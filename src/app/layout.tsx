@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Cinzel, Poppins } from 'next/font/google'
-import Script from 'next/script'
 import { buildOrganizationSchema, buildWebSiteSchema } from '@/lib/schema/organization'
 import './globals.css'
 
@@ -46,13 +45,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-body bg-white text-gray-900 antialiased">
         {children}
 
-        {/* Sitewide JSON-LD — Organization + WebSite */}
-        <Script
+        {/* Sitewide JSON-LD — Organization + WebSite (inline, server-rendered) */}
+        <script
           id="schema-organization"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
         />
-        <Script
+        <script
           id="schema-website"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}

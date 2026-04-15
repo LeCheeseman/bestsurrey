@@ -20,7 +20,6 @@ import { getListingsByCategory, getListingsByTown } from '@/lib/queries/listings
 import { getActiveSubcategoriesForCategory, getTownsWithListingsForCategory, getListingCountsByCategory } from '@/lib/queries/taxonomy'
 import { buildBreadcrumbSchema } from '@/lib/schema/breadcrumbs'
 import { buildCollectionSchema } from '@/lib/schema/collection'
-import { categoryBreadcrumbs, townBreadcrumbs } from '@/lib/schema/breadcrumbs'
 
 export const revalidate = 3600
 

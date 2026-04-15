@@ -15,7 +15,6 @@ import { OpeningHoursTable } from '@/components/listings/OpeningHoursTable'
 import { FaqSection } from '@/components/listings/FaqSection'
 import { JsonLd } from '@/components/schema/JsonLd'
 import { buildListingSchema, buildFaqSchema } from '@/lib/schema/listing'
-import { listingBreadcrumbs } from '@/lib/schema/breadcrumbs'
 import { getListingBySlug, getPublishedListingSlugs, getRelatedListings } from '@/lib/queries/listings'
 
 export const revalidate = 3600

@@ -110,10 +110,10 @@ export function buildListingSchema(listing: ListingWithRelations) {
   if (listing.reviewScore && listing.reviewCount && listing.reviewCount > 0) {
     schema.aggregateRating = {
       '@type':       'AggregateRating',
-      ratingValue:   Number(listing.reviewScore).toFixed(1),
+      ratingValue:   Number(Number(listing.reviewScore).toFixed(1)),
       reviewCount:   listing.reviewCount,
-      bestRating:    '5',
-      worstRating:   '1',
+      bestRating:    5,
+      worstRating:   1,
     }
   }
 
