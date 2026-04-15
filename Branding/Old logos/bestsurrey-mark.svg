@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="-175 -175 350 350">
+  <title>Best Surrey — Primary Mark</title>
+  <desc>Best Surrey bloom logomark with stamp centre. Green petals, champagne gold inner bloom.</desc>
+
+  <defs>
+    <radialGradient id="p1" cx="42%" cy="22%" r="78%">
+      <stop offset="0%" stop-color="#5ab82e"/>
+      <stop offset="100%" stop-color="#183c0c"/>
+    </radialGradient>
+    <radialGradient id="p2" cx="42%" cy="22%" r="78%">
+      <stop offset="0%" stop-color="#3e9818"/>
+      <stop offset="100%" stop-color="#112a08"/>
+    </radialGradient>
+    <radialGradient id="p3" cx="42%" cy="22%" r="78%">
+      <stop offset="0%" stop-color="#68c83a"/>
+      <stop offset="100%" stop-color="#1c4c10"/>
+    </radialGradient>
+    <radialGradient id="p4" cx="42%" cy="22%" r="78%">
+      <stop offset="0%" stop-color="#2e7014"/>
+      <stop offset="100%" stop-color="#0e2408"/>
+    </radialGradient>
+    <radialGradient id="p5" cx="42%" cy="22%" r="78%">
+      <stop offset="0%" stop-color="#72d040"/>
+      <stop offset="100%" stop-color="#205214"/>
+    </radialGradient>
+    <radialGradient id="p6" cx="42%" cy="22%" r="78%">
+      <stop offset="0%" stop-color="#367c18"/>
+      <stop offset="100%" stop-color="#102808"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Six petals -->
+  <ellipse cx="0" cy="-88" rx="64" ry="88" fill="url(#p1)" opacity="0.86" transform="rotate(0)"/>
+  <ellipse cx="0" cy="-88" rx="64" ry="88" fill="url(#p2)" opacity="0.86" transform="rotate(60)"/>
+  <ellipse cx="0" cy="-88" rx="64" ry="88" fill="url(#p3)" opacity="0.86" transform="rotate(120)"/>
+  <ellipse cx="0" cy="-88" rx="64" ry="88" fill="url(#p4)" opacity="0.86" transform="rotate(180)"/>
+  <ellipse cx="0" cy="-88" rx="64" ry="88" fill="url(#p5)" opacity="0.86" transform="rotate(240)"/>
+  <ellipse cx="0" cy="-88" rx="64" ry="88" fill="url(#p6)" opacity="0.86" transform="rotate(300)"/>
+
+  <!-- Stamp: outer dark ring -->
+  <circle cx="0" cy="0" r="36" fill="#1a380e" opacity="0.72"/>
+  <!-- Stamp face: ivory -->
+  <circle cx="0" cy="0" r="31" fill="#eee9e0"/>
+  <!-- Score line -->
+  <circle cx="0" cy="0" r="28" fill="none" stroke="#c4a24a" stroke-width="0.9" opacity="0.55"/>
+
+  <!-- Inner petal echo — champagne gold -->
+  <ellipse cx="0" cy="-13" rx="6.5" ry="10" fill="#c8a85a" opacity="0.82" transform="rotate(0)"/>
+  <ellipse cx="0" cy="-13" rx="6.5" ry="10" fill="#b89848" opacity="0.82" transform="rotate(60)"/>
+  <ellipse cx="0" cy="-13" rx="6.5" ry="10" fill="#c8a85a" opacity="0.82" transform="rotate(120)"/>
+  <ellipse cx="0" cy="-13" rx="6.5" ry="10" fill="#b89848" opacity="0.82" transform="rotate(180)"/>
+  <ellipse cx="0" cy="-13" rx="6.5" ry="10" fill="#c8a85a" opacity="0.82" transform="rotate(240)"/>
+  <ellipse cx="0" cy="-13" rx="6.5" ry="10" fill="#b89848" opacity="0.82" transform="rotate(300)"/>
+
+  <!-- Centre pip -->
+  <circle cx="0" cy="0" r="4.5" fill="#9a7828" opacity="0.92"/>
+  <circle cx="0" cy="0" r="2"   fill="#7a5818" opacity="1"/>
+
+</svg>
