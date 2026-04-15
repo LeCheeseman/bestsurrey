@@ -282,6 +282,24 @@ export const roundupListings = pgTable(
   })
 )
 
+// ─── Click tracking ───────────────────────────────────────────────────────────
+
+export const listingClicks = pgTable(
+  'listing_clicks',
+  {
+    id:        uuid('id').primaryKey().defaultRandom(),
+    listingId: uuid('listing_id').notNull().references(() => listings.id, { onDelete: 'cascade' }),
+    eventType: text('event_type').notNull().default('website_click'),
+    pagePath:  text('page_path'),
+    referer:   text('referer'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    listingIdx: index('listing_clicks_listing_idx').on(t.listingId),
+    createdIdx: index('listing_clicks_created_idx').on(t.createdAt),
+  })
+)
+
 // ─── Category + town editorial overrides ─────────────────────────────────────
 // Allows editors to write custom intro copy per town+category combo.
 // If no row exists the page template falls back to a generated intro.

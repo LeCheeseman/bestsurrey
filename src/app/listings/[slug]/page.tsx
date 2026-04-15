@@ -172,7 +172,7 @@ export default async function ListingPage({ params }: Props) {
                 {/* Website link */}
                 {listing.websiteUrl && (
                   <a
-                    href={listing.websiteUrl}
+                    href={`/api/go/${listing.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-6 inline-block bg-forest-green text-white font-body text-sm px-5 py-2.5 rounded-lg hover:bg-mid-green transition-colors"
@@ -323,7 +323,7 @@ export default async function ListingPage({ params }: Props) {
                     {listing.websiteUrl && (
                       <p>
                         <a
-                          href={listing.websiteUrl}
+                          href={`/api/go/${listing.slug}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-forest-green hover:underline truncate block"

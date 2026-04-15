@@ -7,14 +7,19 @@ import { ListingCard } from './ListingCard'
 import type { ListingCard as ListingCardData } from '@/types'
 
 interface ListingGridProps {
-  listings: ListingCardData[]
+  listings:             ListingCardData[]
   showRankingPosition?: boolean
+  /** Maximum sponsored listings to show. Excess are moved to organic order. Default: 2 */
+  maxSponsored?:        number
 }
 
-export function ListingGrid({ listings, showRankingPosition = false }: ListingGridProps) {
-  // Sponsored and organic listings must be visually separated
-  const sponsored = listings.filter((l) => l.sponsored)
-  const organic   = listings.filter((l) => !l.sponsored)
+export function ListingGrid({ listings, showRankingPosition = false, maxSponsored = 2 }: ListingGridProps) {
+  // Sponsored and organic listings must be visually separated.
+  // Cap sponsored slots to prevent a single advertiser flooding a page.
+  const allSponsored = listings.filter((l) => l.sponsored)
+  const sponsored    = allSponsored.slice(0, maxSponsored)
+  const overflowSponsored = allSponsored.slice(maxSponsored)
+  const organic      = [...listings.filter((l) => !l.sponsored), ...overflowSponsored]
 
   return (
     <div>
