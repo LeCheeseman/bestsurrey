@@ -26,7 +26,8 @@ interface Props {
 }
 
 export function generateStaticParams() {
-  return getTownCategoryParams().map(({ slug, category }) => ({ slug, category }))
+  // Generated on first request via ISR — build env has no DB/network access
+  return []
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

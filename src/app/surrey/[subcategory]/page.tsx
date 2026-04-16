@@ -24,7 +24,8 @@ interface Props {
 }
 
 export function generateStaticParams() {
-  return SUBCATEGORY_SLUGS.map((subcategory) => ({ subcategory }))
+  // Generated on first request via ISR — build env has no DB/network access
+  return []
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

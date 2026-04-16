@@ -9,6 +9,7 @@ import { TownCard } from '@/components/ui/TownCard'
 import { getFeaturedListings } from '@/lib/queries/listings'
 import { getListingCountsByCategory, getListingCountsByTown } from '@/lib/queries/taxonomy'
 import { CATEGORIES, TOWNS } from '@/lib/taxonomy/constants'
+import type { ListingCard } from '@/types'
 
 export const revalidate = 3600
 
@@ -24,11 +25,19 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const [featured, categoryCounts, townCounts] = await Promise.all([
-    getFeaturedListings(6),
-    getListingCountsByCategory(),
-    getListingCountsByTown(),
-  ])
+  let featured: ListingCard[] = []
+  let categoryCounts: Record<string, number> = {}
+  let townCounts: Record<string, number> = {}
+
+  try {
+    ;[featured, categoryCounts, townCounts] = await Promise.all([
+      getFeaturedListings(6),
+      getListingCountsByCategory(),
+      getListingCountsByTown(),
+    ])
+  } catch {
+    // DB unreachable at build time — page renders with empty state, updated via ISR at runtime
+  }
 
   return (
     <>

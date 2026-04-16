@@ -5,7 +5,6 @@
 
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import Script from 'next/script'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -28,10 +27,8 @@ interface Props {
 }
 
 export function generateStaticParams() {
-  return [
-    ...TOWN_SLUGS.map((slug) => ({ slug })),
-    ...CATEGORY_SLUGS.map((slug) => ({ slug })),
-  ]
+  // Generated on first request via ISR — build env has no DB/network access
+  return []
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
