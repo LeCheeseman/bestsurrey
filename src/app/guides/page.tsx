@@ -23,16 +23,22 @@ export const metadata: Metadata = {
 }
 
 export default async function GuidesIndexPage() {
-  const allRoundups = await db
-    .select({
-      slug:        roundups.slug,
-      title:       roundups.title,
-      intro:       roundups.intro,
-      publishedAt: roundups.publishedAt,
-    })
-    .from(roundups)
-    .where(eq(roundups.status, 'published'))
-    .orderBy(desc(roundups.publishedAt))
+  let allRoundups: { slug: string; title: string; intro: string | null; publishedAt: Date | null }[] = []
+
+  try {
+    allRoundups = await db
+      .select({
+        slug:        roundups.slug,
+        title:       roundups.title,
+        intro:       roundups.intro,
+        publishedAt: roundups.publishedAt,
+      })
+      .from(roundups)
+      .where(eq(roundups.status, 'published'))
+      .orderBy(desc(roundups.publishedAt))
+  } catch {
+    // DB unreachable at build time — page renders with empty state, updated via ISR at runtime
+  }
 
   const breadcrumbItems = [
     { name: 'Home',   path: '/' },
