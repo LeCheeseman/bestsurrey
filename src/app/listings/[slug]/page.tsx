@@ -24,8 +24,13 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  const slugs = await getPublishedListingSlugs()
-  return slugs.map((slug) => ({ slug }))
+  try {
+    const slugs = await getPublishedListingSlugs()
+    return slugs.map((slug) => ({ slug }))
+  } catch {
+    // DB unreachable at build time — pages generated on first request via ISR
+    return []
+  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

@@ -58,11 +58,16 @@ async function getRoundup(slug: string) {
 }
 
 export async function generateStaticParams() {
-  const rows = await db
-    .select({ slug: roundups.slug })
-    .from(roundups)
-    .where(eq(roundups.status, 'published'))
-  return rows.map(({ slug }) => ({ slug }))
+  try {
+    const rows = await db
+      .select({ slug: roundups.slug })
+      .from(roundups)
+      .where(eq(roundups.status, 'published'))
+    return rows.map(({ slug }) => ({ slug }))
+  } catch {
+    // DB unreachable at build time — pages generated on first request via ISR
+    return []
+  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

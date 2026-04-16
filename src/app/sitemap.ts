@@ -27,14 +27,21 @@ const url  = (path: string) => `${BASE}${path}`
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
 
-  const [listingRows, roundupRows] = await Promise.all([
-    db.select({ slug: listings.slug, updatedAt: listings.updatedAt })
-      .from(listings)
-      .where(eq(listings.status, 'published')),
-    db.select({ slug: roundups.slug, updatedAt: roundups.updatedAt })
-      .from(roundups)
-      .where(eq(roundups.status, 'published')),
-  ])
+  let listingRows: { slug: string; updatedAt: Date | null }[] = []
+  let roundupRows: { slug: string; updatedAt: Date | null }[] = []
+
+  try {
+    ;[listingRows, roundupRows] = await Promise.all([
+      db.select({ slug: listings.slug, updatedAt: listings.updatedAt })
+        .from(listings)
+        .where(eq(listings.status, 'published')),
+      db.select({ slug: roundups.slug, updatedAt: roundups.updatedAt })
+        .from(roundups)
+        .where(eq(roundups.status, 'published')),
+    ])
+  } catch {
+    // DB unreachable at build time — dynamic entries omitted, sitemap regenerated via ISR
+  }
 
   return [
     // ── Homepage ──────────────────────────────────────────────────────────
