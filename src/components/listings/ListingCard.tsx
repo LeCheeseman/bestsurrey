@@ -20,6 +20,10 @@ export function ListingCard({ listing, position }: ListingCardProps) {
 
   return (
     <article className="group relative bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+
+      {/* Entire card is clickable */}
+      <Link href={`/listings/${listing.slug}/`} className="absolute inset-0 z-0" aria-label={listing.name} />
+
       {/* Sponsored label — always visible, always distinct from organic */}
       {listing.sponsored && (
         <div className="absolute top-2 left-2 z-10 bg-parchment text-gray-600 text-xs px-2 py-0.5 rounded font-body">
@@ -36,7 +40,7 @@ export function ListingCard({ listing, position }: ListingCardProps) {
 
       {/* Ranking position — shown on "best of" ranked pages */}
       {position && !listing.sponsored && (
-        <div className="absolute top-2 right-2 z-10 bg-forest-green text-white text-xs w-6 h-6 flex items-center justify-center rounded-full font-display font-semibold">
+        <div className="absolute top-2 right-2 z-10 bg-white/90 text-forest-green text-xs w-7 h-7 flex items-center justify-center rounded-full font-display font-bold border border-forest-green/20 shadow-sm">
           {position}
         </div>
       )}
@@ -61,12 +65,9 @@ export function ListingCard({ listing, position }: ListingCardProps) {
       {/* Content */}
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-1">
-          <Link
-            href={`/listings/${listing.slug}/`}
-            className="font-display text-base font-semibold text-forest-green hover:underline line-clamp-2"
-          >
+          <span className="font-display text-base font-semibold text-forest-green line-clamp-2">
             {listing.name}
-          </Link>
+          </span>
           {listing.priceBand && (
             <span className="text-xs text-gray-500 shrink-0 mt-0.5">{listing.priceBand}</span>
           )}
@@ -82,9 +83,9 @@ export function ListingCard({ listing, position }: ListingCardProps) {
 
         {/* Attribute badges */}
         <div className="flex flex-wrap gap-1 mt-3">
-          {listing.familyFriendly      && <Badge label="Family friendly" />}
-          {listing.dogFriendly         && <Badge label="Dog friendly" />}
-          {listing.veganFriendly       && <Badge label="Vegan" />}
+          {listing.familyFriendly       && <Badge label="Family friendly" />}
+          {listing.dogFriendly          && <Badge label="Dog friendly" />}
+          {listing.veganFriendly        && <Badge label="Vegan" />}
           {listing.wheelchairAccessible && <Badge label="Accessible" />}
         </div>
       </div>
