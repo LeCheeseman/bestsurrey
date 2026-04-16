@@ -34,20 +34,24 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const listing = await getListingBySlug(params.slug)
-  if (!listing) return {}
+  try {
+    const listing = await getListingBySlug(params.slug)
+    if (!listing) return {}
 
-  const primaryImage = listing.images?.find((i) => i.isPrimary) ?? listing.images?.[0]
+    const primaryImage = listing.images?.find((i) => i.isPrimary) ?? listing.images?.[0]
 
-  return {
-    title:       `${listing.name} — ${listing.town.name} ${listing.primaryCategory.name}`,
-    description: listing.shortSummary ?? undefined,
-    alternates:  { canonical: `/listings/${listing.slug}/` },
-    openGraph: {
-      title:       listing.name,
+    return {
+      title:       `${listing.name} — ${listing.town.name} ${listing.primaryCategory.name}`,
       description: listing.shortSummary ?? undefined,
-      ...(primaryImage ? { images: [{ url: primaryImage.url, alt: primaryImage.alt }] } : {}),
-    },
+      alternates:  { canonical: `/listings/${listing.slug}/` },
+      openGraph: {
+        title:       listing.name,
+        description: listing.shortSummary ?? undefined,
+        ...(primaryImage ? { images: [{ url: primaryImage.url, alt: primaryImage.alt }] } : {}),
+      },
+    }
+  } catch {
+    return {}
   }
 }
 

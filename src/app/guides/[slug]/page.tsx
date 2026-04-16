@@ -71,13 +71,16 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const data = await getRoundup(params.slug)
-  if (!data) return {}
-
-  return {
-    title:       data.roundup.metaTitle    ?? data.roundup.title,
-    description: data.roundup.metaDescription ?? data.roundup.intro ?? undefined,
-    alternates:  { canonical: `/guides/${params.slug}/` },
+  try {
+    const data = await getRoundup(params.slug)
+    if (!data) return {}
+    return {
+      title:       data.roundup.metaTitle    ?? data.roundup.title,
+      description: data.roundup.metaDescription ?? data.roundup.intro ?? undefined,
+      alternates:  { canonical: `/guides/${params.slug}/` },
+    }
+  } catch {
+    return {}
   }
 }
 
