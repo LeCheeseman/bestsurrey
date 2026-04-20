@@ -1,0 +1,115 @@
+town,town_slug,category,category_slug,priority,target_listings,status,notes
+Guildford,guildford,Restaurants,restaurants,1,12,done,Imported — re-import with images
+Guildford,guildford,Pubs & Bars,pubs-bars,1,10,next,High priority
+Guildford,guildford,Cafés & Brunch,cafes-brunch,1,10,done,Imported
+Guildford,guildford,Things To Do,things-to-do,1,10,pending,
+Guildford,guildford,Kids & Family,kids-family,1,8,pending,
+Guildford,guildford,Indoor Activities,indoor-activities,1,6,pending,
+Woking,woking,Restaurants,restaurants,1,10,pending,
+Woking,woking,Pubs & Bars,pubs-bars,1,8,pending,
+Woking,woking,Cafés & Brunch,cafes-brunch,1,8,pending,
+Woking,woking,Things To Do,things-to-do,2,8,pending,
+Woking,woking,Kids & Family,kids-family,2,6,pending,
+Woking,woking,Indoor Activities,indoor-activities,2,4,pending,
+Epsom,epsom,Restaurants,restaurants,1,10,pending,
+Epsom,epsom,Pubs & Bars,pubs-bars,1,8,pending,
+Epsom,epsom,Cafés & Brunch,cafes-brunch,1,6,pending,
+Epsom,epsom,Things To Do,things-to-do,2,6,pending,Epsom Downs / racecourse area
+Epsom,epsom,Kids & Family,kids-family,2,5,pending,
+Epsom,epsom,Indoor Activities,indoor-activities,2,4,pending,
+Camberley,camberley,Restaurants,restaurants,1,10,pending,
+Camberley,camberley,Pubs & Bars,pubs-bars,1,8,pending,
+Camberley,camberley,Cafés & Brunch,cafes-brunch,1,6,pending,
+Camberley,camberley,Things To Do,things-to-do,2,6,pending,
+Camberley,camberley,Kids & Family,kids-family,2,6,pending,
+Camberley,camberley,Indoor Activities,indoor-activities,2,5,pending,Good bowling/indoor options
+Redhill,redhill,Restaurants,restaurants,1,8,pending,
+Redhill,redhill,Pubs & Bars,pubs-bars,1,6,pending,
+Redhill,redhill,Cafés & Brunch,cafes-brunch,1,6,pending,
+Redhill,redhill,Things To Do,things-to-do,2,6,pending,
+Redhill,redhill,Kids & Family,kids-family,2,5,pending,
+Redhill,redhill,Indoor Activities,indoor-activities,3,3,pending,
+Farnham,farnham,Restaurants,restaurants,1,8,pending,
+Farnham,farnham,Pubs & Bars,pubs-bars,1,8,pending,Strong pub town
+Farnham,farnham,Cafés & Brunch,cafes-brunch,1,8,pending,Great independent café scene
+Farnham,farnham,Things To Do,things-to-do,2,8,pending,Castle + Alice Holt
+Farnham,farnham,Kids & Family,kids-family,2,6,pending,Alice Holt Forest
+Farnham,farnham,Indoor Activities,indoor-activities,3,3,pending,
+Reigate,reigate,Restaurants,restaurants,2,8,pending,
+Reigate,reigate,Pubs & Bars,pubs-bars,2,8,pending,Strong independent pub scene
+Reigate,reigate,Cafés & Brunch,cafes-brunch,2,6,pending,
+Reigate,reigate,Things To Do,things-to-do,2,8,pending,Reigate Hill / North Downs
+Reigate,reigate,Kids & Family,kids-family,2,5,pending,
+Reigate,reigate,Indoor Activities,indoor-activities,3,3,pending,
+Godalming,godalming,Restaurants,restaurants,2,6,pending,
+Godalming,godalming,Pubs & Bars,pubs-bars,2,6,pending,
+Godalming,godalming,Cafés & Brunch,cafes-brunch,2,6,pending,Good independent scene
+Godalming,godalming,Things To Do,things-to-do,2,6,pending,River Wey / Surrey Hills
+Godalming,godalming,Kids & Family,kids-family,3,4,pending,
+Godalming,godalming,Indoor Activities,indoor-activities,3,2,pending,Limited — only if enough venues
+Leatherhead,leatherhead,Restaurants,restaurants,2,6,pending,
+Leatherhead,leatherhead,Pubs & Bars,pubs-bars,2,6,pending,
+Leatherhead,leatherhead,Cafés & Brunch,cafes-brunch,2,5,pending,
+Leatherhead,leatherhead,Things To Do,things-to-do,3,5,pending,
+Leatherhead,leatherhead,Kids & Family,kids-family,3,4,pending,
+Leatherhead,leatherhead,Indoor Activities,indoor-activities,3,3,pending,
+Cobham,cobham,Restaurants,restaurants,2,6,pending,Affluent — quality over quantity
+Cobham,cobham,Pubs & Bars,pubs-bars,2,6,pending,Good country pubs nearby
+Cobham,cobham,Cafés & Brunch,cafes-brunch,2,5,pending,
+Cobham,cobham,Things To Do,things-to-do,3,5,pending,
+Cobham,cobham,Kids & Family,kids-family,3,4,pending,
+Cobham,cobham,Indoor Activities,indoor-activities,3,3,pending,
+Weybridge,weybridge,Restaurants,restaurants,2,6,pending,
+Weybridge,weybridge,Pubs & Bars,pubs-bars,2,6,pending,
+Weybridge,weybridge,Cafés & Brunch,cafes-brunch,2,5,pending,
+Weybridge,weybridge,Things To Do,things-to-do,3,5,pending,
+Weybridge,weybridge,Kids & Family,kids-family,3,4,pending,
+Weybridge,weybridge,Indoor Activities,indoor-activities,3,3,pending,
+Esher,esher,Restaurants,restaurants,2,6,pending,Affluent — boutique scene
+Esher,esher,Pubs & Bars,pubs-bars,2,5,pending,
+Esher,esher,Cafés & Brunch,cafes-brunch,2,5,pending,
+Esher,esher,Things To Do,things-to-do,3,5,pending,Claremont / Sandown Park
+Esher,esher,Kids & Family,kids-family,3,4,pending,
+Esher,esher,Indoor Activities,indoor-activities,3,2,pending,
+Walton-on-Thames,walton-on-thames,Restaurants,restaurants,2,6,pending,
+Walton-on-Thames,walton-on-thames,Pubs & Bars,pubs-bars,2,6,pending,
+Walton-on-Thames,walton-on-thames,Cafés & Brunch,cafes-brunch,2,5,pending,
+Walton-on-Thames,walton-on-thames,Things To Do,things-to-do,3,5,pending,
+Walton-on-Thames,walton-on-thames,Kids & Family,kids-family,3,4,pending,
+Walton-on-Thames,walton-on-thames,Indoor Activities,indoor-activities,3,3,pending,
+Dorking,dorking,Restaurants,restaurants,2,6,pending,
+Dorking,dorking,Pubs & Bars,pubs-bars,2,6,pending,Good country pubs
+Dorking,dorking,Cafés & Brunch,cafes-brunch,2,5,pending,
+Dorking,dorking,Things To Do,things-to-do,2,8,pending,Box Hill / North Downs — strong
+Dorking,dorking,Kids & Family,kids-family,3,5,pending,
+Dorking,dorking,Indoor Activities,indoor-activities,3,2,pending,Limited
+Haslemere,haslemere,Restaurants,restaurants,3,5,pending,
+Haslemere,haslemere,Pubs & Bars,pubs-bars,3,5,pending,
+Haslemere,haslemere,Cafés & Brunch,cafes-brunch,3,4,pending,
+Haslemere,haslemere,Things To Do,things-to-do,3,6,pending,Surrey Hills gateway
+Haslemere,haslemere,Kids & Family,kids-family,3,3,pending,
+Haslemere,haslemere,Indoor Activities,indoor-activities,3,0,pending,Skip unless venues found
+Oxted,oxted,Restaurants,restaurants,3,5,pending,
+Oxted,oxted,Pubs & Bars,pubs-bars,3,5,pending,
+Oxted,oxted,Cafés & Brunch,cafes-brunch,3,4,pending,
+Oxted,oxted,Things To Do,things-to-do,3,5,pending,Greensand Way
+Oxted,oxted,Kids & Family,kids-family,3,3,pending,
+Oxted,oxted,Indoor Activities,indoor-activities,3,0,pending,Skip unless venues found
+Virginia Water,virginia-water,Restaurants,restaurants,3,4,pending,Premium only
+Virginia Water,virginia-water,Pubs & Bars,pubs-bars,3,3,pending,
+Virginia Water,virginia-water,Cafés & Brunch,cafes-brunch,3,3,pending,
+Virginia Water,virginia-water,Things To Do,things-to-do,3,4,pending,Virginia Water lake / Great Windsor Park
+Virginia Water,virginia-water,Kids & Family,kids-family,3,3,pending,
+Virginia Water,virginia-water,Indoor Activities,indoor-activities,3,0,pending,Skip
+Cranleigh,cranleigh,Restaurants,restaurants,3,4,pending,
+Cranleigh,cranleigh,Pubs & Bars,pubs-bars,3,4,pending,
+Cranleigh,cranleigh,Cafés & Brunch,cafes-brunch,3,3,pending,
+Cranleigh,cranleigh,Things To Do,things-to-do,3,4,pending,
+Cranleigh,cranleigh,Kids & Family,kids-family,3,3,pending,
+Cranleigh,cranleigh,Indoor Activities,indoor-activities,3,0,pending,Skip
+Staines,staines,Restaurants,restaurants,3,5,pending,
+Staines,staines,Pubs & Bars,pubs-bars,3,5,pending,Riverside pubs
+Staines,staines,Cafés & Brunch,cafes-brunch,3,4,pending,
+Staines,staines,Things To Do,things-to-do,3,4,pending,Thames riverside
+Staines,staines,Kids & Family,kids-family,3,3,pending,
+Staines,staines,Indoor Activities,indoor-activities,3,3,pending,
