@@ -15,7 +15,7 @@ import { OpeningHoursTable } from '@/components/listings/OpeningHoursTable'
 import { FaqSection } from '@/components/listings/FaqSection'
 import { JsonLd } from '@/components/schema/JsonLd'
 import { buildListingSchema, buildFaqSchema } from '@/lib/schema/listing'
-import { getListingBySlug, getPublishedListingSlugs, getRelatedListings } from '@/lib/queries/listings'
+import { getListingBySlug, getRelatedListings } from '@/lib/queries/listings'
 
 export const revalidate = 3600
 
@@ -23,14 +23,9 @@ interface Props {
   params: { slug: string }
 }
 
-export async function generateStaticParams() {
-  try {
-    const slugs = await getPublishedListingSlugs()
-    return slugs.map((slug) => ({ slug }))
-  } catch {
-    // DB unreachable at build time — pages generated on first request via ISR
-    return []
-  }
+export function generateStaticParams() {
+  // All listing pages generated on first request via ISR — never pre-render at build time
+  return []
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
