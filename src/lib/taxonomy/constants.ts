@@ -17,28 +17,28 @@
 // ─── Towns ────────────────────────────────────────────────────────────────────
 
 export const TOWNS = [
-  // Tier 1 — high population / strong commercial activity
-  { slug: 'guildford',        name: 'Guildford'          },
-  { slug: 'woking',           name: 'Woking'             },
-  { slug: 'epsom',            name: 'Epsom'              },
-  { slug: 'camberley',        name: 'Camberley'          },
-  { slug: 'redhill',          name: 'Redhill'            },
-  { slug: 'farnham',          name: 'Farnham'            },
-  // Tier 2 — affluent / strong dining & leisure
-  { slug: 'reigate',          name: 'Reigate'            },
-  { slug: 'godalming',        name: 'Godalming'          },
-  { slug: 'leatherhead',      name: 'Leatherhead'        },
-  { slug: 'cobham',           name: 'Cobham'             },
-  { slug: 'weybridge',        name: 'Weybridge'          },
-  { slug: 'esher',            name: 'Esher'              },
-  { slug: 'walton-on-thames', name: 'Walton-on-Thames'   },
-  // Tier 3 — smaller towns / niche appeal
-  { slug: 'dorking',          name: 'Dorking'            },
-  { slug: 'haslemere',        name: 'Haslemere'          },
-  { slug: 'oxted',            name: 'Oxted'              },
-  { slug: 'virginia-water',   name: 'Virginia Water'     },
-  { slug: 'cranleigh',        name: 'Cranleigh'          },
-  { slug: 'staines',          name: 'Staines-upon-Thames'},
+  // Tier 1 — priority now
+  { slug: 'guildford',        name: 'Guildford'           },
+  { slug: 'woking',           name: 'Woking'              },
+  { slug: 'epsom',            name: 'Epsom'               },
+  { slug: 'camberley',        name: 'Camberley'           },
+  { slug: 'redhill',          name: 'Redhill'             },
+  { slug: 'farnham',          name: 'Farnham'             },
+  // Tier 2 — priority soon
+  { slug: 'reigate',          name: 'Reigate'             },
+  { slug: 'godalming',        name: 'Godalming'           },
+  { slug: 'leatherhead',      name: 'Leatherhead'         },
+  { slug: 'cobham',           name: 'Cobham'              },
+  { slug: 'weybridge',        name: 'Weybridge'           },
+  { slug: 'esher',            name: 'Esher'               },
+  { slug: 'walton-on-thames', name: 'Walton-on-Thames'    },
+  // Tier 3 — later
+  { slug: 'dorking',          name: 'Dorking'             },
+  { slug: 'haslemere',        name: 'Haslemere'           },
+  { slug: 'oxted',            name: 'Oxted'               },
+  { slug: 'virginia-water',   name: 'Virginia Water'      },
+  { slug: 'cranleigh',        name: 'Cranleigh'           },
+  { slug: 'staines',          name: 'Staines-upon-Thames' },
 ] as const
 
 export type TownSlug = (typeof TOWNS)[number]['slug']
@@ -48,12 +48,12 @@ export const TOWN_SLUGS = TOWNS.map((t) => t.slug) as TownSlug[]
 // ─── Categories ───────────────────────────────────────────────────────────────
 
 export const CATEGORIES = [
-  { slug: 'restaurants',      name: 'Restaurants'      },
-  { slug: 'pubs-bars',        name: 'Pubs & Bars'      },
-  { slug: 'cafes-brunch',     name: 'Cafés & Brunch'   },
-  { slug: 'things-to-do',     name: 'Things To Do'     },
-  { slug: 'kids-family',      name: 'Kids & Family'    },
-  { slug: 'indoor-activities',name: 'Indoor Activities'},
+  { slug: 'restaurants',       name: 'Restaurants'       },
+  { slug: 'pubs-bars',         name: 'Pubs & Bars'       },
+  { slug: 'cafes-brunch',      name: 'Cafés & Brunch'    },
+  { slug: 'things-to-do',      name: 'Things To Do'      },
+  { slug: 'kids-family',       name: 'Kids & Family'     },
+  { slug: 'indoor-activities', name: 'Indoor Activities' },
 ] as const
 
 export type CategorySlug = (typeof CATEGORIES)[number]['slug']
@@ -64,64 +64,59 @@ export const CATEGORY_SLUGS = CATEGORIES.map((c) => c.slug) as CategorySlug[]
 
 export const SUBCATEGORIES = [
   // Restaurants
-  { slug: 'fine-dining',            name: 'Fine Dining',       categorySlug: 'restaurants'       },
-  { slug: 'casual-dining',          name: 'Casual Dining',     categorySlug: 'restaurants'       },
-  { slug: 'date-night',             name: 'Date Night',        categorySlug: 'restaurants'       },
-  { slug: 'family-dining',          name: 'Family Dining',     categorySlug: 'restaurants'       },
-  { slug: 'sunday-roast',           name: 'Sunday Roast',      categorySlug: 'restaurants'       },
-  { slug: 'vegan-restaurants',      name: 'Vegan',             categorySlug: 'restaurants'       },
-  { slug: 'vegetarian-restaurants', name: 'Vegetarian',        categorySlug: 'restaurants'       },
-  { slug: 'takeaway',               name: 'Takeaway',          categorySlug: 'restaurants'       },
-  { slug: 'brunch',                 name: 'Brunch',            categorySlug: 'restaurants'       },
+  { slug: 'fine-dining',            name: 'Fine Dining',         categorySlug: 'restaurants'       },
+  { slug: 'casual-dining',          name: 'Casual Dining',       categorySlug: 'restaurants'       },
+  { slug: 'date-night',             name: 'Date Night',          categorySlug: 'restaurants'       },
+  { slug: 'family-dining',          name: 'Family Dining',       categorySlug: 'restaurants'       },
+  { slug: 'sunday-roast',           name: 'Sunday Roast',        categorySlug: 'restaurants'       },
+  { slug: 'vegan-restaurants',      name: 'Vegan',               categorySlug: 'restaurants'       },
+  { slug: 'vegetarian-restaurants', name: 'Vegetarian',          categorySlug: 'restaurants'       },
+  { slug: 'takeaway',               name: 'Takeaway',            categorySlug: 'restaurants'       },
+  { slug: 'brunch',                 name: 'Brunch',              categorySlug: 'restaurants'       },
 
   // Pubs & Bars
-  { slug: 'gastropubs',             name: 'Gastropubs',        categorySlug: 'pubs-bars'         },
-  { slug: 'traditional-pubs',       name: 'Traditional Pubs',  categorySlug: 'pubs-bars'         },
-  { slug: 'country-pubs',           name: 'Country Pubs',      categorySlug: 'pubs-bars'         },
-  { slug: 'beer-gardens',           name: 'Beer Gardens',      categorySlug: 'pubs-bars'         },
-  { slug: 'wine-bars',              name: 'Wine Bars',         categorySlug: 'pubs-bars'         },
-  { slug: 'cocktail-bars',          name: 'Cocktail Bars',     categorySlug: 'pubs-bars'         },
-  { slug: 'sports-bars',            name: 'Sports Bars',       categorySlug: 'pubs-bars'         },
-  // pubs-gastropubs kept here for backward compat with existing restaurant listings
-  { slug: 'pubs-gastropubs',        name: 'Pubs & Gastropubs', categorySlug: 'pubs-bars'         },
+  { slug: 'gastropubs',             name: 'Gastropubs',          categorySlug: 'pubs-bars'         },
+  { slug: 'traditional-pubs',       name: 'Traditional Pubs',    categorySlug: 'pubs-bars'         },
+  { slug: 'country-pubs',           name: 'Country Pubs',        categorySlug: 'pubs-bars'         },
+  { slug: 'beer-gardens',           name: 'Beer Gardens',        categorySlug: 'pubs-bars'         },
+  { slug: 'wine-bars',              name: 'Wine Bars',           categorySlug: 'pubs-bars'         },
+  { slug: 'cocktail-bars',          name: 'Cocktail Bars',       categorySlug: 'pubs-bars'         },
+  { slug: 'sports-bars',            name: 'Sports Bars',         categorySlug: 'pubs-bars'         },
 
   // Cafés & Brunch
-  { slug: 'coffee-shops',           name: 'Coffee Shops',      categorySlug: 'cafes-brunch'      },
-  { slug: 'brunch-spots',           name: 'Brunch Spots',      categorySlug: 'cafes-brunch'      },
-  { slug: 'bakeries',               name: 'Bakeries',          categorySlug: 'cafes-brunch'      },
-  { slug: 'tea-rooms',              name: 'Tea Rooms',         categorySlug: 'cafes-brunch'      },
+  { slug: 'coffee-shops',           name: 'Coffee Shops',        categorySlug: 'cafes-brunch'      },
+  { slug: 'brunch-spots',           name: 'Brunch Spots',        categorySlug: 'cafes-brunch'      },
+  { slug: 'bakeries',               name: 'Bakeries',            categorySlug: 'cafes-brunch'      },
+  { slug: 'tea-rooms',              name: 'Tea Rooms',           categorySlug: 'cafes-brunch'      },
 
   // Things To Do
-  { slug: 'walks-nature',           name: 'Walks & Nature',    categorySlug: 'things-to-do'      },
-  { slug: 'historic-sites',         name: 'Historic Sites',    categorySlug: 'things-to-do'      },
-  { slug: 'gardens-parks',          name: 'Gardens & Parks',   categorySlug: 'things-to-do'      },
-  { slug: 'days-out',               name: 'Days Out',          categorySlug: 'things-to-do'      },
-  { slug: 'arts-culture',           name: 'Arts & Culture',    categorySlug: 'things-to-do'      },
-  { slug: 'entertainment',          name: 'Entertainment',     categorySlug: 'things-to-do'      },
-  { slug: 'cycling',                name: 'Cycling',           categorySlug: 'things-to-do'      },
+  { slug: 'walks-nature',           name: 'Walks & Nature',      categorySlug: 'things-to-do'      },
+  { slug: 'historic-sites',         name: 'Historic Sites',      categorySlug: 'things-to-do'      },
+  { slug: 'gardens-parks',          name: 'Gardens & Parks',     categorySlug: 'things-to-do'      },
+  { slug: 'days-out',               name: 'Days Out',            categorySlug: 'things-to-do'      },
+  { slug: 'arts-culture',           name: 'Arts & Culture',      categorySlug: 'things-to-do'      },
+  { slug: 'entertainment',          name: 'Entertainment',       categorySlug: 'things-to-do'      },
+  { slug: 'cycling',                name: 'Cycling',             categorySlug: 'things-to-do'      },
 
   // Kids & Family
-  { slug: 'soft-play',              name: 'Soft Play',         categorySlug: 'kids-family'       },
-  { slug: 'farms-animals',          name: 'Farms & Animals',   categorySlug: 'kids-family'       },
-  { slug: 'outdoor-play',           name: 'Outdoor Play',      categorySlug: 'kids-family'       },
-  { slug: 'museums-education',      name: 'Museums & Education',categorySlug: 'kids-family'      },
-  { slug: 'arts-crafts',            name: 'Arts & Crafts',     categorySlug: 'kids-family'       },
-  { slug: 'theme-parks',            name: 'Theme Parks',       categorySlug: 'kids-family'       },
-  { slug: 'holiday-activities',     name: 'Holiday Activities',categorySlug: 'kids-family'       },
-  { slug: 'indoor-kids-activities', name: 'Indoor Activities', categorySlug: 'kids-family'       },
-  { slug: 'outdoor-kids-activities',name: 'Outdoor Activities',categorySlug: 'kids-family'       },
+  { slug: 'soft-play',              name: 'Soft Play',           categorySlug: 'kids-family'       },
+  { slug: 'farms-animals',          name: 'Farms & Animals',     categorySlug: 'kids-family'       },
+  { slug: 'outdoor-play',           name: 'Outdoor Play',        categorySlug: 'kids-family'       },
+  { slug: 'museums-education',      name: 'Museums & Education', categorySlug: 'kids-family'       },
+  { slug: 'arts-crafts',            name: 'Arts & Crafts',       categorySlug: 'kids-family'       },
+  { slug: 'theme-parks',            name: 'Theme Parks',         categorySlug: 'kids-family'       },
+  { slug: 'holiday-activities',     name: 'Holiday Activities',  categorySlug: 'kids-family'       },
 
   // Indoor Activities
-  { slug: 'escape-rooms',           name: 'Escape Rooms',      categorySlug: 'indoor-activities' },
-  { slug: 'bowling',                name: 'Bowling',           categorySlug: 'indoor-activities' },
-  { slug: 'go-karting',             name: 'Go-Karting',        categorySlug: 'indoor-activities' },
-  { slug: 'climbing',               name: 'Climbing',          categorySlug: 'indoor-activities' },
-  { slug: 'mini-golf',              name: 'Mini Golf',         categorySlug: 'indoor-activities' },
-  { slug: 'laser-tag',              name: 'Laser Tag',         categorySlug: 'indoor-activities' },
-  { slug: 'trampoline-parks',       name: 'Trampoline Parks',  categorySlug: 'indoor-activities' },
-  { slug: 'axe-throwing',           name: 'Axe Throwing',      categorySlug: 'indoor-activities' },
-  { slug: 'virtual-reality',        name: 'Virtual Reality',   categorySlug: 'indoor-activities' },
-  { slug: 'swimming',               name: 'Swimming',          categorySlug: 'indoor-activities' },
+  { slug: 'escape-rooms',           name: 'Escape Rooms',        categorySlug: 'indoor-activities' },
+  { slug: 'bowling',                name: 'Bowling',             categorySlug: 'indoor-activities' },
+  { slug: 'go-karting',             name: 'Go-Karting',          categorySlug: 'indoor-activities' },
+  { slug: 'climbing',               name: 'Climbing',            categorySlug: 'indoor-activities' },
+  { slug: 'mini-golf',              name: 'Mini Golf',           categorySlug: 'indoor-activities' },
+  { slug: 'laser-tag',              name: 'Laser Tag',           categorySlug: 'indoor-activities' },
+  { slug: 'trampoline-parks',       name: 'Trampoline Parks',    categorySlug: 'indoor-activities' },
+  { slug: 'axe-throwing',           name: 'Axe Throwing',        categorySlug: 'indoor-activities' },
+  { slug: 'virtual-reality',        name: 'Virtual Reality',     categorySlug: 'indoor-activities' },
 ] as const
 
 export type SubcategorySlug = (typeof SUBCATEGORIES)[number]['slug']
