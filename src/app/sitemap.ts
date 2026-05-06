@@ -6,18 +6,17 @@
  *   0.9  Town + category pages  (primary SEO targets)
  *   0.8  Category index pages, town hub pages
  *   0.7  Listing detail pages
- *   0.6  Subcategory pages, guide pages
- *   0.5  Guides index
+ *   0.6  Subcategory pages
  *
  * /search is intentionally excluded (noindex).
  */
 
 import type { MetadataRoute } from 'next'
 import { db }          from '@/lib/db'
-import { listings, roundups } from '@/lib/db/schema'
+import { listings } from '@/lib/db/schema'
 import { eq }          from 'drizzle-orm'
-import { TOWN_SLUGS, CATEGORY_SLUGS, SUBCATEGORY_SLUGS } from '@/lib/taxonomy/constants'
-import { getTownCategoryParams } from '@/lib/taxonomy/validation'
+import { TOWN_SLUGS, CATEGORY_SLUGS } from '@/lib/taxonomy/constants'
+import { getIndexableSubcategorySlugs, getIndexableTownCategoryParams } from '@/lib/queries/taxonomy'
 
 export const revalidate = 3600
 
@@ -28,16 +27,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
 
   let listingRows: { slug: string; updatedAt: Date | null }[] = []
-  let roundupRows: { slug: string; updatedAt: Date | null }[] = []
+  let townCategoryRows: { slug: string; category: string }[] = []
+  let subcategorySlugs: string[] = []
 
   try {
-    ;[listingRows, roundupRows] = await Promise.all([
+    ;[listingRows, townCategoryRows, subcategorySlugs] = await Promise.all([
       db.select({ slug: listings.slug, updatedAt: listings.updatedAt })
         .from(listings)
         .where(eq(listings.status, 'published')),
-      db.select({ slug: roundups.slug, updatedAt: roundups.updatedAt })
-        .from(roundups)
-        .where(eq(roundups.status, 'published')),
+      getIndexableTownCategoryParams(),
+      getIndexableSubcategorySlugs(),
     ])
   } catch {
     // DB unreachable at build time — dynamic entries omitted, sitemap regenerated via ISR
@@ -52,17 +51,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority:        1.0,
     },
 
-    // ── Guides index ──────────────────────────────────────────────────────
     {
-      url:             url('/guides/'),
+      url:             url('/places'),
       lastModified:    now,
       changeFrequency: 'weekly',
-      priority:        0.5,
+      priority:        0.7,
+    },
+    {
+      url:             url('/about'),
+      lastModified:    now,
+      changeFrequency: 'monthly',
+      priority:        0.4,
     },
 
     // ── Category index pages (/restaurants/, /cafes-brunch/, …) ──────────
     ...CATEGORY_SLUGS.map((slug) => ({
-      url:             url(`/${slug}/`),
+      url:             url(`/${slug}`),
       lastModified:    now,
       changeFrequency: 'weekly' as const,
       priority:        0.8,
@@ -70,23 +74,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // ── Town hub pages (/guildford/, /woking/, …) ─────────────────────────
     ...TOWN_SLUGS.map((slug) => ({
-      url:             url(`/${slug}/`),
+      url:             url(`/${slug}`),
       lastModified:    now,
       changeFrequency: 'weekly' as const,
       priority:        0.8,
     })),
 
     // ── Town + category pages — primary SEO targets ───────────────────────
-    ...getTownCategoryParams().map(({ slug, category }) => ({
-      url:             url(`/${slug}/${category}/`),
+    ...townCategoryRows.map(({ slug, category }) => ({
+      url:             url(`/${slug}/${category}`),
       lastModified:    now,
       changeFrequency: 'weekly' as const,
       priority:        0.9,
     })),
 
     // ── Subcategory pages (/surrey/vegan-restaurants/, …) ─────────────────
-    ...SUBCATEGORY_SLUGS.map((slug) => ({
-      url:             url(`/surrey/${slug}/`),
+    ...subcategorySlugs.map((slug) => ({
+      url:             url(`/surrey/${slug}`),
       lastModified:    now,
       changeFrequency: 'weekly' as const,
       priority:        0.6,
@@ -94,18 +98,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // ── Listing detail pages (/listings/[slug]/) ──────────────────────────
     ...listingRows.map((row) => ({
-      url:             url(`/listings/${row.slug}/`),
+      url:             url(`/listings/${row.slug}`),
       lastModified:    row.updatedAt ?? now,
       changeFrequency: 'weekly' as const,
       priority:        0.7,
-    })),
-
-    // ── Guide pages (/guides/[slug]/) ─────────────────────────────────────
-    ...roundupRows.map((row) => ({
-      url:             url(`/guides/${row.slug}/`),
-      lastModified:    row.updatedAt ?? now,
-      changeFrequency: 'monthly' as const,
-      priority:        0.6,
     })),
   ]
 }

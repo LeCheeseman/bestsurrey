@@ -12,10 +12,10 @@ import { ListingGrid } from '@/components/listings/ListingGrid'
 import { SubcategoryPills } from '@/components/ui/SubcategoryPills'
 import { TownFilterRow } from '@/components/ui/TownFilterRow'
 import { JsonLd } from '@/components/schema/JsonLd'
-import { isTownSlug, isCategorySlug, getTownCategoryParams } from '@/lib/taxonomy/validation'
-import { TOWN_BY_SLUG, CATEGORY_BY_SLUG, TOWNS } from '@/lib/taxonomy/constants'
+import { isTownSlug, isCategorySlug } from '@/lib/taxonomy/validation'
+import { TOWN_BY_SLUG, CATEGORY_BY_SLUG } from '@/lib/taxonomy/constants'
 import { getListingsByTownAndCategory } from '@/lib/queries/listings'
-import { getActiveSubcategoriesForCategory, getCategoryTownOverride } from '@/lib/queries/taxonomy'
+import { getActiveSubcategoriesForCategory, getCategoryTownOverride, getListingCountForTownCategory, getMinIndexableListings, getTownsWithListingsForCategory } from '@/lib/queries/taxonomy'
 import { buildBreadcrumbSchema } from '@/lib/schema/breadcrumbs'
 import { buildCollectionSchema } from '@/lib/schema/collection'
 
@@ -36,11 +36,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const town     = TOWN_BY_SLUG[params.slug]
   const category = CATEGORY_BY_SLUG[params.category]
 
-  return {
+  const metadata: Metadata = {
     title:       `Best ${category.name} in ${town.name}, Surrey`,
     description: `The best ${category.name.toLowerCase()} in ${town.name}. Curated picks, ranked by quality and local knowledge.`,
-    alternates:  { canonical: `/${params.slug}/${params.category}/` },
+    alternates:  { canonical: `/${params.slug}/${params.category}` },
   }
+
+  try {
+    const count = await getListingCountForTownCategory(params.slug, params.category)
+    if (count < getMinIndexableListings(params.category)) {
+      metadata.robots = { index: false, follow: true }
+    }
+  } catch {
+    // If the DB is unavailable, keep default metadata and let ISR retry later.
+  }
+
+  return metadata
 }
 
 export default async function TownCategoryPage({ params }: Props) {
@@ -49,10 +60,11 @@ export default async function TownCategoryPage({ params }: Props) {
   const town     = TOWN_BY_SLUG[params.slug]
   const category = CATEGORY_BY_SLUG[params.category]
 
-  const [pageListings, subcategories, override] = await Promise.all([
+  const [pageListings, subcategories, override, townsWithListings] = await Promise.all([
     getListingsByTownAndCategory(params.slug, params.category, 12),
     getActiveSubcategoriesForCategory(params.category),
     getCategoryTownOverride(params.slug, params.category),
+    getTownsWithListingsForCategory(params.category),
   ])
 
   const intro = override?.intro
@@ -74,8 +86,10 @@ export default async function TownCategoryPage({ params }: Props) {
     }),
   ]
 
-  // Nearby towns — all towns except current (only show those with listings in Phase 3+)
-  const nearbyTowns = TOWNS.filter((t) => t.slug !== params.slug).slice(0, 5)
+  const nearbyTowns = townsWithListings
+    .filter((t) => t.slug !== params.slug)
+    .filter((t) => t.count >= getMinIndexableListings(params.category))
+    .slice(0, 8)
 
   return (
     <>
@@ -101,6 +115,20 @@ export default async function TownCategoryPage({ params }: Props) {
             </section>
           )}
 
+          {/* Nearby towns */}
+          {nearbyTowns.length > 0 && (
+            <section>
+              <h2 className="font-display text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                {category.name} in nearby towns
+              </h2>
+              <TownFilterRow
+                towns={nearbyTowns}
+                categorySlug={params.category}
+                activeTown={params.slug}
+              />
+            </section>
+          )}
+
           {/* Listings */}
           <section>
             <ListingGrid listings={pageListings} showRankingPosition />
@@ -109,18 +137,6 @@ export default async function TownCategoryPage({ params }: Props) {
                 We&apos;re adding {category.name.toLowerCase()} in {town.name} soon. Check back shortly.
               </p>
             )}
-          </section>
-
-          {/* Nearby towns */}
-          <section>
-            <h2 className="font-display text-lg font-semibold text-forest-green mb-3">
-              {category.name} in nearby towns
-            </h2>
-            <TownFilterRow
-              towns={nearbyTowns}
-              categorySlug={params.category}
-              activeTown={params.slug}
-            />
           </section>
 
         </div>

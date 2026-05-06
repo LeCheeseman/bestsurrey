@@ -3,7 +3,8 @@ import { sql } from 'drizzle-orm'
 import fs from 'fs'
 
 async function main() {
-  const migration = fs.readFileSync('drizzle/migrations/0003b_subcategories_update.sql', 'utf-8')
+  const migrationPath = process.argv[2] ?? 'drizzle/migrations/0003b_subcategories_update.sql'
+  const migration = fs.readFileSync(migrationPath, 'utf-8')
   const statements = migration
     .split('\n')
     .filter(l => !l.trim().startsWith('--') && l.trim())
@@ -20,7 +21,7 @@ async function main() {
       console.error('✗', stmt.slice(0, 80).replace(/\n/g, ' '), '->', e.message)
     }
   }
-  console.log('\nMigration complete.')
+  console.log(`\nMigration complete: ${migrationPath}`)
   process.exit(0)
 }
 

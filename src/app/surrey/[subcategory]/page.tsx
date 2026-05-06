@@ -34,11 +34,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const sub = SUBCATEGORIES.find((s) => s.slug === params.subcategory)
   if (!sub) return {}
 
-  return {
+  const metadata: Metadata = {
     title:       `Best ${sub.name} in Surrey`,
     description: `Discover the best ${sub.name.toLowerCase()} across Surrey. Curated and ranked.`,
-    alternates:  { canonical: `/surrey/${params.subcategory}/` },
+    alternates:  { canonical: `/surrey/${params.subcategory}` },
   }
+
+  try {
+    const listings = await getListingsBySubcategory(params.subcategory, 1)
+    if (listings.length === 0) {
+      metadata.robots = { index: false, follow: true }
+    }
+  } catch {
+    // Keep default metadata when DB is unavailable; ISR can refresh later.
+  }
+
+  return metadata
 }
 
 export default async function SubcategoryPage({ params }: Props) {
@@ -78,6 +89,14 @@ export default async function SubcategoryPage({ params }: Props) {
       <main className="bg-cream min-h-screen">
         <div className="max-w-6xl mx-auto px-4 py-10 space-y-10">
 
+          {/* Browse by town */}
+          <section>
+            <h2 className="font-display text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+              Browse by town
+            </h2>
+            <TownFilterRow towns={TOWNS.map((t) => ({ ...t }))} />
+          </section>
+
           <section>
             <ListingGrid listings={pageListings} showRankingPosition />
             {pageListings.length === 0 && (
@@ -85,14 +104,6 @@ export default async function SubcategoryPage({ params }: Props) {
                 We&apos;re adding {sub.name.toLowerCase()} listings soon. Check back shortly.
               </p>
             )}
-          </section>
-
-          {/* Browse by town */}
-          <section>
-            <h2 className="font-display text-lg font-semibold text-forest-green mb-3">
-              Browse by town
-            </h2>
-            <TownFilterRow towns={TOWNS.map((t) => ({ ...t }))} />
           </section>
 
         </div>

@@ -33,9 +33,9 @@ export function SiteHeader() {
           <ul className="flex items-center gap-5 text-sm font-body text-gray-600">
             <li><Link href="/restaurants/"   className="hover:text-forest-green transition-colors">Eat</Link></li>
             <li><Link href="/things-to-do/"  className="hover:text-forest-green transition-colors">Do</Link></li>
-            <li><Link href="/kids-activities/" className="hover:text-forest-green transition-colors">Family</Link></li>
-            <li><Link href="/activity-venues/" className="hover:text-forest-green transition-colors">Activities</Link></li>
-            <li><Link href="/guides/"        className="hover:text-forest-green transition-colors">Guides</Link></li>
+            <li><Link href="/kids-family/" className="hover:text-forest-green transition-colors">Family</Link></li>
+            <li><Link href="/indoor-activities/" className="hover:text-forest-green transition-colors">Activities</Link></li>
+            <li><Link href="/places/"      className="hover:text-forest-green transition-colors">Places</Link></li>
           </ul>
         </nav>
 

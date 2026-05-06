@@ -35,7 +35,7 @@ export function SiteFooter() {
         <div>
           <h3 className="font-display text-sm font-semibold text-forest-green mb-3">Best Surrey</h3>
           <ul className="space-y-2 text-sm text-gray-600">
-            <li><Link href="/guides/" className="hover:text-forest-green">Guides</Link></li>
+            <li><Link href="/places/" className="hover:text-forest-green">Places</Link></li>
             <li><Link href="/about/"  className="hover:text-forest-green">About</Link></li>
           </ul>
         </div>

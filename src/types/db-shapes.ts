@@ -11,6 +11,8 @@ export interface ListingImage {
   alt: string
   caption?: string
   isPrimary: boolean
+  sourceUrl?: string
+  sourceType?: string
 }
 
 export interface OpeningHoursDay {

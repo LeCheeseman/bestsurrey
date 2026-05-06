@@ -4,8 +4,22 @@
  */
 
 import { db } from '@/lib/db'
-import { listings, categories, subcategories, towns, categoryTownOverrides } from '@/lib/db/schema'
+import { listings, categories, subcategories, towns, categoryTownOverrides, listingSubcategories } from '@/lib/db/schema'
 import { eq, and, count, sql } from 'drizzle-orm'
+import type { CategorySlug, SubcategorySlug, TownSlug } from '@/lib/taxonomy/constants'
+
+export const MIN_INDEXABLE_LISTINGS_BY_CATEGORY: Record<CategorySlug, number> = {
+  restaurants:       5,
+  'pubs-bars':       5,
+  'cafes-brunch':    5,
+  'things-to-do':    5,
+  'kids-family':     4,
+  'indoor-activities': 3,
+}
+
+export function getMinIndexableListings(categorySlug: string): number {
+  return MIN_INDEXABLE_LISTINGS_BY_CATEGORY[categorySlug as CategorySlug] ?? 5
+}
 
 // ─── Listing counts ────────────────────────────────────────────────────────────
 
@@ -60,6 +74,46 @@ export async function getListingCountForTownCategory(
     ))
 
   return rows[0]?.total ?? 0
+}
+
+/** Returns town/category pages that have enough listings to be worth indexing. */
+export async function getIndexableTownCategoryParams(): Promise<Array<{ slug: TownSlug; category: CategorySlug; count: number }>> {
+  const rows = await db
+    .select({
+      slug:     towns.slug,
+      category: categories.slug,
+      total:    count(listings.id),
+    })
+    .from(listings)
+    .innerJoin(towns,      eq(listings.townId,            towns.id))
+    .innerJoin(categories, eq(listings.primaryCategoryId, categories.id))
+    .where(eq(listings.status, 'published'))
+    .groupBy(towns.slug, categories.slug)
+
+  return rows
+    .filter((row) => row.total >= getMinIndexableListings(row.category))
+    .map((row) => ({
+      slug:     row.slug as TownSlug,
+      category: row.category as CategorySlug,
+      count:    row.total,
+    }))
+}
+
+/** Returns county-wide subcategory pages with at least one published listing. */
+export async function getIndexableSubcategorySlugs(): Promise<SubcategorySlug[]> {
+  const rows = await db
+    .select({
+      slug:  subcategories.slug,
+      total: count(listings.id),
+    })
+    .from(subcategories)
+    .innerJoin(listingSubcategories, eq(listingSubcategories.subcategoryId, subcategories.id))
+    .innerJoin(listings, eq(listingSubcategories.listingId, listings.id))
+    .where(eq(listings.status, 'published'))
+    .groupBy(subcategories.slug)
+    .having(sql`count(${listings.id}) > 0`)
+
+  return rows.map((row) => row.slug as SubcategorySlug)
 }
 
 /**

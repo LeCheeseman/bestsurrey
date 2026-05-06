@@ -14,6 +14,7 @@
 
 import type { ListingWithRelations } from '@/types'
 import type { FaqItem } from '@/types/db-shapes'
+import { normalizeListingImages, normalizeOpeningHours } from '@/lib/listing-json'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bestsurrey.co.uk'
 
@@ -71,8 +72,9 @@ export function buildListingSchema(listing: ListingWithRelations) {
   }
 
   // Opening hours — only if populated
-  if (listing.openingHours) {
-    const days = listing.openingHours
+  const openingHours = normalizeOpeningHours(listing.openingHours)
+  if (openingHours) {
+    const days = openingHours
     const specs = (Object.entries(days) as Array<[string, typeof days[keyof typeof days]]>)
       .filter(([, val]) => val && !('closed' in val))
       .map(([day, val]) => {
@@ -97,7 +99,8 @@ export function buildListingSchema(listing: ListingWithRelations) {
   }
 
   // Primary image
-  const primaryImage = listing.images?.find((img) => img.isPrimary) ?? listing.images?.[0]
+  const images = normalizeListingImages(listing.images)
+  const primaryImage = images.find((img) => img.isPrimary) ?? images[0]
   if (primaryImage) {
     schema.image = {
       '@type': 'ImageObject',

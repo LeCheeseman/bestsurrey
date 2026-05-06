@@ -5,16 +5,17 @@
 
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { ListingGrid } from '@/components/listings/ListingGrid'
+import { ResponsiveListingImage } from '@/components/listings/ResponsiveListingImage'
 import { OpeningHoursTable } from '@/components/listings/OpeningHoursTable'
 import { FaqSection } from '@/components/listings/FaqSection'
 import { JsonLd } from '@/components/schema/JsonLd'
 import { buildListingSchema, buildFaqSchema } from '@/lib/schema/listing'
+import { normalizeFaq, normalizeListingImages, normalizeOpeningHours } from '@/lib/listing-json'
 import { getListingBySlug, getRelatedListings } from '@/lib/queries/listings'
 
 export const revalidate = 3600
@@ -33,12 +34,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const listing = await getListingBySlug(params.slug)
     if (!listing) return {}
 
-    const primaryImage = listing.images?.find((i) => i.isPrimary) ?? listing.images?.[0]
+    const images = normalizeListingImages(listing.images)
+    const primaryImage = images.find((i) => i.isPrimary) ?? images[0]
 
     return {
       title:       `${listing.name} — ${listing.town.name} ${listing.primaryCategory.name}`,
       description: listing.shortSummary ?? undefined,
-      alternates:  { canonical: `/listings/${listing.slug}/` },
+      alternates:  { canonical: `/listings/${listing.slug}` },
       openGraph: {
         title:       listing.name,
         description: listing.shortSummary ?? undefined,
@@ -61,8 +63,10 @@ export default async function ListingPage({ params }: Props) {
     3
   )
 
-  const primaryImage = listing.images?.find((i) => i.isPrimary) ?? listing.images?.[0]
-  const allImages    = listing.images ?? []
+  const images       = normalizeListingImages(listing.images)
+  const faq          = normalizeFaq(listing.faq)
+  const openingHours = normalizeOpeningHours(listing.openingHours)
+  const primaryImage = images.find((i) => i.isPrimary) ?? images[0]
 
   const breadcrumbItems = [
     { name: 'Home',                                          path: '/'                                                  },
@@ -72,7 +76,7 @@ export default async function ListingPage({ params }: Props) {
   ]
 
   const listingSchema = buildListingSchema(listing)
-  const faqSchema     = listing.faq ? buildFaqSchema(listing.faq) : null
+  const faqSchema     = faq.length > 0 ? buildFaqSchema(faq) : null
   const schema        = faqSchema ? [listingSchema, faqSchema] : listingSchema
 
   return (
@@ -97,11 +101,9 @@ export default async function ListingPage({ params }: Props) {
               {/* Image */}
               <div className="aspect-[4/3] rounded-lg overflow-hidden bg-mist-green relative">
                 {primaryImage ? (
-                  <Image
+                  <ResponsiveListingImage
                     src={primaryImage.url}
                     alt={primaryImage.alt}
-                    fill
-                    className="object-cover"
                     priority
                     sizes="(max-width: 1024px) 100vw, 50vw"
                   />
@@ -114,15 +116,10 @@ export default async function ListingPage({ params }: Props) {
 
               {/* Info */}
               <div>
-                {/* Sponsored / Featured labels */}
+                {/* Sponsored label */}
                 {listing.sponsored && (
                   <span className="inline-block text-xs bg-parchment text-gray-600 px-2 py-0.5 rounded mb-3 font-body">
                     Sponsored
-                  </span>
-                )}
-                {listing.featured && !listing.sponsored && (
-                  <span className="inline-block text-xs bg-warm-gold text-white px-2 py-0.5 rounded mb-3 font-body">
-                    Editor&apos;s Pick
                   </span>
                 )}
 
@@ -256,12 +253,12 @@ export default async function ListingPage({ params }: Props) {
               )}
 
               {/* FAQ */}
-              {listing.faq && listing.faq.length > 0 && (
+              {faq.length > 0 && (
                 <section>
                   <h2 className="font-display text-xl font-semibold text-forest-green mb-4">
                     Frequently asked questions
                   </h2>
-                  <FaqSection items={listing.faq} />
+                  <FaqSection items={faq} />
                 </section>
               )}
 
@@ -271,12 +268,12 @@ export default async function ListingPage({ params }: Props) {
             <aside className="space-y-6">
 
               {/* Opening hours */}
-              {listing.openingHours && (
+              {openingHours && (
                 <div className="bg-white rounded-lg p-5 border border-gray-100">
                   <h2 className="font-display text-base font-semibold text-forest-green mb-4">
                     Opening hours
                   </h2>
-                  <OpeningHoursTable hours={listing.openingHours} />
+                  <OpeningHoursTable hours={openingHours} />
                 </div>
               )}
 

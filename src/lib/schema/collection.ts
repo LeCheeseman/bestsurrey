@@ -37,7 +37,7 @@ export function buildCollectionSchema({
       itemListElement: listings.map((listing, i) => ({
         '@type': 'ListItem',
         position: i + 1,
-        url: `${SITE_URL}/listings/${listing.slug}/`,
+        url: `${SITE_URL}/listings/${listing.slug}`,
       })),
     },
   ]

@@ -47,8 +47,8 @@ export function townCategoryBreadcrumbs(
   categorySlug: string
 ) {
   return buildBreadcrumbSchema([
-    { name: 'Home',       path: '/'                         },
-    { name: townName,     path: `/${townSlug}/`             },
+    { name: 'Home',       path: '/'             },
+    { name: townName,     path: `/${townSlug}`  },
     { name: categoryName },
   ])
 }
@@ -59,8 +59,8 @@ export function subcategoryBreadcrumbs(
   subcategoryName: string
 ) {
   return buildBreadcrumbSchema([
-    { name: 'Home',         path: '/'               },
-    { name: categoryName,   path: `/${categorySlug}/` },
+    { name: 'Home',         path: '/'                },
+    { name: categoryName,   path: `/${categorySlug}` },
     { name: subcategoryName },
   ])
 }
@@ -73,9 +73,9 @@ export function listingBreadcrumbs(
   listingName: string
 ) {
   return buildBreadcrumbSchema([
-    { name: 'Home',                          path: '/'                              },
-    { name: categoryName,                    path: `/${categorySlug}/`              },
-    { name: `${categoryName} in ${townName}`, path: `/${townSlug}/${categorySlug}/` },
+    { name: 'Home',                          path: '/'                            },
+    { name: categoryName,                    path: `/${categorySlug}`             },
+    { name: `${categoryName} in ${townName}`, path: `/${townSlug}/${categorySlug}` },
     { name: listingName },
   ])
 }
@@ -83,7 +83,7 @@ export function listingBreadcrumbs(
 export function guideBreadcrumbs(guideTitle: string) {
   return buildBreadcrumbSchema([
     { name: 'Home',   path: '/'       },
-    { name: 'Guides', path: '/guides/' },
+    { name: 'Guides', path: '/guides' },
     { name: guideTitle },
   ])
 }

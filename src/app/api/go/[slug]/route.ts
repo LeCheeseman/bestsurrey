@@ -14,7 +14,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { db }           from '@/lib/db'
 import { listings, listingClicks } from '@/lib/db/schema'
-import { eq }           from 'drizzle-orm'
+import { and, eq }      from 'drizzle-orm'
 
 export async function GET(
   request: NextRequest,
@@ -23,13 +23,18 @@ export async function GET(
   const rows = await db
     .select({ id: listings.id, websiteUrl: listings.websiteUrl })
     .from(listings)
-    .where(eq(listings.slug, params.slug))
+    .where(and(
+      eq(listings.slug, params.slug),
+      eq(listings.status, 'published')
+    ))
     .limit(1)
 
   const listing = rows[0]
 
-  if (!listing?.websiteUrl) {
-    return NextResponse.redirect(new URL(`/listings/${params.slug}/`, request.url))
+  const target = parseSafeExternalUrl(listing?.websiteUrl)
+
+  if (!target) {
+    return NextResponse.redirect(new URL(`/listings/${params.slug}`, request.url))
   }
 
   // Log click — fire-and-forget so it never slows the redirect
@@ -42,5 +47,17 @@ export async function GET(
     referer:   request.headers.get('referer'),
   }).catch(() => { /* non-critical */ })
 
-  return NextResponse.redirect(listing.websiteUrl, { status: 302 })
+  return NextResponse.redirect(target, { status: 302 })
+}
+
+function parseSafeExternalUrl(value: string | null | undefined): URL | null {
+  if (!value) return null
+
+  try {
+    const url = new URL(value)
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null
+    return url
+  } catch {
+    return null
+  }
 }

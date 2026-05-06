@@ -13,6 +13,8 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "node --env-file=.env.local --import=tsx drizzle/seed/taxonomy.ts",
+    "content:audit": "node --env-file=.env.local --import=tsx drizzle/maintenance/content-audit.ts",
+    "images:upload": "node --env-file=.env.local --import=tsx drizzle/maintenance/upload-listing-images.ts --",
     "import:csv": "node --env-file=.env.local --import=tsx drizzle/import/run-import.ts --",
     "upload:image": "node --env-file=.env.local --import=tsx drizzle/import/upload-image.ts --"
   },

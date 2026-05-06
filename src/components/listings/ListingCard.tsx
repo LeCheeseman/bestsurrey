@@ -1,13 +1,14 @@
 /**
  * ListingCard — used on all index/collection pages.
  *
- * Sponsored and Featured listings render with distinct visual treatment.
+ * Sponsored listings render with distinct visual treatment.
  * This is enforced in the component, not only in CSS, so it can't be
  * accidentally stripped by a style change.
  */
 
 import Link from 'next/link'
-import Image from 'next/image'
+import { normalizeListingImages } from '@/lib/listing-json'
+import { ResponsiveListingImage } from './ResponsiveListingImage'
 import type { ListingCard as ListingCardData } from '@/types'
 
 interface ListingCardProps {
@@ -16,7 +17,8 @@ interface ListingCardProps {
 }
 
 export function ListingCard({ listing, position }: ListingCardProps) {
-  const primaryImage = listing.images?.find((img) => img.isPrimary) ?? listing.images?.[0]
+  const images = normalizeListingImages(listing.images)
+  const primaryImage = images.find((img) => img.isPrimary) ?? images[0]
 
   return (
     <article className="group relative bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
@@ -31,13 +33,6 @@ export function ListingCard({ listing, position }: ListingCardProps) {
         </div>
       )}
 
-      {/* Featured label — only when not sponsored */}
-      {listing.featured && !listing.sponsored && (
-        <div className="absolute top-2 left-2 z-10 bg-warm-gold text-white text-xs px-2 py-0.5 rounded font-body">
-          Editor&apos;s Pick
-        </div>
-      )}
-
       {/* Ranking position — shown on "best of" ranked pages */}
       {position && !listing.sponsored && (
         <div className="absolute top-2 right-2 z-10 bg-white/90 text-forest-green text-xs w-7 h-7 flex items-center justify-center rounded-full font-display font-bold border border-forest-green/20 shadow-sm">
@@ -48,11 +43,9 @@ export function ListingCard({ listing, position }: ListingCardProps) {
       {/* Image */}
       <div className="aspect-[4/3] bg-mist-green relative overflow-hidden">
         {primaryImage ? (
-          <Image
+          <ResponsiveListingImage
             src={primaryImage.url}
             alt={primaryImage.alt}
-            fill
-            className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (

@@ -3,13 +3,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
-import { ListingGrid } from '@/components/listings/ListingGrid'
 import { CategoryCard } from '@/components/ui/CategoryCard'
 import { TownCard } from '@/components/ui/TownCard'
-import { getFeaturedListings } from '@/lib/queries/listings'
 import { getListingCountsByCategory, getListingCountsByTown } from '@/lib/queries/taxonomy'
 import { CATEGORIES, TOWNS } from '@/lib/taxonomy/constants'
-import type { ListingCard } from '@/types'
 
 export const revalidate = 3600
 
@@ -25,13 +22,11 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  let featured: ListingCard[] = []
   let categoryCounts: Record<string, number> = {}
   let townCounts: Record<string, number> = {}
 
   try {
-    ;[featured, categoryCounts, townCounts] = await Promise.all([
-      getFeaturedListings(6),
+    ;[categoryCounts, townCounts] = await Promise.all([
       getListingCountsByCategory(),
       getListingCountsByTown(),
     ])
@@ -69,7 +64,7 @@ export default async function HomePage() {
               Locally researched. Honestly ranked.
             </p>
             <Link
-              href="/restaurants/"
+              href="/places/"
               className="mt-8 inline-block bg-warm-gold hover:bg-light-gold text-white font-body font-medium px-8 py-3 rounded-lg transition-colors"
             >
               Start exploring
@@ -115,17 +110,6 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ── Featured listings ─────────────────────────────────────────── */}
-        {featured.length > 0 && (
-          <section className="bg-cream">
-            <div className="max-w-6xl mx-auto px-4 py-14">
-              <h2 className="font-display text-2xl font-semibold text-forest-green mb-6">
-                Editor&apos;s picks
-              </h2>
-              <ListingGrid listings={featured} />
-            </div>
-          </section>
-        )}
       </main>
 
       <SiteFooter />

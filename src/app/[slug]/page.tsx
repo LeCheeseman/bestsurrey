@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title:       `Best Places in ${town.name}, Surrey`,
       description: `The best restaurants, activities and things to do in ${town.name}, Surrey. Curated picks and local favourites.`,
-      alternates:  { canonical: `/${town.slug}/` },
+      alternates:  { canonical: `/${town.slug}` },
     }
   }
 
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title:       `Best ${category.name} in Surrey`,
     description: `Discover the best ${category.name.toLowerCase()} across Surrey. Curated and ranked by the Best Surrey team.`,
-    alternates:  { canonical: `/${category.slug}/` },
+    alternates:  { canonical: `/${category.slug}` },
   }
 }
 
@@ -116,6 +116,16 @@ async function CategoryIndexPage({ slug }: { slug: import('@/lib/taxonomy/consta
             </section>
           )}
 
+          {/* Browse by town */}
+          {townsWithListings.length > 0 && (
+            <section>
+              <h2 className="font-display text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                Browse by town
+              </h2>
+              <TownFilterRow towns={townsWithListings} categorySlug={slug} />
+            </section>
+          )}
+
           {/* Listings */}
           <section>
             <ListingGrid listings={pageListings} showRankingPosition />
@@ -125,16 +135,6 @@ async function CategoryIndexPage({ slug }: { slug: import('@/lib/taxonomy/consta
               </p>
             )}
           </section>
-
-          {/* Browse by town */}
-          {townsWithListings.length > 0 && (
-            <section>
-              <h2 className="font-display text-lg font-semibold text-forest-green mb-3">
-                Browse by town
-              </h2>
-              <TownFilterRow towns={townsWithListings} categorySlug={slug} />
-            </section>
-          )}
 
           {/* Related categories */}
           <section>
