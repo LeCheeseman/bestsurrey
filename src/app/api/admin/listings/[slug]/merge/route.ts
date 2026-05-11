@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { eq, inArray } from 'drizzle-orm'
 import { adminToolsDisabledResponse, adminToolsEnabled, normalizeSlug } from '@/lib/admin-tools'
 import { db } from '@/lib/db'
-import { listingSubcategories, listings } from '@/lib/db/schema'
+import { categories, listingSubcategories, listings, subcategories, towns } from '@/lib/db/schema'
 import type { FaqItem, ListingImage } from '@/types/db-shapes'
 
 export const runtime = 'nodejs'
@@ -111,5 +111,57 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
 
   await db.delete(listingSubcategories).where(inArray(listingSubcategories.listingId, [source.id]))
 
-  return NextResponse.json({ ok: true, targetSlug: target.slug, sourceSlug: source.slug })
+  const [merged] = await db
+    .select({
+      id: listings.id,
+      name: listings.name,
+      slug: listings.slug,
+      entityType: listings.entityType,
+      websiteUrl: listings.websiteUrl,
+      phoneNumber: listings.phoneNumber,
+      addressLine1: listings.addressLine1,
+      postcode: listings.postcode,
+      latitude: listings.latitude,
+      longitude: listings.longitude,
+      shortSummary: listings.shortSummary,
+      longDescription: listings.longDescription,
+      images: listings.images,
+      status: listings.status,
+      verified: listings.verified,
+      editorialNotes: listings.editorialNotes,
+      familyFriendly: listings.familyFriendly,
+      priceBand: listings.priceBand,
+      townName: towns.name,
+      townSlug: towns.slug,
+      categoryName: categories.name,
+      categorySlug: categories.slug,
+    })
+    .from(listings)
+    .innerJoin(towns, eq(listings.townId, towns.id))
+    .innerJoin(categories, eq(listings.primaryCategoryId, categories.id))
+    .where(eq(listings.id, target.id))
+    .limit(1)
+
+  const subcategoryRows = await db
+    .select({ id: subcategories.id, name: subcategories.name, slug: subcategories.slug })
+    .from(listingSubcategories)
+    .innerJoin(subcategories, eq(listingSubcategories.subcategoryId, subcategories.id))
+    .where(eq(listingSubcategories.listingId, target.id))
+
+  return NextResponse.json({
+    ok: true,
+    targetSlug: target.slug,
+    sourceSlug: source.slug,
+    listing: merged
+      ? {
+          ...merged,
+          images: Array.isArray(merged.images) ? merged.images : [],
+          issueFlags: [],
+          issueCount: 0,
+          duplicateNameMatches: [],
+          sharedWebsiteMatches: [],
+          subcategories: subcategoryRows,
+        }
+      : null,
+  })
 }

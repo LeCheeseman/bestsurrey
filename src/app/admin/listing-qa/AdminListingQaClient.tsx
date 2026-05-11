@@ -474,15 +474,19 @@ export default function AdminListingQaClient() {
     const ok = window.confirm(`Merge ${sourceSlug} into ${selected.slug} and remove the duplicate from the live site?`)
     if (!ok) return
 
+    const targetSlug = selected.slug
     setSaving(true)
     setMessage('')
     try {
-      await api(`/api/admin/listings/${selected.slug}/merge`, {
+      const data = await api<{ listing?: Listing }>(`/api/admin/listings/${targetSlug}/merge`, {
         method: 'POST',
         body: JSON.stringify({ sourceSlug }),
       })
+      if (data.listing) {
+        setListings((items) => items.map((item) => (item.slug === targetSlug ? data.listing as Listing : item)))
+        setSelectedSlug(targetSlug)
+      }
       setMessage('Duplicate merged and removed from the live site.')
-      await loadListings()
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Could not merge duplicate.')
     } finally {
