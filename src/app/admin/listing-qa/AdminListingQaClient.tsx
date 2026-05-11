@@ -75,6 +75,16 @@ type DetailsForm = {
   priceBand: string
 }
 
+type QueueOverrides = Partial<{
+  q: string
+  town: string
+  category: string
+  status: string
+  imageFilter: string
+  issueFilter: string
+  selectedSlug: string
+}>
+
 const emptyTaxonomy: Taxonomy = { towns: [], categories: [], subcategories: [] }
 const statuses = ['published', 'review', 'draft', 'unpublished'] as const
 const issueLabels: Record<string, string> = {
@@ -169,22 +179,31 @@ export default function AdminListingQaClient() {
     return taxonomy.subcategories.filter((item) => !categoryId || item.categoryId === categoryId)
   }, [selectedCategory, taxonomy.categories, taxonomy.subcategories])
 
-  async function loadListings() {
+  async function loadListings(overrides: QueueOverrides = {}) {
     setLoading(true)
     setMessage('')
     const params = new URLSearchParams()
-    if (q.trim()) params.set('q', q.trim())
-    if (town) params.set('town', town)
-    if (category) params.set('category', category)
-    if (status !== 'all') params.set('status', status)
-    if (imageFilter !== 'all') params.set('image', imageFilter)
-    if (issueFilter !== 'all') params.set('issue', issueFilter)
+    const nextQ = overrides.q ?? q
+    const nextTown = overrides.town ?? town
+    const nextCategory = overrides.category ?? category
+    const nextStatus = overrides.status ?? status
+    const nextImageFilter = overrides.imageFilter ?? imageFilter
+    const nextIssueFilter = overrides.issueFilter ?? issueFilter
+    if (nextQ.trim()) params.set('q', nextQ.trim())
+    if (nextTown) params.set('town', nextTown)
+    if (nextCategory) params.set('category', nextCategory)
+    if (nextStatus !== 'all') params.set('status', nextStatus)
+    if (nextImageFilter !== 'all') params.set('image', nextImageFilter)
+    if (nextIssueFilter !== 'all') params.set('issue', nextIssueFilter)
     params.set('limit', '120')
 
     try {
       const data = await api<{ listings: Listing[] }>(`/api/admin/listings?${params.toString()}`)
       setListings(data.listings)
-      setSelectedSlug((current) => data.listings.find((listing) => listing.slug === current)?.slug ?? data.listings[0]?.slug ?? '')
+      setSelectedSlug((current) => {
+        const preferred = overrides.selectedSlug ?? current
+        return data.listings.find((listing) => listing.slug === preferred)?.slug ?? data.listings[0]?.slug ?? ''
+      })
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Could not load listings.')
     } finally {
@@ -292,6 +311,45 @@ export default function AdminListingQaClient() {
       familyFriendly: details.familyFriendly === '' ? null : details.familyFriendly === 'true',
       priceBand: details.priceBand || null,
     })
+  }
+
+  async function reviewListingInAdmin(slug: string) {
+    setQ(slug)
+    setTown('')
+    setCategory('')
+    setStatus('all')
+    setImageFilter('all')
+    setIssueFilter('all')
+    await loadListings({
+      q: slug,
+      town: '',
+      category: '',
+      status: 'all',
+      imageFilter: 'all',
+      issueFilter: 'all',
+      selectedSlug: slug,
+    })
+  }
+
+  async function mergeDuplicate(sourceSlug: string) {
+    if (!selected) return
+    const ok = window.confirm(`Merge ${sourceSlug} into ${selected.slug} and remove the duplicate from the live site?`)
+    if (!ok) return
+
+    setSaving(true)
+    setMessage('')
+    try {
+      await api(`/api/admin/listings/${selected.slug}/merge`, {
+        method: 'POST',
+        body: JSON.stringify({ sourceSlug }),
+      })
+      setMessage('Duplicate merged and removed from the live site.')
+      await loadListings()
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Could not merge duplicate.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   function detailField<K extends keyof DetailsForm>(key: K, value: DetailsForm[K]) {
@@ -423,13 +481,21 @@ export default function AdminListingQaClient() {
                 <p className="mt-1 break-all text-xs text-gray-500">{match.slug}</p>
               </div>
               <div className="flex flex-wrap gap-2">
+                <button onClick={() => void reviewListingInAdmin(match.slug)} className="text-xs font-medium text-emerald-800 underline" type="button">
+                  Review in admin
+                </button>
                 <a href={`/listings/${match.slug}`} target="_blank" rel="noreferrer" className="text-xs font-medium text-emerald-800 underline">
-                  Open listing
+                  Open public
                 </a>
                 {match.websiteUrl ? (
                   <a href={match.websiteUrl} target="_blank" rel="noreferrer" className="text-xs font-medium text-emerald-800 underline">
                     Website
                   </a>
+                ) : null}
+                {selected && match.slug !== selected.slug ? (
+                  <button onClick={() => void mergeDuplicate(match.slug)} className="text-xs font-medium text-rose-800 underline" type="button" disabled={saving}>
+                    Merge into current
+                  </button>
                 ) : null}
               </div>
             </div>
