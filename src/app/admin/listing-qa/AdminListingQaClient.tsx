@@ -355,9 +355,8 @@ export default function AdminListingQaClient() {
     setSaving(true)
     setMessage('')
     try {
-      await api(`/api/admin/listings/${removedSlug}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status: 'unpublished', verified: false }),
+      await api(`/api/admin/listings/${removedSlug}/remove`, {
+        method: 'POST',
       })
 
       if (returnToSlug) {
@@ -485,9 +484,8 @@ export default function AdminListingQaClient() {
     setSaving(true)
     setMessage('')
     try {
-      await api(`/api/admin/listings/${sourceSlug}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status: 'unpublished', verified: false }),
+      await api(`/api/admin/listings/${sourceSlug}/remove`, {
+        method: 'POST',
       })
       setMessage('Duplicate removed from the live site.')
       await loadListings({ selectedSlug: selected.slug })
