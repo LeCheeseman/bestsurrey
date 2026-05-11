@@ -12,6 +12,14 @@ type ListingImage = {
 }
 
 type TaxonomyItem = { id: string; name: string; slug: string; categoryId?: string }
+type ListingMatch = {
+  slug: string
+  name: string
+  townName: string
+  categoryName: string
+  websiteUrl: string | null
+  status: string
+}
 type Listing = {
   id: string
   name: string
@@ -23,6 +31,7 @@ type Listing = {
   latitude: string | null
   longitude: string | null
   shortSummary: string | null
+  longDescription: string | null
   images: ListingImage[]
   status: 'draft' | 'review' | 'published' | 'unpublished'
   verified: boolean
@@ -36,6 +45,8 @@ type Listing = {
   categoryName: string
   categorySlug: string
   subcategories: TaxonomyItem[]
+  duplicateNameMatches: ListingMatch[]
+  sharedWebsiteMatches: ListingMatch[]
 }
 
 type Candidate = {
@@ -50,6 +61,18 @@ type Taxonomy = {
   towns: TaxonomyItem[]
   categories: TaxonomyItem[]
   subcategories: TaxonomyItem[]
+}
+
+type DetailsForm = {
+  name: string
+  websiteUrl: string
+  phoneNumber: string
+  addressLine1: string
+  postcode: string
+  shortSummary: string
+  longDescription: string
+  familyFriendly: '' | 'true' | 'false'
+  priceBand: string
 }
 
 const emptyTaxonomy: Taxonomy = { towns: [], categories: [], subcategories: [] }
@@ -119,6 +142,17 @@ export default function AdminListingQaClient() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const [imageMessage, setImageMessage] = useState('')
+  const [details, setDetails] = useState<DetailsForm>({
+    name: '',
+    websiteUrl: '',
+    phoneNumber: '',
+    addressLine1: '',
+    postcode: '',
+    shortSummary: '',
+    longDescription: '',
+    familyFriendly: '',
+    priceBand: '',
+  })
   const [notes, setNotes] = useState('')
   const [selectedSubcategorySlugs, setSelectedSubcategorySlugs] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState('')
@@ -171,6 +205,17 @@ export default function AdminListingQaClient() {
 
   useEffect(() => {
     if (!selected) return
+    setDetails({
+      name: selected.name,
+      websiteUrl: selected.websiteUrl ?? '',
+      phoneNumber: selected.phoneNumber ?? '',
+      addressLine1: selected.addressLine1 ?? '',
+      postcode: selected.postcode ?? '',
+      shortSummary: selected.shortSummary ?? '',
+      longDescription: selected.longDescription ?? '',
+      familyFriendly: selected.familyFriendly === null ? '' : selected.familyFriendly ? 'true' : 'false',
+      priceBand: selected.priceBand ?? '',
+    })
     setNotes(selected.editorialNotes ?? '')
     setSelectedCategory(selected.categorySlug)
     setSelectedSubcategorySlugs(selected.subcategories.map((item) => item.slug))
@@ -201,6 +246,15 @@ export default function AdminListingQaClient() {
                 ...item,
                 status: patch.status ?? item.status,
                 verified: patch.verified ?? item.verified,
+                name: patch.name ?? item.name,
+                websiteUrl: patch.websiteUrl === undefined ? item.websiteUrl : patch.websiteUrl,
+                phoneNumber: patch.phoneNumber === undefined ? item.phoneNumber : patch.phoneNumber,
+                addressLine1: patch.addressLine1 === undefined ? item.addressLine1 : patch.addressLine1,
+                postcode: patch.postcode === undefined ? item.postcode : patch.postcode,
+                shortSummary: patch.shortSummary === undefined ? item.shortSummary : patch.shortSummary,
+                longDescription: patch.longDescription === undefined ? item.longDescription : patch.longDescription,
+                familyFriendly: patch.familyFriendly === undefined ? item.familyFriendly : patch.familyFriendly,
+                priceBand: patch.priceBand === undefined ? item.priceBand : patch.priceBand,
                 editorialNotes: patch.editorialNotes === undefined ? item.editorialNotes : patch.editorialNotes,
                 categorySlug: patch.categorySlug ?? item.categorySlug,
                 categoryName: taxonomy.categories.find((cat) => cat.slug === patch.categorySlug)?.name ?? item.categoryName,
@@ -224,6 +278,24 @@ export default function AdminListingQaClient() {
   async function saveAndReload(patch: Partial<Listing> & { subcategorySlugs?: string[]; categorySlug?: string }) {
     const ok = await saveListing(patch)
     if (ok) await loadListings()
+  }
+
+  async function saveDetails() {
+    await saveAndReload({
+      name: details.name,
+      websiteUrl: details.websiteUrl || null,
+      phoneNumber: details.phoneNumber || null,
+      addressLine1: details.addressLine1 || null,
+      postcode: details.postcode || null,
+      shortSummary: details.shortSummary || null,
+      longDescription: details.longDescription || null,
+      familyFriendly: details.familyFriendly === '' ? null : details.familyFriendly === 'true',
+      priceBand: details.priceBand || null,
+    })
+  }
+
+  function detailField<K extends keyof DetailsForm>(key: K, value: DetailsForm[K]) {
+    setDetails((current) => ({ ...current, [key]: value }))
   }
 
   function updateListingImage(slug: string, image: ListingImage) {
@@ -335,6 +407,36 @@ export default function AdminListingQaClient() {
     if (selectedIndex < 0) return
     const next = listings[selectedIndex + delta]
     if (next) setSelectedSlug(next.slug)
+  }
+
+  function matchRows(matches: ListingMatch[]) {
+    return (
+      <div className="mt-2 divide-y divide-amber-200 rounded border border-amber-200 bg-white">
+        {matches.map((match) => (
+          <div key={match.slug} className="p-3 text-sm">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="font-semibold text-gray-950">{match.name}</p>
+                <p className="text-xs text-gray-600">
+                  {match.townName} · {match.categoryName} · {match.status}
+                </p>
+                <p className="mt-1 break-all text-xs text-gray-500">{match.slug}</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <a href={`/listings/${match.slug}`} target="_blank" rel="noreferrer" className="text-xs font-medium text-emerald-800 underline">
+                  Open listing
+                </a>
+                {match.websiteUrl ? (
+                  <a href={match.websiteUrl} target="_blank" rel="noreferrer" className="text-xs font-medium text-emerald-800 underline">
+                    Website
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )
   }
 
   return (
@@ -504,6 +606,18 @@ export default function AdminListingQaClient() {
                               </span>
                             ))}
                           </div>
+                          {selected.duplicateNameMatches.length > 0 ? (
+                            <div className="mt-3">
+                              <p className="text-xs font-semibold text-amber-950">Possible duplicate name matches</p>
+                              {matchRows(selected.duplicateNameMatches)}
+                            </div>
+                          ) : null}
+                          {selected.sharedWebsiteMatches.length > 0 ? (
+                            <div className="mt-3">
+                              <p className="text-xs font-semibold text-amber-950">Other listings using the same website</p>
+                              {matchRows(selected.sharedWebsiteMatches)}
+                            </div>
+                          ) : null}
                         </div>
                       ) : (
                         <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">No cleanup flags.</div>
@@ -540,6 +654,7 @@ export default function AdminListingQaClient() {
                       <p className="text-xs font-medium text-gray-700">Subcategories</p>
                       <p className="text-xs text-gray-500">{selectedSubcategorySlugs.length} selected</p>
                     </div>
+                    <p className="text-xs leading-5 text-gray-600">Untick a subcategory to remove this listing from that page. Changing the main category moves the listing to a different top-level section.</p>
                     <div className="grid max-h-72 gap-2 overflow-auto rounded border border-gray-200 p-2">
                       {compatibleSubcategories.map((item) => (
                         <label
@@ -582,6 +697,68 @@ export default function AdminListingQaClient() {
                     </button>
                   </div>
                 </div>
+              </section>
+
+              <section className="rounded border border-gray-200 bg-white p-5">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <h3 className="text-sm font-semibold">Listing details</h3>
+                  <a href={`/listings/${selected.slug}`} target="_blank" rel="noreferrer" className="text-sm font-medium text-emerald-800 underline">
+                    Open public listing
+                  </a>
+                </div>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <label className="block text-xs font-medium text-gray-700">
+                    Name
+                    <input value={details.name} onChange={(event) => detailField('name', event.target.value)} className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950" />
+                  </label>
+                  <label className="block text-xs font-medium text-gray-700">
+                    Website
+                    <input value={details.websiteUrl} onChange={(event) => detailField('websiteUrl', event.target.value)} className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950" placeholder="https://..." />
+                  </label>
+                  <label className="block text-xs font-medium text-gray-700">
+                    Phone
+                    <input value={details.phoneNumber} onChange={(event) => detailField('phoneNumber', event.target.value)} className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950" />
+                  </label>
+                  <label className="block text-xs font-medium text-gray-700">
+                    Address
+                    <input value={details.addressLine1} onChange={(event) => detailField('addressLine1', event.target.value)} className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950" />
+                  </label>
+                  <label className="block text-xs font-medium text-gray-700">
+                    Postcode
+                    <input value={details.postcode} onChange={(event) => detailField('postcode', event.target.value)} className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950" />
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="block text-xs font-medium text-gray-700">
+                      Price
+                      <select value={details.priceBand} onChange={(event) => detailField('priceBand', event.target.value)} className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950">
+                        <option value="">Unknown</option>
+                        <option value="£">£</option>
+                        <option value="££">££</option>
+                        <option value="£££">£££</option>
+                        <option value="££££">££££</option>
+                      </select>
+                    </label>
+                    <label className="block text-xs font-medium text-gray-700">
+                      Family friendly
+                      <select value={details.familyFriendly} onChange={(event) => detailField('familyFriendly', event.target.value as DetailsForm['familyFriendly'])} className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950">
+                        <option value="">Unknown</option>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+                <label className="mt-3 block text-xs font-medium text-gray-700">
+                  Short summary
+                  <textarea value={details.shortSummary} onChange={(event) => detailField('shortSummary', event.target.value)} className="mt-1 min-h-24 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950" />
+                </label>
+                <label className="mt-3 block text-xs font-medium text-gray-700">
+                  Long description
+                  <textarea value={details.longDescription} onChange={(event) => detailField('longDescription', event.target.value)} className="mt-1 min-h-40 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950" />
+                </label>
+                <button onClick={() => void saveDetails()} className={`${buttonClass(true)} mt-3`} disabled={saving}>
+                  Save listing details
+                </button>
               </section>
 
               <section className="rounded border border-gray-200 bg-white p-5">

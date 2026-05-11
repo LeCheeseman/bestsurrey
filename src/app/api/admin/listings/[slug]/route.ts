@@ -10,11 +10,28 @@ export const dynamic = 'force-dynamic'
 const statusValues = ['draft', 'review', 'published', 'unpublished'] as const
 
 type PatchBody = {
+  name?: string
+  websiteUrl?: string | null
+  phoneNumber?: string | null
+  addressLine1?: string | null
+  postcode?: string | null
+  shortSummary?: string | null
+  longDescription?: string | null
+  familyFriendly?: boolean | null
+  priceBand?: string | null
   status?: string
   verified?: boolean
   editorialNotes?: string | null
   categorySlug?: string
   subcategorySlugs?: string[]
+}
+
+const priceBands = ['£', '££', '£££', '££££'] as const
+
+function optionalText(value: string | null | undefined) {
+  if (value === undefined) return undefined
+  const trimmed = value?.trim() ?? ''
+  return trimmed || null
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: { slug: string } }) {
@@ -29,6 +46,27 @@ export async function PATCH(request: NextRequest, { params }: { params: { slug: 
       return NextResponse.json({ error: 'Invalid listing status.' }, { status: 400 })
     }
     update.status = body.status as (typeof statusValues)[number]
+  }
+  if (body.name !== undefined) {
+    const name = body.name.trim()
+    if (!name) return NextResponse.json({ error: 'Name cannot be blank.' }, { status: 400 })
+    update.name = name
+  }
+  if (body.websiteUrl !== undefined) update.websiteUrl = optionalText(body.websiteUrl)
+  if (body.phoneNumber !== undefined) update.phoneNumber = optionalText(body.phoneNumber)
+  if (body.addressLine1 !== undefined) update.addressLine1 = optionalText(body.addressLine1)
+  if (body.postcode !== undefined) update.postcode = optionalText(body.postcode)
+  if (body.shortSummary !== undefined) update.shortSummary = optionalText(body.shortSummary)
+  if (body.longDescription !== undefined) update.longDescription = optionalText(body.longDescription)
+  if (body.familyFriendly !== undefined) update.familyFriendly = body.familyFriendly
+  if (body.priceBand !== undefined) {
+    if (body.priceBand === null || body.priceBand === '') {
+      update.priceBand = null
+    } else if (priceBands.includes(body.priceBand as (typeof priceBands)[number])) {
+      update.priceBand = body.priceBand as (typeof priceBands)[number]
+    } else {
+      return NextResponse.json({ error: 'Invalid price band.' }, { status: 400 })
+    }
   }
   if (body.verified !== undefined) update.verified = body.verified
   if (body.editorialNotes !== undefined) update.editorialNotes = body.editorialNotes || null

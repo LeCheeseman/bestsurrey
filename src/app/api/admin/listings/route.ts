@@ -102,20 +102,32 @@ export async function GET(request: NextRequest) {
     .select({
       id: listings.id,
       name: listings.name,
+      slug: listings.slug,
       townId: listings.townId,
+      townName: towns.name,
+      categoryName: categories.name,
       websiteUrl: listings.websiteUrl,
+      status: listings.status,
     })
     .from(listings)
+    .innerJoin(towns, eq(listings.townId, towns.id))
+    .innerJoin(categories, eq(listings.primaryCategoryId, categories.id))
     .where(eq(listings.status, 'published'))
 
   const normalizeName = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '')
   const nameTownCounts = new Map<string, number>()
   const websiteCounts = new Map<string, number>()
+  const nameTownMatches = new Map<string, typeof publishedRows>()
+  const websiteMatches = new Map<string, typeof publishedRows>()
   for (const row of publishedRows) {
     const nameKey = `${row.townId}:${normalizeName(row.name)}`
     nameTownCounts.set(nameKey, (nameTownCounts.get(nameKey) ?? 0) + 1)
+    nameTownMatches.set(nameKey, [...(nameTownMatches.get(nameKey) ?? []), row])
     const website = row.websiteUrl?.trim()
-    if (website) websiteCounts.set(website, (websiteCounts.get(website) ?? 0) + 1)
+    if (website) {
+      websiteCounts.set(website, (websiteCounts.get(website) ?? 0) + 1)
+      websiteMatches.set(website, [...(websiteMatches.get(website) ?? []), row])
+    }
   }
 
   function issueFlags(row: (typeof rows)[number]) {
@@ -137,11 +149,35 @@ export async function GET(request: NextRequest) {
 
   const listingPayload = rows.map((row) => {
     const flags = issueFlags(row)
+    const nameKey = `${row.townId}:${normalizeName(row.name)}`
+    const website = row.websiteUrl?.trim() ?? ''
     return {
       ...row,
       images: Array.isArray(row.images) ? row.images : [],
       issueFlags: flags,
       issueCount: flags.length,
+      duplicateNameMatches: (nameTownMatches.get(nameKey) ?? [])
+        .filter((match) => match.id !== row.id)
+        .map((match) => ({
+          slug: match.slug,
+          name: match.name,
+          townName: match.townName,
+          categoryName: match.categoryName,
+          websiteUrl: match.websiteUrl,
+          status: match.status,
+        })),
+      sharedWebsiteMatches: website
+        ? (websiteMatches.get(website) ?? [])
+            .filter((match) => match.id !== row.id)
+            .map((match) => ({
+              slug: match.slug,
+              name: match.name,
+              townName: match.townName,
+              categoryName: match.categoryName,
+              websiteUrl: match.websiteUrl,
+              status: match.status,
+            }))
+        : [],
       subcategories: byListing.get(row.id) ?? [],
     }
   })
