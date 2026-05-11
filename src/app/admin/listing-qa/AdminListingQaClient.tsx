@@ -348,6 +348,20 @@ export default function AdminListingQaClient() {
     await loadListings()
   }
 
+  async function completeListing() {
+    if (!selected) return
+    const completedSlug = selected.slug
+    const completedName = selected.name
+    const ok = await saveListing({ verified: true, status: 'published' })
+    if (!ok) return
+
+    const nextListings = listings.filter((listing) => listing.slug !== completedSlug)
+    setListings(nextListings)
+    setQueueTotal((total) => Math.max(0, total - 1))
+    setSelectedSlug(nextListings[Math.min(selectedIndex, nextListings.length - 1)]?.slug ?? '')
+    setMessage(`${completedName} marked complete and removed from this QA queue.`)
+  }
+
   async function removeSelectedFromSite() {
     if (!selected) return
     const removedSlug = selected.slug
@@ -423,7 +437,7 @@ export default function AdminListingQaClient() {
   }
 
   async function saveDetails() {
-    await saveAndReload({
+    await saveListing({
       name: details.name,
       websiteUrl: details.websiteUrl || null,
       phoneNumber: details.phoneNumber || null,
@@ -707,7 +721,7 @@ export default function AdminListingQaClient() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Best Surrey admin</p>
             <h1 className="mt-1 text-2xl font-semibold">Listing cleanup queue</h1>
-            <p className="mt-1 max-w-2xl text-sm text-gray-600">Pick a category, work through the flagged listings, then keep, research, or remove each one from the site.</p>
+            <p className="mt-1 max-w-2xl text-sm text-gray-600">Save edits as you go. A listing only leaves this queue when you click Submit complete, Research, or Remove from site.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
             <span>
@@ -896,8 +910,8 @@ export default function AdminListingQaClient() {
                         <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">No cleanup flags.</div>
                       )}
                       <div className="flex flex-wrap gap-2">
-                        <button onClick={() => void saveAndReload({ verified: true, status: 'published' })} className={buttonClass(true)} disabled={saving}>
-                          Keep
+                        <button onClick={() => void completeListing()} className={buttonClass(true)} disabled={saving}>
+                          Submit complete
                         </button>
                         <button onClick={() => void saveAndReload({ status: 'review' })} className={buttonClass()} disabled={saving}>
                           Research
