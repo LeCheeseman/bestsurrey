@@ -133,13 +133,11 @@ export async function GET(request: NextRequest) {
   function issueFlags(row: (typeof rows)[number]) {
     const flags: string[] = []
     const images = row.images
-    const faq = row.faq
     const website = row.websiteUrl?.trim() ?? ''
     if (!website) flags.push('missing_website')
     if (website.includes('collectivelycamberley.co.uk/business/camberley-public-house')) flags.push('dead_website')
     if (images && !Array.isArray(images)) flags.push('invalid_image_json')
     if (!Array.isArray(images) || images.length === 0) flags.push('missing_image')
-    if (!Array.isArray(faq) || faq.length === 0) flags.push('missing_faq')
     if ((row.shortSummary?.length ?? 0) < 80) flags.push('thin_summary')
     if ((row.longDescription?.length ?? 0) < 250) flags.push('thin_description')
     if ((nameTownCounts.get(`${row.townId}:${normalizeName(row.name)}`) ?? 0) > 1) flags.push('duplicate_name_town')
