@@ -7,8 +7,8 @@
  */
 
 import { db } from '@/lib/db'
-import { listings, categories, towns, subcategories, listingSubcategories, listingTags, tags } from '@/lib/db/schema'
-import { eq, and, desc } from 'drizzle-orm'
+import { listings, categories, towns, subcategories, listingCategories, listingSubcategories, listingTags, tags } from '@/lib/db/schema'
+import { eq, and, desc, sql } from 'drizzle-orm'
 import type { ListingCard, ListingWithRelations } from '@/types'
 
 // ─── Shared select shape (matches ListingCard type) ────────────────────────────
@@ -37,6 +37,16 @@ const listingCardSelect = {
   },
 }
 
+function listingBelongsToCategory(categorySlug: string) {
+  return sql`exists (
+    select 1
+    from ${listingCategories}
+    inner join ${categories} lc on lc.id = ${listingCategories.categoryId}
+    where ${listingCategories.listingId} = ${listings.id}
+      and lc.slug = ${categorySlug}
+  )`
+}
+
 // ─── Index page queries ────────────────────────────────────────────────────────
 
 export async function getListingsByCategory(
@@ -50,7 +60,7 @@ export async function getListingsByCategory(
     .innerJoin(categories, eq(listings.primaryCategoryId, categories.id))
     .where(and(
       eq(listings.status,   'published'),
-      eq(categories.slug,   categorySlug)
+      listingBelongsToCategory(categorySlug)
     ))
     .orderBy(desc(listings.rankingScore))
     .limit(limit)
@@ -90,7 +100,7 @@ export async function getListingsByTownAndCategory(
     .where(and(
       eq(listings.status, 'published'),
       eq(towns.slug,      townSlug),
-      eq(categories.slug, categorySlug)
+      listingBelongsToCategory(categorySlug)
     ))
     .orderBy(desc(listings.rankingScore))
     .limit(limit)

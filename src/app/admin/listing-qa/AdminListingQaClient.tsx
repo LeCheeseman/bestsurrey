@@ -12,6 +12,7 @@ type ListingImage = {
 }
 
 type TaxonomyItem = { id: string; name: string; slug: string; categoryId?: string }
+type ListingCategory = TaxonomyItem & { isPrimary: boolean }
 type ListingMatch = {
   slug: string
   name: string
@@ -44,6 +45,7 @@ type Listing = {
   townSlug: string
   categoryName: string
   categorySlug: string
+  categories: ListingCategory[]
   subcategories: TaxonomyItem[]
   duplicateNameMatches: ListingMatch[]
   sharedWebsiteMatches: ListingMatch[]
@@ -172,7 +174,7 @@ export default function AdminListingQaClient() {
   })
   const [notes, setNotes] = useState('')
   const [selectedSubcategorySlugs, setSelectedSubcategorySlugs] = useState<string[]>([])
-  const [selectedCategory, setSelectedCategory] = useState('')
+  const [selectedCategorySlugs, setSelectedCategorySlugs] = useState<string[]>([])
   const [categoryToAdd, setCategoryToAdd] = useState('')
   const [manualUrl, setManualUrl] = useState('')
   const [manualFiles, setManualFiles] = useState<File[]>([])
@@ -183,9 +185,9 @@ export default function AdminListingQaClient() {
   const currentImage = primaryImage(selected)
   const selectedIndex = selected ? listings.findIndex((listing) => listing.slug === selected.slug) : -1
   const compatibleSubcategories = useMemo(() => {
-    const categoryId = taxonomy.categories.find((item) => item.slug === selectedCategory)?.id
-    return taxonomy.subcategories.filter((item) => !categoryId || item.categoryId === categoryId)
-  }, [selectedCategory, taxonomy.categories, taxonomy.subcategories])
+    const categoryIds = new Set(taxonomy.categories.filter((item) => selectedCategorySlugs.includes(item.slug)).map((item) => item.id))
+    return taxonomy.subcategories.filter((item) => !item.categoryId || categoryIds.has(item.categoryId))
+  }, [selectedCategorySlugs, taxonomy.categories, taxonomy.subcategories])
 
   async function loadListings(overrides: QueueOverrides = {}) {
     setLoading(true)
@@ -245,7 +247,8 @@ export default function AdminListingQaClient() {
       priceBand: selected.priceBand ?? '',
     })
     setNotes(selected.editorialNotes ?? '')
-    setSelectedCategory(selected.categorySlug)
+    const categories = selected.categories?.length ? selected.categories : [{ id: selected.categorySlug, name: selected.categoryName, slug: selected.categorySlug, isPrimary: true }]
+    setSelectedCategorySlugs(categories.map((item) => item.slug))
     setSelectedSubcategorySlugs(selected.subcategories.map((item) => item.slug))
     setCategoryToAdd('')
     setCandidates([])
@@ -261,9 +264,10 @@ export default function AdminListingQaClient() {
 
   const categoryChoices = useMemo(() => {
     const currentSubcategories = new Set(selectedSubcategorySlugs)
+    const currentCategories = new Set(selectedCategorySlugs)
     return [
       ...taxonomy.categories
-        .filter((item) => item.slug !== selectedCategory)
+        .filter((item) => !currentCategories.has(item.slug))
         .map((item) => ({
           value: `category:${item.slug}`,
           label: `Main category: ${item.name}`,
@@ -275,9 +279,9 @@ export default function AdminListingQaClient() {
           label: `Subcategory: ${item.name}`,
         })),
     ]
-  }, [compatibleSubcategories, selectedCategory, selectedSubcategorySlugs, taxonomy.categories])
+  }, [compatibleSubcategories, selectedCategorySlugs, selectedSubcategorySlugs, taxonomy.categories])
 
-  async function saveListing(patch: Partial<Listing> & { subcategorySlugs?: string[]; categorySlug?: string }) {
+  async function saveListing(patch: Partial<Listing> & { subcategorySlugs?: string[]; categorySlug?: string; categorySlugs?: string[] }) {
     if (!selected) return false
     setSaving(true)
     setMessage('')
@@ -303,8 +307,16 @@ export default function AdminListingQaClient() {
                 familyFriendly: patch.familyFriendly === undefined ? item.familyFriendly : patch.familyFriendly,
                 priceBand: patch.priceBand === undefined ? item.priceBand : patch.priceBand,
                 editorialNotes: patch.editorialNotes === undefined ? item.editorialNotes : patch.editorialNotes,
-                categorySlug: patch.categorySlug ?? item.categorySlug,
-                categoryName: taxonomy.categories.find((cat) => cat.slug === patch.categorySlug)?.name ?? item.categoryName,
+                categorySlug: patch.categorySlugs?.[0] ?? patch.categorySlug ?? item.categorySlug,
+                categoryName: taxonomy.categories.find((cat) => cat.slug === (patch.categorySlugs?.[0] ?? patch.categorySlug))?.name ?? item.categoryName,
+                categories: patch.categorySlugs
+                  ? patch.categorySlugs
+                      .map((slug, index) => {
+                        const category = taxonomy.categories.find((item) => item.slug === slug)
+                        return category ? { ...category, isPrimary: index === 0 } : null
+                      })
+                      .filter((category): category is ListingCategory => Boolean(category))
+                  : item.categories,
                 subcategories: patch.subcategorySlugs
                   ? taxonomy.subcategories.filter((sub) => patch.subcategorySlugs?.includes(sub.slug))
                   : item.subcategories,
@@ -322,7 +334,7 @@ export default function AdminListingQaClient() {
     }
   }
 
-  async function saveAndReload(patch: Partial<Listing> & { subcategorySlugs?: string[]; categorySlug?: string }) {
+  async function saveAndReload(patch: Partial<Listing> & { subcategorySlugs?: string[]; categorySlug?: string; categorySlugs?: string[] }) {
     const ok = await saveListing(patch)
     if (!ok) return
     if (patch.status === 'unpublished' && returnToSlug) {
@@ -405,14 +417,30 @@ export default function AdminListingQaClient() {
     }
   }
 
-  async function saveCategories(categorySlug = selectedCategory, subcategorySlugs = selectedSubcategorySlugs) {
-    await saveListing({ categorySlug, subcategorySlugs })
+  async function saveCategories(categorySlugs = selectedCategorySlugs, subcategorySlugs = selectedSubcategorySlugs) {
+    await saveListing({ categorySlugs, subcategorySlugs })
   }
 
   async function removeSubcategory(slug: string) {
     const nextSlugs = selectedSubcategorySlugs.filter((item) => item !== slug)
     setSelectedSubcategorySlugs(nextSlugs)
-    await saveCategories(selectedCategory, nextSlugs)
+    await saveCategories(selectedCategorySlugs, nextSlugs)
+  }
+
+  async function removeCategory(slug: string) {
+    if (selectedCategorySlugs.length <= 1) {
+      setMessage('A listing needs at least one main category.')
+      return
+    }
+    const nextCategorySlugs = selectedCategorySlugs.filter((item) => item !== slug)
+    const allowedCategoryIds = new Set(taxonomy.categories.filter((item) => nextCategorySlugs.includes(item.slug)).map((item) => item.id))
+    const nextSubcategorySlugs = selectedSubcategorySlugs.filter((subcategorySlug) => {
+      const subcategory = taxonomy.subcategories.find((item) => item.slug === subcategorySlug)
+      return !subcategory?.categoryId || allowedCategoryIds.has(subcategory.categoryId)
+    })
+    setSelectedCategorySlugs(nextCategorySlugs)
+    setSelectedSubcategorySlugs(nextSubcategorySlugs)
+    await saveCategories(nextCategorySlugs, nextSubcategorySlugs)
   }
 
   async function addCategoryChoice() {
@@ -421,10 +449,10 @@ export default function AdminListingQaClient() {
     if (!slug) return
 
     if (kind === 'category') {
-      setSelectedCategory(slug)
-      setSelectedSubcategorySlugs([])
+      const nextCategorySlugs = [...new Set([...selectedCategorySlugs, slug])]
+      setSelectedCategorySlugs(nextCategorySlugs)
       setCategoryToAdd('')
-      await saveCategories(slug, [])
+      await saveCategories(nextCategorySlugs, selectedSubcategorySlugs)
       return
     }
 
@@ -432,7 +460,7 @@ export default function AdminListingQaClient() {
       const nextSlugs = [...new Set([...selectedSubcategorySlugs, slug])]
       setSelectedSubcategorySlugs(nextSlugs)
       setCategoryToAdd('')
-      await saveCategories(selectedCategory, nextSlugs)
+      await saveCategories(selectedCategorySlugs, nextSlugs)
     }
   }
 
@@ -933,15 +961,29 @@ export default function AdminListingQaClient() {
                   <div className="mt-3 space-y-3">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-xs font-medium text-gray-700">Currently listed in</p>
-                      <p className="text-xs text-gray-500">{selectedSubcategorySlugs.length + 1} total</p>
+                      <p className="text-xs text-gray-500">{selectedSubcategorySlugs.length + selectedCategorySlugs.length} total</p>
                     </div>
                     <div className="flex flex-wrap gap-2 rounded border border-gray-200 bg-gray-50 p-3">
-                      <span className="inline-flex items-center gap-2 rounded border border-emerald-200 bg-white px-3 py-2 text-sm">
-                        <span>
-                          <span className="font-medium">{taxonomy.categories.find((item) => item.slug === selectedCategory)?.name ?? selected.categoryName}</span>
-                          <span className="ml-1 text-xs text-gray-500">main</span>
-                        </span>
-                      </span>
+                      {selectedCategorySlugs.map((slug, index) => {
+                        const category = taxonomy.categories.find((item) => item.slug === slug)
+                        return (
+                          <span key={slug} className="inline-flex items-center gap-2 rounded border border-emerald-200 bg-white px-3 py-2 text-sm">
+                            <span>
+                              <span className="font-medium">{category?.name ?? slug}</span>
+                              <span className="ml-1 text-xs text-gray-500">{index === 0 ? 'primary' : 'main'}</span>
+                            </span>
+                            <button
+                              onClick={() => void removeCategory(slug)}
+                              className="rounded px-1 text-base font-semibold leading-none text-rose-700 hover:bg-rose-50 disabled:text-gray-300"
+                              type="button"
+                              disabled={saving || selectedCategorySlugs.length <= 1}
+                              aria-label={`Remove ${category?.name ?? slug}`}
+                            >
+                              x
+                            </button>
+                          </span>
+                        )
+                      })}
                       {selectedSubcategorySlugs.length > 0 ? (
                         selectedSubcategorySlugs.map((slug) => {
                           const subcategory = taxonomy.subcategories.find((item) => item.slug === slug)
@@ -977,7 +1019,7 @@ export default function AdminListingQaClient() {
                         Add
                       </button>
                     </div>
-                    <p className="text-xs leading-5 text-gray-600">Adding a main category moves the listing to that section. Adding a subcategory lists it on that subcategory page. Use the red x to remove subcategory pages.</p>
+                    <p className="text-xs leading-5 text-gray-600">A listing can now appear in multiple main categories. The first main category is used as the primary category for breadcrumbs and default display.</p>
                   </div>
                 </div>
               </section>

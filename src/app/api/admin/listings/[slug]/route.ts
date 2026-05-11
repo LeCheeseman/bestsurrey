@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { eq, inArray } from 'drizzle-orm'
 import { adminToolsDisabledResponse, adminToolsEnabled, normalizeSlug } from '@/lib/admin-tools'
 import { db } from '@/lib/db'
-import { categories, listingSubcategories, listings, subcategories } from '@/lib/db/schema'
+import { categories, listingCategories, listingSubcategories, listings, subcategories } from '@/lib/db/schema'
 import type { ListingImage } from '@/types/db-shapes'
 
 export const runtime = 'nodejs'
@@ -24,6 +24,7 @@ type PatchBody = {
   verified?: boolean
   editorialNotes?: string | null
   categorySlug?: string
+  categorySlugs?: string[]
   subcategorySlugs?: string[]
   images?: ListingImage[]
 }
@@ -84,8 +85,15 @@ export async function PATCH(request: NextRequest, { params }: { params: { slug: 
     }))
   }
 
-  if (body.categorySlug) {
-    const [category] = await db.select({ id: categories.id }).from(categories).where(eq(categories.slug, body.categorySlug)).limit(1)
+  const requestedCategorySlugs = Array.isArray(body.categorySlugs)
+    ? [...new Set(body.categorySlugs.map(normalizeSlug).filter(Boolean))]
+    : body.categorySlug
+      ? [normalizeSlug(body.categorySlug)]
+      : null
+
+  if (requestedCategorySlugs) {
+    if (requestedCategorySlugs.length === 0) return NextResponse.json({ error: 'At least one category is required.' }, { status: 400 })
+    const [category] = await db.select({ id: categories.id }).from(categories).where(eq(categories.slug, requestedCategorySlugs[0])).limit(1)
     if (!category) return NextResponse.json({ error: 'Category not found.' }, { status: 404 })
     update.primaryCategoryId = category.id
   }
@@ -111,6 +119,25 @@ export async function PATCH(request: NextRequest, { params }: { params: { slug: 
         })),
       )
     }
+  }
+
+  if (requestedCategorySlugs) {
+    const categoryRows = await db
+      .select({ id: categories.id, slug: categories.slug })
+      .from(categories)
+      .where(inArray(categories.slug, requestedCategorySlugs))
+    if (categoryRows.length !== requestedCategorySlugs.length) {
+      return NextResponse.json({ error: 'One or more category slugs were not found.' }, { status: 400 })
+    }
+    const bySlug = new Map(categoryRows.map((category) => [category.slug, category.id]))
+    await db.delete(listingCategories).where(eq(listingCategories.listingId, listing.id))
+    await db.insert(listingCategories).values(
+      requestedCategorySlugs.map((categorySlug, index) => ({
+        listingId: listing.id,
+        categoryId: bySlug.get(categorySlug) as string,
+        isPrimary: index === 0,
+      })),
+    )
   }
 
   return NextResponse.json({ ok: true, slug: listing.slug })

@@ -12,7 +12,7 @@
  */
 
 import { db } from '@/lib/db'
-import { listings, towns, categories } from '@/lib/db/schema'
+import { listings, towns, categories, listingCategories } from '@/lib/db/schema'
 import { eq, and, desc, sql } from 'drizzle-orm'
 import type { ListingCard } from '@/types'
 
@@ -66,7 +66,15 @@ export async function searchListings(
           coalesce(${categories.name}, '')
         ) @@ websearch_to_tsquery('english', ${q})`,
         townSlug     ? eq(towns.slug,      townSlug)     : undefined,
-        categorySlug ? eq(categories.slug, categorySlug) : undefined,
+        categorySlug
+          ? sql`exists (
+              select 1
+              from ${listingCategories}
+              inner join ${categories} lc on lc.id = ${listingCategories.categoryId}
+              where ${listingCategories.listingId} = ${listings.id}
+                and lc.slug = ${categorySlug}
+            )`
+          : undefined,
       )
     )
     .orderBy(desc(listings.rankingScore))

@@ -4,7 +4,7 @@
  */
 
 import { db } from '@/lib/db'
-import { listings, categories, subcategories, towns, categoryTownOverrides, listingSubcategories } from '@/lib/db/schema'
+import { listings, categories, subcategories, towns, categoryTownOverrides, listingCategories, listingSubcategories } from '@/lib/db/schema'
 import { eq, and, count, sql } from 'drizzle-orm'
 import type { CategorySlug, SubcategorySlug, TownSlug } from '@/lib/taxonomy/constants'
 
@@ -31,8 +31,9 @@ export async function getListingCountsByCategory(): Promise<Record<string, numbe
       total: count(listings.id),
     })
     .from(categories)
+    .leftJoin(listingCategories, eq(listingCategories.categoryId, categories.id))
     .leftJoin(listings, and(
-      eq(listings.primaryCategoryId, categories.id),
+      eq(listings.id, listingCategories.listingId),
       eq(listings.status, 'published')
     ))
     .groupBy(categories.slug)
@@ -64,9 +65,10 @@ export async function getListingCountForTownCategory(
 ): Promise<number> {
   const rows = await db
     .select({ total: count(listings.id) })
-    .from(listings)
+    .from(listingCategories)
+    .innerJoin(listings, eq(listingCategories.listingId, listings.id))
     .innerJoin(towns,      eq(listings.townId,            towns.id))
-    .innerJoin(categories, eq(listings.primaryCategoryId, categories.id))
+    .innerJoin(categories, eq(listingCategories.categoryId, categories.id))
     .where(and(
       eq(listings.status,  'published'),
       eq(towns.slug,       townSlug),
@@ -84,9 +86,10 @@ export async function getIndexableTownCategoryParams(): Promise<Array<{ slug: To
       category: categories.slug,
       total:    count(listings.id),
     })
-    .from(listings)
+    .from(listingCategories)
+    .innerJoin(listings, eq(listingCategories.listingId, listings.id))
     .innerJoin(towns,      eq(listings.townId,            towns.id))
-    .innerJoin(categories, eq(listings.primaryCategoryId, categories.id))
+    .innerJoin(categories, eq(listingCategories.categoryId, categories.id))
     .where(eq(listings.status, 'published'))
     .groupBy(towns.slug, categories.slug)
 
@@ -131,7 +134,8 @@ export async function getTownsWithListingsForCategory(
     })
     .from(towns)
     .innerJoin(listings,   eq(listings.townId,            towns.id))
-    .innerJoin(categories, eq(listings.primaryCategoryId, categories.id))
+    .innerJoin(listingCategories, eq(listingCategories.listingId, listings.id))
+    .innerJoin(categories, eq(listingCategories.categoryId, categories.id))
     .where(and(
       eq(listings.status,  'published'),
       eq(categories.slug,  categorySlug)

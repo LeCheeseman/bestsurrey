@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { and, asc, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm'
 import { adminToolsDisabledResponse, adminToolsEnabled } from '@/lib/admin-tools'
 import { db } from '@/lib/db'
-import { categories, listingSubcategories, listings, subcategories, towns } from '@/lib/db/schema'
+import { categories, listingCategories, listingSubcategories, listings, subcategories, towns } from '@/lib/db/schema'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -29,7 +29,15 @@ export async function GET(request: NextRequest) {
     conditions.push(or(ilike(listings.name, `%${q}%`), ilike(listings.slug, `%${q}%`), ilike(listings.postcode, `%${q}%`)))
   }
   if (town) conditions.push(eq(towns.slug, town))
-  if (category) conditions.push(eq(categories.slug, category))
+  if (category) {
+    conditions.push(sql`exists (
+      select 1
+      from ${listingCategories}
+      inner join ${categories} lc on lc.id = ${listingCategories.categoryId}
+      where ${listingCategories.listingId} = ${listings.id}
+        and lc.slug = ${category}
+    )`)
+  }
   if (status && statusValues.includes(status as (typeof statusValues)[number])) {
     conditions.push(eq(listings.status, status as (typeof statusValues)[number]))
   }
@@ -77,6 +85,20 @@ export async function GET(request: NextRequest) {
     .limit(1000)
 
   const ids = rows.map((row) => row.id)
+  const categoryRows = ids.length
+    ? await db
+        .select({
+          listingId: listingCategories.listingId,
+          id: categories.id,
+          name: categories.name,
+          slug: categories.slug,
+          isPrimary: listingCategories.isPrimary,
+        })
+        .from(listingCategories)
+        .innerJoin(categories, eq(listingCategories.categoryId, categories.id))
+        .where(inArray(listingCategories.listingId, ids))
+        .orderBy(desc(listingCategories.isPrimary), asc(categories.sortOrder), asc(categories.name))
+    : []
   const subcategoryRows = ids.length
     ? await db
         .select({
@@ -90,6 +112,14 @@ export async function GET(request: NextRequest) {
         .where(inArray(listingSubcategories.listingId, ids))
         .orderBy(asc(subcategories.name))
     : []
+
+  const categoriesByListing = new Map<string, Array<{ id: string; name: string; slug: string; isPrimary: boolean }>>()
+  for (const row of categoryRows) {
+    categoriesByListing.set(row.listingId, [
+      ...(categoriesByListing.get(row.listingId) ?? []),
+      { id: row.id, name: row.name, slug: row.slug, isPrimary: row.isPrimary },
+    ])
+  }
 
   const byListing = new Map<string, Array<{ id: string; name: string; slug: string }>>()
   for (const row of subcategoryRows) {
@@ -152,6 +182,7 @@ export async function GET(request: NextRequest) {
       images: Array.isArray(row.images) ? row.images : [],
       issueFlags: flags,
       issueCount: flags.length,
+      categories: categoriesByListing.get(row.id) ?? [{ id: row.categoryId, name: row.categoryName, slug: row.categorySlug, isPrimary: true }],
       duplicateNameMatches: (nameTownMatches.get(nameKey) ?? [])
         .filter((match) => match.id !== row.id)
         .map((match) => ({

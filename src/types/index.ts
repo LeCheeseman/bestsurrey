@@ -12,6 +12,7 @@ import type {
   towns,
   tags,
   listings,
+  listingCategories,
   listingSubcategories,
   listingTags,
   listingClicks,
@@ -56,6 +57,7 @@ export type CategoryTownOverride    = InferSelectModel<typeof categoryTownOverri
 export type NewCategoryTownOverride = InferInsertModel<typeof categoryTownOverrides>
 
 export type ListingSubcategory = InferSelectModel<typeof listingSubcategories>
+export type ListingCategory    = InferSelectModel<typeof listingCategories>
 export type ListingTag         = InferSelectModel<typeof listingTags>
 export type ListingClick       = InferSelectModel<typeof listingClicks>
 export type RoundupListing     = InferSelectModel<typeof roundupListings>

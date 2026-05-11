@@ -11,7 +11,7 @@
 import { db } from '@/lib/db'
 import {
   listings, towns, categories, subcategories, tags,
-  listingSubcategories, listingTags,
+  listingCategories, listingSubcategories, listingTags,
 } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { computeCompletenessScore } from '@/lib/completeness'
@@ -189,6 +189,13 @@ export async function upsertListings(
       }
 
       // ── Replace subcategory junction rows ─────────────────────────────────
+      await db.delete(listingCategories).where(eq(listingCategories.listingId, listingId))
+      await db.insert(listingCategories).values({
+        listingId,
+        categoryId,
+        isPrimary: true,
+      })
+
       await db.delete(listingSubcategories).where(eq(listingSubcategories.listingId, listingId))
       const subcategoryIds = parsePipe(r.subcategory_slugs)
         .map((s) => subBySlug[s])

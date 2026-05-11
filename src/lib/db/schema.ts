@@ -235,6 +235,19 @@ export const listingSubcategories = pgTable(
   })
 )
 
+export const listingCategories = pgTable(
+  'listing_categories',
+  {
+    listingId:  uuid('listing_id').notNull().references(() => listings.id, { onDelete: 'cascade' }),
+    categoryId: uuid('category_id').notNull().references(() => categories.id, { onDelete: 'cascade' }),
+    isPrimary:  boolean('is_primary').default(false).notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.listingId, t.categoryId] }),
+    categoryIdx: index('listing_categories_category_idx').on(t.categoryId),
+  })
+)
+
 export const listingTags = pgTable(
   'listing_tags',
   {
@@ -327,6 +340,7 @@ export const categoryTownOverrides = pgTable(
 export const categoriesRelations = relations(categories, ({ many }) => ({
   subcategories: many(subcategories),
   listings:      many(listings),
+  listingCategories: many(listingCategories),
 }))
 
 export const subcategoriesRelations = relations(subcategories, ({ one, many }) => ({
@@ -341,9 +355,15 @@ export const townsRelations = relations(towns, ({ many }) => ({
 export const listingsRelations = relations(listings, ({ one, many }) => ({
   primaryCategory:      one(categories, { fields: [listings.primaryCategoryId], references: [categories.id] }),
   town:                 one(towns,      { fields: [listings.townId],            references: [towns.id]      }),
+  listingCategories:    many(listingCategories),
   listingSubcategories: many(listingSubcategories),
   listingTags:          many(listingTags),
   roundupListings:      many(roundupListings),
+}))
+
+export const listingCategoriesRelations = relations(listingCategories, ({ one }) => ({
+  listing:  one(listings,   { fields: [listingCategories.listingId],  references: [listings.id]  }),
+  category: one(categories, { fields: [listingCategories.categoryId], references: [categories.id] }),
 }))
 
 export const listingSubcategoriesRelations = relations(listingSubcategories, ({ one }) => ({
