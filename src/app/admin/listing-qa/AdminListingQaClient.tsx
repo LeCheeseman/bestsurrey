@@ -184,10 +184,15 @@ export default function AdminListingQaClient() {
   const selected = listings.find((listing) => listing.slug === selectedSlug) ?? listings[0] ?? null
   const currentImage = primaryImage(selected)
   const selectedIndex = selected ? listings.findIndex((listing) => listing.slug === selected.slug) : -1
+  const currentCategorySlugs = useMemo(() => {
+    if (selectedCategorySlugs.length > 0) return selectedCategorySlugs
+    if (selected?.categories?.length) return selected.categories.map((item) => item.slug)
+    return selected?.categorySlug ? [selected.categorySlug] : []
+  }, [selected?.categories, selected?.categorySlug, selectedCategorySlugs])
   const compatibleSubcategories = useMemo(() => {
-    const categoryIds = new Set(taxonomy.categories.filter((item) => selectedCategorySlugs.includes(item.slug)).map((item) => item.id))
+    const categoryIds = new Set(taxonomy.categories.filter((item) => currentCategorySlugs.includes(item.slug)).map((item) => item.id))
     return taxonomy.subcategories.filter((item) => !item.categoryId || categoryIds.has(item.categoryId))
-  }, [selectedCategorySlugs, taxonomy.categories, taxonomy.subcategories])
+  }, [currentCategorySlugs, taxonomy.categories, taxonomy.subcategories])
 
   async function loadListings(overrides: QueueOverrides = {}) {
     setLoading(true)
@@ -264,13 +269,13 @@ export default function AdminListingQaClient() {
 
   const categoryChoices = useMemo(() => {
     const currentSubcategories = new Set(selectedSubcategorySlugs)
-    const currentCategories = new Set(selectedCategorySlugs)
+    const currentCategories = new Set(currentCategorySlugs)
     return [
       ...taxonomy.categories
         .filter((item) => !currentCategories.has(item.slug))
         .map((item) => ({
           value: `category:${item.slug}`,
-          label: `Main category: ${item.name}`,
+          label: `Add main category: ${item.name}`,
         })),
       ...compatibleSubcategories
         .filter((item) => !currentSubcategories.has(item.slug))
@@ -279,7 +284,7 @@ export default function AdminListingQaClient() {
           label: `Subcategory: ${item.name}`,
         })),
     ]
-  }, [compatibleSubcategories, selectedCategorySlugs, selectedSubcategorySlugs, taxonomy.categories])
+  }, [compatibleSubcategories, currentCategorySlugs, selectedSubcategorySlugs, taxonomy.categories])
 
   async function saveListing(patch: Partial<Listing> & { subcategorySlugs?: string[]; categorySlug?: string; categorySlugs?: string[] }) {
     if (!selected) return false
@@ -417,22 +422,23 @@ export default function AdminListingQaClient() {
     }
   }
 
-  async function saveCategories(categorySlugs = selectedCategorySlugs, subcategorySlugs = selectedSubcategorySlugs) {
+  async function saveCategories(categorySlugs = currentCategorySlugs, subcategorySlugs = selectedSubcategorySlugs) {
     await saveListing({ categorySlugs, subcategorySlugs })
   }
 
   async function removeSubcategory(slug: string) {
     const nextSlugs = selectedSubcategorySlugs.filter((item) => item !== slug)
     setSelectedSubcategorySlugs(nextSlugs)
-    await saveCategories(selectedCategorySlugs, nextSlugs)
+    await saveCategories(currentCategorySlugs, nextSlugs)
   }
 
   async function removeCategory(slug: string) {
-    if (selectedCategorySlugs.length <= 1) {
+    const baseCategorySlugs = currentCategorySlugs
+    if (baseCategorySlugs.length <= 1) {
       setMessage('A listing needs at least one main category.')
       return
     }
-    const nextCategorySlugs = selectedCategorySlugs.filter((item) => item !== slug)
+    const nextCategorySlugs = baseCategorySlugs.filter((item) => item !== slug)
     const allowedCategoryIds = new Set(taxonomy.categories.filter((item) => nextCategorySlugs.includes(item.slug)).map((item) => item.id))
     const nextSubcategorySlugs = selectedSubcategorySlugs.filter((subcategorySlug) => {
       const subcategory = taxonomy.subcategories.find((item) => item.slug === subcategorySlug)
@@ -449,7 +455,8 @@ export default function AdminListingQaClient() {
     if (!slug) return
 
     if (kind === 'category') {
-      const nextCategorySlugs = [...new Set([...selectedCategorySlugs, slug])]
+      const baseCategorySlugs = currentCategorySlugs
+      const nextCategorySlugs = baseCategorySlugs.includes(slug) ? baseCategorySlugs : [...baseCategorySlugs, slug]
       setSelectedCategorySlugs(nextCategorySlugs)
       setCategoryToAdd('')
       await saveCategories(nextCategorySlugs, selectedSubcategorySlugs)
@@ -460,7 +467,7 @@ export default function AdminListingQaClient() {
       const nextSlugs = [...new Set([...selectedSubcategorySlugs, slug])]
       setSelectedSubcategorySlugs(nextSlugs)
       setCategoryToAdd('')
-      await saveCategories(selectedCategorySlugs, nextSlugs)
+      await saveCategories(currentCategorySlugs, nextSlugs)
     }
   }
 
@@ -961,10 +968,10 @@ export default function AdminListingQaClient() {
                   <div className="mt-3 space-y-3">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-xs font-medium text-gray-700">Currently listed in</p>
-                      <p className="text-xs text-gray-500">{selectedSubcategorySlugs.length + selectedCategorySlugs.length} total</p>
+                      <p className="text-xs text-gray-500">{selectedSubcategorySlugs.length + currentCategorySlugs.length} total</p>
                     </div>
                     <div className="flex flex-wrap gap-2 rounded border border-gray-200 bg-gray-50 p-3">
-                      {selectedCategorySlugs.map((slug, index) => {
+                      {currentCategorySlugs.map((slug, index) => {
                         const category = taxonomy.categories.find((item) => item.slug === slug)
                         return (
                           <span key={slug} className="inline-flex items-center gap-2 rounded border border-emerald-200 bg-white px-3 py-2 text-sm">
@@ -976,7 +983,7 @@ export default function AdminListingQaClient() {
                               onClick={() => void removeCategory(slug)}
                               className="rounded px-1 text-base font-semibold leading-none text-rose-700 hover:bg-rose-50 disabled:text-gray-300"
                               type="button"
-                              disabled={saving || selectedCategorySlugs.length <= 1}
+                              disabled={saving || currentCategorySlugs.length <= 1}
                               aria-label={`Remove ${category?.name ?? slug}`}
                             >
                               x
@@ -1008,7 +1015,7 @@ export default function AdminListingQaClient() {
                     </div>
                     <div className="flex flex-col gap-2 sm:flex-row">
                       <select value={categoryToAdd} onChange={(event) => setCategoryToAdd(event.target.value)} className="min-w-0 flex-1 rounded border border-gray-300 px-2 py-2 text-sm">
-                        <option value="">Select category to add or switch to</option>
+                        <option value="">Select category or subcategory to add</option>
                         {categoryChoices.map((item) => (
                           <option key={item.value} value={item.value}>
                             {item.label}
@@ -1019,7 +1026,7 @@ export default function AdminListingQaClient() {
                         Add
                       </button>
                     </div>
-                    <p className="text-xs leading-5 text-gray-600">A listing can now appear in multiple main categories. The first main category is used as the primary category for breadcrumbs and default display.</p>
+                    <p className="text-xs leading-5 text-gray-600">Adding a main category now keeps the existing primary category and adds the new one alongside it. Use the red x to remove a category.</p>
                   </div>
                 </div>
               </section>
