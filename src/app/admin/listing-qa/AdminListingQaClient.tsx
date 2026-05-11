@@ -142,6 +142,7 @@ export default function AdminListingQaClient() {
   const [taxonomy, setTaxonomy] = useState<Taxonomy>(emptyTaxonomy)
   const [listings, setListings] = useState<Listing[]>([])
   const [selectedSlug, setSelectedSlug] = useState<string>('')
+  const [returnToSlug, setReturnToSlug] = useState('')
   const [q, setQ] = useState('')
   const [town, setTown] = useState('')
   const [category, setCategory] = useState('')
@@ -296,7 +297,28 @@ export default function AdminListingQaClient() {
 
   async function saveAndReload(patch: Partial<Listing> & { subcategorySlugs?: string[]; categorySlug?: string }) {
     const ok = await saveListing(patch)
-    if (ok) await loadListings()
+    if (!ok) return
+    if (patch.status === 'unpublished' && returnToSlug) {
+      const targetSlug = returnToSlug
+      setReturnToSlug('')
+      setQ(targetSlug)
+      setTown('')
+      setCategory('')
+      setStatus('all')
+      setImageFilter('all')
+      setIssueFilter('all')
+      await loadListings({
+        q: targetSlug,
+        town: '',
+        category: '',
+        status: 'all',
+        imageFilter: 'all',
+        issueFilter: 'all',
+        selectedSlug: targetSlug,
+      })
+      return
+    }
+    await loadListings()
   }
 
   async function saveDetails() {
@@ -314,6 +336,7 @@ export default function AdminListingQaClient() {
   }
 
   async function reviewListingInAdmin(slug: string) {
+    if (selected?.slug && selected.slug !== slug) setReturnToSlug(selected.slug)
     setQ(slug)
     setTown('')
     setCategory('')
@@ -347,6 +370,27 @@ export default function AdminListingQaClient() {
       await loadListings()
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Could not merge duplicate.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function removeDuplicate(sourceSlug: string) {
+    if (!selected) return
+    const ok = window.confirm(`Remove duplicate ${sourceSlug} from the live site?`)
+    if (!ok) return
+
+    setSaving(true)
+    setMessage('')
+    try {
+      await api(`/api/admin/listings/${sourceSlug}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'unpublished', verified: false }),
+      })
+      setMessage('Duplicate removed from the live site.')
+      await loadListings({ selectedSlug: selected.slug })
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Could not remove duplicate.')
     } finally {
       setSaving(false)
     }
@@ -467,6 +511,27 @@ export default function AdminListingQaClient() {
     if (next) setSelectedSlug(next.slug)
   }
 
+  async function returnToOriginal() {
+    if (!returnToSlug) return
+    const targetSlug = returnToSlug
+    setReturnToSlug('')
+    setQ(targetSlug)
+    setTown('')
+    setCategory('')
+    setStatus('all')
+    setImageFilter('all')
+    setIssueFilter('all')
+    await loadListings({
+      q: targetSlug,
+      town: '',
+      category: '',
+      status: 'all',
+      imageFilter: 'all',
+      issueFilter: 'all',
+      selectedSlug: targetSlug,
+    })
+  }
+
   function matchRows(matches: ListingMatch[]) {
     return (
       <div className="mt-2 divide-y divide-amber-200 rounded border border-amber-200 bg-white">
@@ -493,9 +558,14 @@ export default function AdminListingQaClient() {
                   </a>
                 ) : null}
                 {selected && match.slug !== selected.slug ? (
-                  <button onClick={() => void mergeDuplicate(match.slug)} className="text-xs font-medium text-rose-800 underline" type="button" disabled={saving}>
-                    Merge into current
-                  </button>
+                  <>
+                    <button onClick={() => void removeDuplicate(match.slug)} className="text-xs font-medium text-rose-800 underline" type="button" disabled={saving}>
+                      Remove duplicate
+                    </button>
+                    <button onClick={() => void mergeDuplicate(match.slug)} className="text-xs font-medium text-rose-800 underline" type="button" disabled={saving}>
+                      Merge into current
+                    </button>
+                  </>
                 ) : null}
               </div>
             </div>
@@ -621,6 +691,16 @@ export default function AdminListingQaClient() {
 
           {selected ? (
             <>
+              {returnToSlug ? (
+                <div className="rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <span>You are reviewing a duplicate. Removing it will return you to the original listing.</span>
+                    <button onClick={() => void returnToOriginal()} className="font-medium underline" type="button">
+                      Back to original
+                    </button>
+                  </div>
+                </div>
+              ) : null}
               <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
                 <div className="rounded border border-gray-200 bg-white p-5">
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
