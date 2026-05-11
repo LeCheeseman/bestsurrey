@@ -34,7 +34,8 @@
     "**/*.tsx",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "drizzle/**/*.ts"
+    "drizzle/**/*.ts",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

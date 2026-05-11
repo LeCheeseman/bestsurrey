@@ -57,22 +57,20 @@ ENTITY_MAP = {
 VALID_SUBCATEGORY_SLUGS = {
     # Restaurants
     'fine-dining', 'casual-dining', 'date-night', 'family-dining',
-    'sunday-roast', 'vegan-restaurants', 'vegetarian-restaurants',
-    'takeaway', 'brunch',
+    'sunday-roast',
     # Pubs & Bars
     'gastropubs', 'traditional-pubs', 'country-pubs', 'beer-gardens',
-    'wine-bars', 'cocktail-bars', 'sports-bars',
+    'wine-bars', 'cocktail-bars',
     # Cafés & Brunch
-    'coffee-shops', 'brunch-spots', 'bakeries', 'tea-rooms',
+    'coffee-shops', 'brunch-spots', 'bakeries',
     # Things To Do
     'walks-nature', 'historic-sites', 'gardens-parks', 'days-out',
-    'arts-culture', 'entertainment', 'cycling',
+    'arts-culture', 'entertainment',
     # Kids & Family
     'soft-play', 'farms-animals', 'outdoor-play', 'museums-education',
-    'arts-crafts', 'theme-parks', 'holiday-activities',
     # Indoor Activities
-    'escape-rooms', 'bowling', 'go-karting', 'climbing', 'mini-golf',
-    'laser-tag', 'trampoline-parks', 'axe-throwing', 'virtual-reality',
+    'escape-rooms', 'bowling', 'climbing', 'mini-golf',
+    'trampoline-parks',
 }
 
 SKIP_FILES = {'listings-template.csv', 'listings.csv', 'bestsurrey-work-tracker.csv',

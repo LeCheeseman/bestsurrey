@@ -17,13 +17,39 @@ async function seed() {
 
   // ── Categories ──────────────────────────────────────────────────────────────
 
-  const categoryData = [
-    { slug: 'restaurants',     name: 'Restaurants',     sortOrder: 1, icon: '🍽️',  description: 'The best restaurants across Surrey, from casual dining to fine dining.' },
-    { slug: 'cafes-brunch',    name: 'Cafés & Brunch',  sortOrder: 2, icon: '☕',   description: 'Cafés, coffee shops, brunch spots and tea rooms across Surrey.' },
-    { slug: 'kids-activities', name: 'Kids Activities', sortOrder: 3, icon: '🎠',   description: 'The best activities and days out for children in Surrey.' },
-    { slug: 'things-to-do',    name: 'Things To Do',    sortOrder: 4, icon: '🗺️',  description: 'Things to do across Surrey — walks, historic sites, gardens and more.' },
-    { slug: 'activity-venues', name: 'Activity Venues', sortOrder: 5, icon: '🏁',   description: 'Activity venues across Surrey — go-karting, bowling, climbing and more.' },
-  ]
+  const categoryMeta: Record<string, { icon: string; description: string }> = {
+    restaurants: {
+      icon: '🍽️',
+      description: 'The best restaurants across Surrey, from casual dining to fine dining.',
+    },
+    'pubs-bars': {
+      icon: '🍺',
+      description: 'Pubs, gastropubs, beer gardens, wine bars and cocktail bars across Surrey.',
+    },
+    'cafes-brunch': {
+      icon: '☕',
+      description: 'The best brunch spots, coffee shops, bakeries and tea rooms across Surrey.',
+    },
+    'things-to-do': {
+      icon: '🗺️',
+      description: 'Things to do across Surrey — walks, historic sites, gardens and more.',
+    },
+    'kids-family': {
+      icon: '🎠',
+      description: 'The best family days out and children’s activities in Surrey.',
+    },
+    'indoor-activities': {
+      icon: '🏁',
+      description: 'Indoor activity venues across Surrey — bowling, climbing, soft play and more.',
+    },
+  }
+
+  const categoryData = CATEGORIES.map((category, index) => ({
+    ...category,
+    sortOrder: index + 1,
+    icon: categoryMeta[category.slug].icon,
+    description: categoryMeta[category.slug].description,
+  }))
 
   const insertedCategories = await db
     .insert(categories)
@@ -34,7 +60,16 @@ async function seed() {
       icon:      c.icon,
       description: c.description,
     })))
-    .onConflictDoNothing()
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name:        sql`excluded.name`,
+        sortOrder:   sql`excluded.sort_order`,
+        icon:        sql`excluded.icon`,
+        description: sql`excluded.description`,
+        updatedAt:   new Date(),
+      },
+    })
     .returning({ id: categories.id, slug: categories.slug })
 
   console.log(`  Categories: ${insertedCategories.length} inserted`)
@@ -49,12 +84,21 @@ async function seed() {
     name:       sub.name,
     slug:       sub.slug,
     categoryId: categoryIdBySlug[sub.categorySlug],
+    sortOrder:  SUBCATEGORIES.filter((item) => item.categorySlug === sub.categorySlug).findIndex((item) => item.slug === sub.slug) + 1,
   })).filter((s) => s.categoryId) // guard against missing parent
 
   const insertedSubcategories = await db
     .insert(subcategories)
     .values(subcategoryData)
-    .onConflictDoNothing()
+    .onConflictDoUpdate({
+      target: subcategories.slug,
+      set: {
+        name:       sql`excluded.name`,
+        categoryId: sql`excluded.category_id`,
+        sortOrder:  sql`excluded.sort_order`,
+        updatedAt:  new Date(),
+      },
+    })
     .returning({ id: subcategories.id })
 
   console.log(`  Subcategories: ${insertedSubcategories.length} inserted`)

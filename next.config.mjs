@@ -11,6 +11,50 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/surrey/tea-rooms',
+        destination: '/cafes-brunch/',
+        permanent: true,
+      },
+      {
+        source: '/surrey/sports-bars',
+        destination: '/pubs-bars/',
+        permanent: true,
+      },
+      {
+        source: '/surrey/arts-crafts',
+        destination: '/kids-family/',
+        permanent: true,
+      },
+      {
+        source: '/surrey/theme-parks',
+        destination: '/kids-family/',
+        permanent: true,
+      },
+      {
+        source: '/surrey/holiday-activities',
+        destination: '/kids-family/',
+        permanent: true,
+      },
+      {
+        source: '/surrey/go-karting',
+        destination: '/indoor-activities/',
+        permanent: true,
+      },
+      {
+        source: '/surrey/laser-tag',
+        destination: '/indoor-activities/',
+        permanent: true,
+      },
+      {
+        source: '/surrey/swimming',
+        destination: '/indoor-activities/',
+        permanent: true,
+      },
+    ]
+  },
   async headers() {
     return [
       {
