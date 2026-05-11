@@ -85,6 +85,13 @@ type QueueOverrides = Partial<{
   selectedSlug: string
 }>
 
+type ListingPaging = {
+  limit: number
+  offset: number
+  count: number
+  total: number
+}
+
 const emptyTaxonomy: Taxonomy = { towns: [], categories: [], subcategories: [] }
 const statuses = ['published', 'review', 'draft', 'unpublished'] as const
 const issueLabels: Record<string, string> = {
@@ -139,6 +146,7 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
 export default function AdminListingQaClient() {
   const [taxonomy, setTaxonomy] = useState<Taxonomy>(emptyTaxonomy)
   const [listings, setListings] = useState<Listing[]>([])
+  const [queueTotal, setQueueTotal] = useState(0)
   const [selectedSlug, setSelectedSlug] = useState<string>('')
   const [returnToSlug, setReturnToSlug] = useState('')
   const [q, setQ] = useState('')
@@ -198,8 +206,9 @@ export default function AdminListingQaClient() {
     params.set('limit', '120')
 
     try {
-      const data = await api<{ listings: Listing[] }>(`/api/admin/listings?${params.toString()}`)
+      const data = await api<{ listings: Listing[]; paging: ListingPaging }>(`/api/admin/listings?${params.toString()}`)
       setListings(data.listings)
+      setQueueTotal(data.paging.total)
       setSelectedSlug((current) => {
         const preferred = overrides.selectedSlug ?? current
         return data.listings.find((listing) => listing.slug === preferred)?.slug ?? data.listings[0]?.slug ?? ''
@@ -337,6 +346,50 @@ export default function AdminListingQaClient() {
       return
     }
     await loadListings()
+  }
+
+  async function removeSelectedFromSite() {
+    if (!selected) return
+    const removedSlug = selected.slug
+    const removedName = selected.name
+    setSaving(true)
+    setMessage('')
+    try {
+      await api(`/api/admin/listings/${removedSlug}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'unpublished', verified: false }),
+      })
+
+      if (returnToSlug) {
+        const targetSlug = returnToSlug
+        setReturnToSlug('')
+        setQ(targetSlug)
+        setTown('')
+        setCategory('')
+        setStatus('all')
+        setImageFilter('all')
+        setIssueFilter('all')
+        await loadListings({
+          q: targetSlug,
+          town: '',
+          category: '',
+          status: 'all',
+          imageFilter: 'all',
+          issueFilter: 'all',
+          selectedSlug: targetSlug,
+        })
+      } else {
+        const nextListings = listings.filter((listing) => listing.slug !== removedSlug)
+        setListings(nextListings)
+        setQueueTotal((total) => Math.max(0, total - 1))
+        setSelectedSlug(nextListings[Math.min(selectedIndex, nextListings.length - 1)]?.slug ?? '')
+      }
+      setMessage(`${removedName} was removed from the live site.`)
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Could not remove listing.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function saveCategories(categorySlug = selectedCategory, subcategorySlugs = selectedSubcategorySlugs) {
@@ -659,7 +712,9 @@ export default function AdminListingQaClient() {
             <p className="mt-1 max-w-2xl text-sm text-gray-600">Pick a category, work through the flagged listings, then keep, research, or remove each one from the site.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
-            <span>{listings.length} in queue</span>
+            <span>
+              Showing {listings.length} of {queueTotal} in queue
+            </span>
             {selected ? <span>Reviewing {selectedIndex + 1} of {listings.length}</span> : null}
           </div>
         </div>
@@ -849,7 +904,7 @@ export default function AdminListingQaClient() {
                         <button onClick={() => void saveAndReload({ status: 'review' })} className={buttonClass()} disabled={saving}>
                           Research
                         </button>
-                        <button onClick={() => void saveAndReload({ status: 'unpublished' })} className="rounded border border-rose-300 bg-white px-3 py-2 text-sm font-medium text-rose-800 hover:border-rose-500" disabled={saving}>
+                        <button onClick={() => void removeSelectedFromSite()} className="rounded border border-rose-300 bg-white px-3 py-2 text-sm font-medium text-rose-800 hover:border-rose-500" disabled={saving}>
                           Remove from site
                         </button>
                       </div>

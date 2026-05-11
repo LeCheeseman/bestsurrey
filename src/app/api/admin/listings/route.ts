@@ -23,7 +23,6 @@ export async function GET(request: NextRequest) {
   const requestedOffset = Number(searchParams.get('offset') ?? 0)
   const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 1000) : 500
   const offset = Number.isFinite(requestedOffset) ? Math.max(requestedOffset, 0) : 0
-  const hasIssueFilter = Boolean(issue && issue !== 'all')
 
   const conditions = []
   if (q) {
@@ -75,8 +74,7 @@ export async function GET(request: NextRequest) {
     .innerJoin(categories, eq(listings.primaryCategoryId, categories.id))
     .where(where)
     .orderBy(asc(towns.name), asc(categories.name), desc(listings.status), asc(listings.name))
-    .limit(hasIssueFilter ? 1000 : limit)
-    .offset(hasIssueFilter ? 0 : offset)
+    .limit(1000)
 
   const ids = rows.map((row) => row.id)
   const subcategoryRows = ids.length
@@ -186,7 +184,7 @@ export async function GET(request: NextRequest) {
       if (issue === 'has_issues') return row.issueFlags.length > 0
       return row.issueFlags.includes(issue)
     })
-  const pagedPayload = hasIssueFilter ? filteredPayload.slice(offset, offset + limit) : filteredPayload
+  const pagedPayload = filteredPayload.slice(offset, offset + limit)
 
   return NextResponse.json({
     listings: pagedPayload,
