@@ -167,6 +167,7 @@ export default function AdminListingQaClient() {
   const [notes, setNotes] = useState('')
   const [selectedSubcategorySlugs, setSelectedSubcategorySlugs] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState('')
+  const [categoryToAdd, setCategoryToAdd] = useState('')
   const [manualUrl, setManualUrl] = useState('')
   const [manualFile, setManualFile] = useState<File | null>(null)
   const [candidates, setCandidates] = useState<Candidate[]>([])
@@ -239,6 +240,7 @@ export default function AdminListingQaClient() {
     setNotes(selected.editorialNotes ?? '')
     setSelectedCategory(selected.categorySlug)
     setSelectedSubcategorySlugs(selected.subcategories.map((item) => item.slug))
+    setCategoryToAdd('')
     setCandidates([])
     setManualUrl('')
     setManualFile(null)
@@ -249,6 +251,24 @@ export default function AdminListingQaClient() {
     const allowed = new Set(compatibleSubcategories.map((item) => item.slug))
     setSelectedSubcategorySlugs((slugs) => slugs.filter((slug) => allowed.has(slug)))
   }, [compatibleSubcategories])
+
+  const categoryChoices = useMemo(() => {
+    const currentSubcategories = new Set(selectedSubcategorySlugs)
+    return [
+      ...taxonomy.categories
+        .filter((item) => item.slug !== selectedCategory)
+        .map((item) => ({
+          value: `category:${item.slug}`,
+          label: `Main category: ${item.name}`,
+        })),
+      ...compatibleSubcategories
+        .filter((item) => !currentSubcategories.has(item.slug))
+        .map((item) => ({
+          value: `subcategory:${item.slug}`,
+          label: `Subcategory: ${item.name}`,
+        })),
+    ]
+  }, [compatibleSubcategories, selectedCategory, selectedSubcategorySlugs, taxonomy.categories])
 
   async function saveListing(patch: Partial<Listing> & { subcategorySlugs?: string[]; categorySlug?: string }) {
     if (!selected) return false
@@ -319,6 +339,37 @@ export default function AdminListingQaClient() {
       return
     }
     await loadListings()
+  }
+
+  async function saveCategories(categorySlug = selectedCategory, subcategorySlugs = selectedSubcategorySlugs) {
+    await saveListing({ categorySlug, subcategorySlugs })
+  }
+
+  async function removeSubcategory(slug: string) {
+    const nextSlugs = selectedSubcategorySlugs.filter((item) => item !== slug)
+    setSelectedSubcategorySlugs(nextSlugs)
+    await saveCategories(selectedCategory, nextSlugs)
+  }
+
+  async function addCategoryChoice() {
+    if (!categoryToAdd) return
+    const [kind, slug] = categoryToAdd.split(':')
+    if (!slug) return
+
+    if (kind === 'category') {
+      setSelectedCategory(slug)
+      setSelectedSubcategorySlugs([])
+      setCategoryToAdd('')
+      await saveCategories(slug, [])
+      return
+    }
+
+    if (kind === 'subcategory') {
+      const nextSlugs = [...new Set([...selectedSubcategorySlugs, slug])]
+      setSelectedSubcategorySlugs(nextSlugs)
+      setCategoryToAdd('')
+      await saveCategories(selectedCategory, nextSlugs)
+    }
   }
 
   async function saveDetails() {
@@ -786,61 +837,53 @@ export default function AdminListingQaClient() {
                 <div className="rounded border border-gray-200 bg-white p-5">
                   <h3 className="text-sm font-semibold">Category QA</h3>
                   <div className="mt-3 space-y-3">
-                    <label className="block text-xs font-medium text-gray-700" htmlFor="category">
-                      Main category
-                    </label>
-                    <select id="category" value={selectedCategory} onChange={(event) => setSelectedCategory(event.target.value)} className="w-full rounded border border-gray-300 px-2 py-2 text-sm">
-                      {taxonomy.categories.map((item) => (
-                        <option key={item.slug} value={item.slug}>
-                          {item.name}
-                        </option>
-                      ))}
-                    </select>
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs font-medium text-gray-700">Subcategories</p>
-                      <p className="text-xs text-gray-500">{selectedSubcategorySlugs.length} selected</p>
+                      <p className="text-xs font-medium text-gray-700">Currently listed in</p>
+                      <p className="text-xs text-gray-500">{selectedSubcategorySlugs.length + 1} total</p>
                     </div>
-                    <p className="text-xs leading-5 text-gray-600">Untick a subcategory to remove this listing from that page. Changing the main category moves the listing to a different top-level section.</p>
-                    <div className="grid max-h-72 gap-2 overflow-auto rounded border border-gray-200 p-2">
-                      {compatibleSubcategories.map((item) => (
-                        <label
-                          key={item.slug}
-                          className={[
-                            'flex cursor-pointer items-start gap-2 rounded border px-3 py-2 text-sm transition',
-                            selectedSubcategorySlugs.includes(item.slug)
-                              ? 'border-emerald-700 bg-emerald-50 text-emerald-950'
-                              : 'border-gray-200 bg-white text-gray-800 hover:border-gray-400',
-                          ].join(' ')}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedSubcategorySlugs.includes(item.slug)}
-                            onChange={(event) => {
-                              setSelectedSubcategorySlugs((slugs) =>
-                                event.target.checked ? [...slugs, item.slug] : slugs.filter((slug) => slug !== item.slug),
-                              )
-                            }}
-                            className="mt-1"
-                          />
-                          <span>
-                            <span className="block font-medium">{item.name}</span>
-                            <span className="block text-xs text-gray-500">{item.slug}</span>
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                    <button
-                      onClick={() =>
-                        void saveListing({
-                          categorySlug: selectedCategory,
-                          subcategorySlugs: selectedSubcategorySlugs,
+                    <div className="flex flex-wrap gap-2 rounded border border-gray-200 bg-gray-50 p-3">
+                      <span className="inline-flex items-center gap-2 rounded border border-emerald-200 bg-white px-3 py-2 text-sm">
+                        <span>
+                          <span className="font-medium">{taxonomy.categories.find((item) => item.slug === selectedCategory)?.name ?? selected.categoryName}</span>
+                          <span className="ml-1 text-xs text-gray-500">main</span>
+                        </span>
+                      </span>
+                      {selectedSubcategorySlugs.length > 0 ? (
+                        selectedSubcategorySlugs.map((slug) => {
+                          const subcategory = taxonomy.subcategories.find((item) => item.slug === slug)
+                          return (
+                            <span key={slug} className="inline-flex items-center gap-2 rounded border border-gray-200 bg-white px-3 py-2 text-sm">
+                              <span>{subcategory?.name ?? slug}</span>
+                              <button
+                                onClick={() => void removeSubcategory(slug)}
+                                className="rounded px-1 text-base font-semibold leading-none text-rose-700 hover:bg-rose-50"
+                                type="button"
+                                disabled={saving}
+                                aria-label={`Remove ${subcategory?.name ?? slug}`}
+                              >
+                                x
+                              </button>
+                            </span>
+                          )
                         })
-                      }
-                      className={buttonClass(true)}
-                      disabled={saving}
-                    >
-                      Save categories
-                    </button>
+                      ) : (
+                        <span className="text-sm text-gray-500">No subcategory pages attached.</span>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <select value={categoryToAdd} onChange={(event) => setCategoryToAdd(event.target.value)} className="min-w-0 flex-1 rounded border border-gray-300 px-2 py-2 text-sm">
+                        <option value="">Select category to add or switch to</option>
+                        {categoryChoices.map((item) => (
+                          <option key={item.value} value={item.value}>
+                            {item.label}
+                          </option>
+                        ))}
+                      </select>
+                      <button onClick={() => void addCategoryChoice()} className={buttonClass(true)} disabled={saving || !categoryToAdd}>
+                        Add
+                      </button>
+                    </div>
+                    <p className="text-xs leading-5 text-gray-600">Adding a main category moves the listing to that section. Adding a subcategory lists it on that subcategory page. Use the red x to remove subcategory pages.</p>
                   </div>
                 </div>
               </section>
