@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { eq, inArray } from 'drizzle-orm'
+import { asc, desc, eq, inArray } from 'drizzle-orm'
 import { adminToolsDisabledResponse, adminToolsEnabled, normalizeSlug } from '@/lib/admin-tools'
 import { db } from '@/lib/db'
-import { categories, listingSubcategories, listings, subcategories, towns } from '@/lib/db/schema'
+import { categories, listingCategories, listingSubcategories, listings, subcategories, towns } from '@/lib/db/schema'
 import type { FaqItem, ListingImage } from '@/types/db-shapes'
 
 export const runtime = 'nodejs'
@@ -58,6 +58,34 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
     )
   }
 
+  const targetCategories = await db
+    .select({ categoryId: listingCategories.categoryId, isPrimary: listingCategories.isPrimary })
+    .from(listingCategories)
+    .where(eq(listingCategories.listingId, target.id))
+  const sourceCategories = await db
+    .select({ categoryId: listingCategories.categoryId, isPrimary: listingCategories.isPrimary })
+    .from(listingCategories)
+    .where(eq(listingCategories.listingId, source.id))
+
+  const orderedCategoryIds = [
+    ...targetCategories.filter((row) => row.isPrimary).map((row) => row.categoryId),
+    ...targetCategories.filter((row) => !row.isPrimary).map((row) => row.categoryId),
+    ...sourceCategories.filter((row) => row.isPrimary).map((row) => row.categoryId),
+    ...sourceCategories.filter((row) => !row.isPrimary).map((row) => row.categoryId),
+    target.primaryCategoryId,
+    source.primaryCategoryId,
+  ]
+  const mergedCategoryIds = [...new Set(orderedCategoryIds)]
+
+  await db.delete(listingCategories).where(eq(listingCategories.listingId, target.id))
+  await db.insert(listingCategories).values(
+    mergedCategoryIds.map((categoryId, index) => ({
+      listingId: target.id,
+      categoryId,
+      isPrimary: index === 0,
+    })),
+  )
+
   const mergedImages = mergeArrays<ListingImage>(target.images, source.images)
   const mergedFaq = mergeArrays<FaqItem>(target.faq, source.faq)
   const notes = [
@@ -110,6 +138,7 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
     .where(eq(listings.id, source.id))
 
   await db.delete(listingSubcategories).where(inArray(listingSubcategories.listingId, [source.id]))
+  await db.delete(listingCategories).where(inArray(listingCategories.listingId, [source.id]))
 
   const [merged] = await db
     .select({
@@ -148,6 +177,13 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
     .innerJoin(subcategories, eq(listingSubcategories.subcategoryId, subcategories.id))
     .where(eq(listingSubcategories.listingId, target.id))
 
+  const categoryRows = await db
+    .select({ id: categories.id, name: categories.name, slug: categories.slug, isPrimary: listingCategories.isPrimary })
+    .from(listingCategories)
+    .innerJoin(categories, eq(listingCategories.categoryId, categories.id))
+    .where(eq(listingCategories.listingId, target.id))
+    .orderBy(desc(listingCategories.isPrimary), asc(categories.sortOrder), asc(categories.name))
+
   return NextResponse.json({
     ok: true,
     targetSlug: target.slug,
@@ -160,6 +196,7 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
           issueCount: 0,
           duplicateNameMatches: [],
           sharedWebsiteMatches: [],
+          categories: categoryRows,
           subcategories: subcategoryRows,
         }
       : null,
