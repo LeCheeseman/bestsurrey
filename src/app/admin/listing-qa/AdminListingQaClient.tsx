@@ -558,12 +558,12 @@ export default function AdminListingQaClient() {
     setMessage('')
     setImageMessage('')
     try {
-      const data = await api<{ candidates: Candidate[] }>('/api/admin/images/candidates', {
+      const data = await api<{ candidates: Candidate[]; warning?: string }>('/api/admin/images/candidates', {
         method: 'POST',
         body: JSON.stringify({ websiteUrl: selected.websiteUrl }),
       })
       setCandidates(data.candidates)
-      setImageMessage(data.candidates.length ? `Found ${data.candidates.length} candidate images.` : 'No usable images found on the official site.')
+      setImageMessage(data.warning ?? (data.candidates.length ? `Found ${data.candidates.length} candidate images.` : 'No usable images found on the official site.'))
     } catch (error) {
       setImageMessage(error instanceof Error ? error.message : 'Could not find images.')
     } finally {

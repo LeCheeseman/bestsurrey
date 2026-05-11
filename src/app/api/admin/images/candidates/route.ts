@@ -18,6 +18,16 @@ type CandidateBody = {
   manualUrl?: string | null
 }
 
+const browserHeaders = {
+  'user-agent':
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+  accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'no-cache',
+  pragma: 'no-cache',
+  referer: 'https://www.google.com/',
+}
+
 type WebsiteFetchResult = {
   ok: boolean
   status: number
@@ -187,10 +197,7 @@ export async function POST(request: NextRequest) {
         port: requestUrl.port || undefined,
         rejectUnauthorized: false,
         timeout: 12000,
-        headers: {
-          'user-agent': 'BestSurrey admin image reviewer (+https://bestsurrey.co.uk)',
-          accept: 'text/html,application/xhtml+xml',
-        },
+        headers: browserHeaders,
       }
 
       const request = httpsGet(options, (response) => {
@@ -227,8 +234,7 @@ export async function POST(request: NextRequest) {
       return await fetch(url, {
         signal: controller.signal,
         headers: {
-          'user-agent': 'BestSurrey admin image reviewer (+https://bestsurrey.co.uk)',
-          accept: 'text/html,application/xhtml+xml',
+          ...browserHeaders,
         },
       })
     } finally {
@@ -245,7 +251,16 @@ export async function POST(request: NextRequest) {
       response = (await insecureFetchWebsite(pageUrl)) as Response
       insecureCertificateFallback = true
     }
-    if (!response.ok) return NextResponse.json({ error: `Official site returned HTTP ${response.status}.` }, { status: 502 })
+    if (!response.ok) {
+      if (response.status === 403) {
+        return NextResponse.json({
+          candidates: [],
+          warning:
+            'The official site is blocking server-side image discovery with HTTP 403. The URL may still be correct. Use Image search, Facebook, Instagram, or paste/upload an image manually for this listing.',
+        })
+      }
+      return NextResponse.json({ error: `Official site returned HTTP ${response.status}.` }, { status: 502 })
+    }
     const html = await response.text()
     if (/default server vhost|siteground web hosting|domain name is either not yet pointed/i.test(html)) {
       return NextResponse.json(
