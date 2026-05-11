@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const adminCookieName = 'best_surrey_admin'
+
 function adminToolsAvailable() {
   if (process.env.NODE_ENV !== 'production') return true
   return process.env.ENABLE_ADMIN_TOOLS === 'true' && Boolean(process.env.ADMIN_PASSWORD)
+}
+
+function adminCookieToken() {
+  const username = process.env.ADMIN_USERNAME || 'admin'
+  const password = process.env.ADMIN_PASSWORD || ''
+  return btoa(`${username}:${password}`)
 }
 
 function unauthorized() {
@@ -14,7 +22,12 @@ function unauthorized() {
   })
 }
 
-function adminAuthenticated(request: NextRequest) {
+function adminCookieAuthenticated(request: NextRequest) {
+  if (process.env.NODE_ENV !== 'production') return true
+  return request.cookies.get(adminCookieName)?.value === adminCookieToken()
+}
+
+function adminBasicAuthenticated(request: NextRequest) {
   if (process.env.NODE_ENV !== 'production') return true
 
   const password = process.env.ADMIN_PASSWORD
@@ -35,8 +48,18 @@ function adminAuthenticated(request: NextRequest) {
 
 export function middleware(request: NextRequest) {
   if (!adminToolsAvailable()) return new NextResponse('Not found', { status: 404 })
-  if (!adminAuthenticated(request)) return unauthorized()
-  return NextResponse.next()
+  if (adminCookieAuthenticated(request)) return NextResponse.next()
+  if (!adminBasicAuthenticated(request)) return unauthorized()
+
+  const response = NextResponse.next()
+  response.cookies.set(adminCookieName, adminCookieToken(), {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: true,
+    path: '/',
+    maxAge: 60 * 60 * 12,
+  })
+  return response
 }
 
 export const config = {
