@@ -169,7 +169,7 @@ export default function AdminListingQaClient() {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [categoryToAdd, setCategoryToAdd] = useState('')
   const [manualUrl, setManualUrl] = useState('')
-  const [manualFile, setManualFile] = useState<File | null>(null)
+  const [manualFiles, setManualFiles] = useState<File[]>([])
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [candidateLoading, setCandidateLoading] = useState(false)
 
@@ -243,7 +243,7 @@ export default function AdminListingQaClient() {
     setCategoryToAdd('')
     setCandidates([])
     setManualUrl('')
-    setManualFile(null)
+    setManualFiles([])
     setImageMessage('')
   }, [selected?.slug])
 
@@ -451,14 +451,35 @@ export default function AdminListingQaClient() {
     setDetails((current) => ({ ...current, [key]: value }))
   }
 
-  function updateListingImage(slug: string, image: ListingImage) {
+  function updateListingImages(slug: string, images: ListingImage[]) {
     setListings((items) =>
       items.map((item) => {
         if (item.slug !== slug) return item
         const issueFlags = item.issueFlags.filter((flag) => !['missing_image', 'invalid_image_json'].includes(flag))
-        return { ...item, images: [image], issueFlags, issueCount: issueFlags.length }
+        return { ...item, images, issueFlags, issueCount: issueFlags.length }
       }),
     )
+  }
+
+  async function removeGalleryImage(index: number) {
+    if (!selected) return
+    const images = selected.images
+      .filter((_, imageIndex) => imageIndex !== index)
+      .map((image, imageIndex) => ({ ...image, isPrimary: imageIndex === 0 }))
+    const ok = await saveListing({ images })
+    if (ok) updateListingImages(selected.slug, images)
+  }
+
+  async function makePrimaryImage(index: number) {
+    if (!selected || index === 0) return
+    const image = selected.images[index]
+    if (!image) return
+    const images = [image, ...selected.images.filter((_, imageIndex) => imageIndex !== index)].map((item, imageIndex) => ({
+      ...item,
+      isPrimary: imageIndex === 0,
+    }))
+    const ok = await saveListing({ images })
+    if (ok) updateListingImages(selected.slug, images)
   }
 
   async function findOfficialImages() {
@@ -507,7 +528,7 @@ export default function AdminListingQaClient() {
     setMessage('')
     setImageMessage('')
     try {
-      const data = await api<{ image: ListingImage }>('/api/admin/images/apply', {
+      const data = await api<{ image: ListingImage; images: ListingImage[] }>('/api/admin/images/apply', {
         method: 'POST',
         body: JSON.stringify({
           slug: selected.slug,
@@ -518,8 +539,8 @@ export default function AdminListingQaClient() {
           caption: `${selected.name}, ${selected.townName}`,
         }),
       })
-      updateListingImage(selected.slug, data.image)
-      setImageMessage('Image uploaded and listing updated.')
+      updateListingImages(selected.slug, data.images)
+      setImageMessage('Image uploaded and added to the gallery.')
     } catch (error) {
       setImageMessage(error instanceof Error ? error.message : 'Could not apply image.')
     } finally {
@@ -527,28 +548,32 @@ export default function AdminListingQaClient() {
     }
   }
 
-  async function uploadManualFile() {
-    if (!selected || !manualFile) return
+  async function uploadManualFiles() {
+    if (!selected || manualFiles.length === 0) return
     setSaving(true)
     setImageMessage('')
     try {
-      const formData = new FormData()
-      formData.set('slug', selected.slug)
-      formData.set('file', manualFile)
-      formData.set('alt', `${selected.name} in ${selected.townName}`)
-      formData.set('caption', `${selected.name}, ${selected.townName}`)
-      formData.set('sourceUrl', manualFile.name)
+      let images = selected.images
+      for (const file of manualFiles) {
+        const formData = new FormData()
+        formData.set('slug', selected.slug)
+        formData.set('file', file)
+        formData.set('alt', `${selected.name} in ${selected.townName}`)
+        formData.set('caption', `${selected.name}, ${selected.townName}`)
+        formData.set('sourceUrl', file.name)
 
-      const response = await fetch('/api/admin/images/upload', {
-        method: 'POST',
-        body: formData,
-      })
-      const data = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(data.error || `Upload failed: ${response.status}`)
+        const response = await fetch('/api/admin/images/upload', {
+          method: 'POST',
+          body: formData,
+        })
+        const data = await response.json().catch(() => ({}))
+        if (!response.ok) throw new Error(data.error || `Upload failed: ${response.status}`)
+        images = data.images
+      }
 
-      updateListingImage(selected.slug, data.image)
-      setManualFile(null)
-      setImageMessage('Manual image uploaded and listing updated.')
+      updateListingImages(selected.slug, images)
+      setManualFiles([])
+      setImageMessage(`${manualFiles.length} image${manualFiles.length === 1 ? '' : 's'} uploaded and added to the gallery.`)
     } catch (error) {
       setImageMessage(error instanceof Error ? error.message : 'Could not upload image file.')
     } finally {
@@ -961,14 +986,44 @@ export default function AdminListingQaClient() {
               <section className="rounded border border-gray-200 bg-white p-5">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                   <div>
-                    <h3 className="text-sm font-semibold">Image candidates</h3>
-                    <p className="mt-1 text-sm text-gray-600">Use the official-site finder, paste a direct official image URL, or upload a file manually.</p>
+                    <h3 className="text-sm font-semibold">Image gallery</h3>
+                    <p className="mt-1 text-sm text-gray-600">Add multiple images, set the first image as primary, and remove any bad gallery images.</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <button onClick={() => void findOfficialImages()} className={buttonClass(true)} disabled={candidateLoading || !selected.websiteUrl}>
                       {candidateLoading ? 'Finding...' : 'Find from official site'}
                     </button>
                   </div>
+                </div>
+
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  {selected.images.map((image, index) => (
+                    <article key={`${image.url}-${index}`} className="overflow-hidden rounded border border-gray-200 bg-white">
+                      <div className="bg-gray-100">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={image.url} alt={image.alt} className="aspect-[4/3] w-full object-cover" loading="lazy" />
+                      </div>
+                      <div className="space-y-2 p-3">
+                        <p className="line-clamp-2 text-xs text-gray-600">{image.caption || image.alt || image.url}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {index === 0 ? (
+                            <span className="rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800">Primary</span>
+                          ) : (
+                            <button onClick={() => void makePrimaryImage(index)} className="text-xs font-medium text-emerald-800 underline" type="button" disabled={saving}>
+                              Make primary
+                            </button>
+                          )}
+                          <a href={image.url} target="_blank" rel="noreferrer" className="text-xs font-medium text-emerald-800 underline">
+                            Open
+                          </a>
+                          <button onClick={() => void removeGalleryImage(index)} className="text-xs font-medium text-rose-800 underline" type="button" disabled={saving}>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                  {selected.images.length === 0 ? <div className="rounded border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">No gallery images yet.</div> : null}
                 </div>
 
                 <div className="mt-4 flex flex-col gap-2 sm:flex-row">
@@ -986,15 +1041,20 @@ export default function AdminListingQaClient() {
                     <input
                       id="manual-image-upload"
                       type="file"
+                      multiple
                       accept="image/jpeg,image/png,image/webp,image/avif"
-                      onChange={(event) => setManualFile(event.target.files?.[0] ?? null)}
+                      onChange={(event) => setManualFiles(Array.from(event.target.files ?? []))}
                       className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-3 py-2 text-sm"
                     />
-                    <button onClick={() => void uploadManualFile()} className={buttonClass(true)} disabled={saving || !manualFile}>
-                      Upload file
+                    <button onClick={() => void uploadManualFiles()} className={buttonClass(true)} disabled={saving || manualFiles.length === 0}>
+                      Upload file{manualFiles.length === 1 ? '' : 's'}
                     </button>
                   </div>
-                  {manualFile ? <p className="mt-2 text-xs text-gray-600">{manualFile.name} · {(manualFile.size / 1024 / 1024).toFixed(2)}MB</p> : null}
+                  {manualFiles.length > 0 ? (
+                    <p className="mt-2 text-xs text-gray-600">
+                      {manualFiles.length} selected · {(manualFiles.reduce((sum, file) => sum + file.size, 0) / 1024 / 1024).toFixed(2)}MB
+                    </p>
+                  ) : null}
                 </div>
 
                 {imageMessage ? <div className="mt-4 rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">{imageMessage}</div> : null}

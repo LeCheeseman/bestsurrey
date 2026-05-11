@@ -26,7 +26,7 @@ function supabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error('NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set.')
+    throw new Error('Image uploads are not configured. Add NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel, then redeploy.')
   }
   return createClient(supabaseUrl, serviceRoleKey)
 }
@@ -79,6 +79,7 @@ export async function uploadListingImage({
       townName: towns.name,
       townSlug: towns.slug,
       categorySlug: categories.slug,
+      images: listings.images,
     })
     .from(listings)
     .innerJoin(towns, eq(listings.townId, towns.id))
@@ -95,7 +96,7 @@ export async function uploadListingImage({
     storageSafe(listing.townSlug),
     storageSafe(listing.categorySlug),
     storageSafe(listing.slug),
-    `primary.${ext}`,
+    `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`,
   ].join('/')
 
   const { error: uploadError } = await supabase.storage.from(listingImageBucket).upload(storagePath, bytes, {
@@ -110,12 +111,14 @@ export async function uploadListingImage({
     url: data.publicUrl,
     alt: alt?.trim() || `${listing.name} in ${listing.townName}`,
     caption: caption?.trim() || `${listing.name}, ${listing.townName}`,
-    isPrimary: true,
+    isPrimary: !Array.isArray(listing.images) || listing.images.length === 0,
     sourceUrl: sourceUrl || '',
     sourceType,
   }
+  const existingImages = Array.isArray(listing.images) ? listing.images : []
+  const images = existingImages.length === 0 ? [image] : [...existingImages, image]
 
-  await db.update(listings).set({ images: [image], updatedAt: new Date() }).where(eq(listings.id, listing.id))
+  await db.update(listings).set({ images, updatedAt: new Date() }).where(eq(listings.id, listing.id))
 
-  return { image, storagePath }
+  return { image, images, storagePath }
 }

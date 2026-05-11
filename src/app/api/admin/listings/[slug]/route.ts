@@ -3,6 +3,7 @@ import { eq, inArray } from 'drizzle-orm'
 import { adminToolsDisabledResponse, adminToolsEnabled, normalizeSlug } from '@/lib/admin-tools'
 import { db } from '@/lib/db'
 import { categories, listingSubcategories, listings, subcategories } from '@/lib/db/schema'
+import type { ListingImage } from '@/types/db-shapes'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -24,6 +25,7 @@ type PatchBody = {
   editorialNotes?: string | null
   categorySlug?: string
   subcategorySlugs?: string[]
+  images?: ListingImage[]
 }
 
 const priceBands = ['£', '££', '£££', '££££'] as const
@@ -70,6 +72,17 @@ export async function PATCH(request: NextRequest, { params }: { params: { slug: 
   }
   if (body.verified !== undefined) update.verified = body.verified
   if (body.editorialNotes !== undefined) update.editorialNotes = body.editorialNotes || null
+  if (body.images !== undefined) {
+    if (!Array.isArray(body.images)) return NextResponse.json({ error: 'Images must be an array.' }, { status: 400 })
+    update.images = body.images.map((image, index) => ({
+      url: image.url,
+      alt: image.alt || '',
+      caption: image.caption || '',
+      isPrimary: index === 0,
+      sourceUrl: image.sourceUrl || '',
+      sourceType: image.sourceType || '',
+    }))
+  }
 
   if (body.categorySlug) {
     const [category] = await db.select({ id: categories.id }).from(categories).where(eq(categories.slug, body.categorySlug)).limit(1)
