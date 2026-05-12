@@ -82,6 +82,7 @@ type QueueOverrides = Partial<{
   town: string
   category: string
   status: string
+  verifiedFilter: string
   imageFilter: string
   issueFilter: string
   selectedSlug: string
@@ -120,6 +121,10 @@ const issueOptions = [
   'all',
 ]
 
+type AdminListingQaClientProps = {
+  mode?: 'qa' | 'category-review'
+}
+
 function primaryImage(listing: Listing | null) {
   return listing?.images?.find((image) => image.isPrimary) ?? listing?.images?.[0] ?? null
 }
@@ -145,7 +150,8 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   return data as T
 }
 
-export default function AdminListingQaClient() {
+export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClientProps) {
+  const categoryReviewMode = mode === 'category-review'
   const [taxonomy, setTaxonomy] = useState<Taxonomy>(emptyTaxonomy)
   const [listings, setListings] = useState<Listing[]>([])
   const [queueTotal, setQueueTotal] = useState(0)
@@ -155,8 +161,9 @@ export default function AdminListingQaClient() {
   const [town, setTown] = useState('')
   const [category, setCategory] = useState('')
   const [status, setStatus] = useState('published')
+  const [verifiedFilter, setVerifiedFilter] = useState(categoryReviewMode ? 'all' : 'all')
   const [imageFilter, setImageFilter] = useState('all')
-  const [issueFilter, setIssueFilter] = useState('has_issues')
+  const [issueFilter, setIssueFilter] = useState(categoryReviewMode ? 'all' : 'has_issues')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
@@ -202,12 +209,14 @@ export default function AdminListingQaClient() {
     const nextTown = overrides.town ?? town
     const nextCategory = overrides.category ?? category
     const nextStatus = overrides.status ?? status
+    const nextVerifiedFilter = overrides.verifiedFilter ?? verifiedFilter
     const nextImageFilter = overrides.imageFilter ?? imageFilter
     const nextIssueFilter = overrides.issueFilter ?? issueFilter
     if (nextQ.trim()) params.set('q', nextQ.trim())
     if (nextTown) params.set('town', nextTown)
     if (nextCategory) params.set('category', nextCategory)
     if (nextStatus !== 'all') params.set('status', nextStatus)
+    if (nextVerifiedFilter !== 'all') params.set('verified', nextVerifiedFilter)
     if (nextImageFilter !== 'all') params.set('image', nextImageFilter)
     if (nextIssueFilter !== 'all') params.set('issue', nextIssueFilter)
     params.set('limit', '120')
@@ -236,7 +245,7 @@ export default function AdminListingQaClient() {
   useEffect(() => {
     void loadListings()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [town, category, status, imageFilter, issueFilter])
+  }, [town, category, status, verifiedFilter, imageFilter, issueFilter])
 
   useEffect(() => {
     if (!selected) return
@@ -349,6 +358,7 @@ export default function AdminListingQaClient() {
       setTown('')
       setCategory('')
       setStatus('all')
+      setVerifiedFilter('all')
       setImageFilter('all')
       setIssueFilter('all')
       await loadListings({
@@ -356,6 +366,7 @@ export default function AdminListingQaClient() {
         town: '',
         category: '',
         status: 'all',
+        verifiedFilter: 'all',
         imageFilter: 'all',
         issueFilter: 'all',
         selectedSlug: targetSlug,
@@ -376,7 +387,7 @@ export default function AdminListingQaClient() {
     setListings(nextListings)
     setQueueTotal((total) => Math.max(0, total - 1))
     setSelectedSlug(nextListings[Math.min(selectedIndex, nextListings.length - 1)]?.slug ?? '')
-    setMessage(`${completedName} marked complete and removed from this QA queue.`)
+    setMessage(categoryReviewMode ? `${completedName} marked reviewed.` : `${completedName} marked complete and removed from this QA queue.`)
   }
 
   async function removeSelectedFromSite() {
@@ -397,6 +408,7 @@ export default function AdminListingQaClient() {
         setTown('')
         setCategory('')
         setStatus('all')
+        setVerifiedFilter('all')
         setImageFilter('all')
         setIssueFilter('all')
         await loadListings({
@@ -404,6 +416,7 @@ export default function AdminListingQaClient() {
           town: '',
           category: '',
           status: 'all',
+          verifiedFilter: 'all',
           imageFilter: 'all',
           issueFilter: 'all',
           selectedSlug: targetSlug,
@@ -491,6 +504,7 @@ export default function AdminListingQaClient() {
     setTown('')
     setCategory('')
     setStatus('all')
+    setVerifiedFilter('all')
     setImageFilter('all')
     setIssueFilter('all')
     await loadListings({
@@ -498,6 +512,7 @@ export default function AdminListingQaClient() {
       town: '',
       category: '',
       status: 'all',
+      verifiedFilter: 'all',
       imageFilter: 'all',
       issueFilter: 'all',
       selectedSlug: slug,
@@ -697,6 +712,7 @@ export default function AdminListingQaClient() {
     setTown('')
     setCategory('')
     setStatus('all')
+    setVerifiedFilter('all')
     setImageFilter('all')
     setIssueFilter('all')
     await loadListings({
@@ -704,6 +720,7 @@ export default function AdminListingQaClient() {
       town: '',
       category: '',
       status: 'all',
+      verifiedFilter: 'all',
       imageFilter: 'all',
       issueFilter: 'all',
       selectedSlug: targetSlug,
@@ -759,12 +776,25 @@ export default function AdminListingQaClient() {
         <div className="mx-auto flex max-w-7xl flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Best Surrey admin</p>
-            <h1 className="mt-1 text-2xl font-semibold">Listing cleanup queue</h1>
-            <p className="mt-1 max-w-2xl text-sm text-gray-600">Save edits as you go. A listing only leaves this queue when you click Submit complete, Research, or Remove from site.</p>
+            <h1 className="mt-1 text-2xl font-semibold">{categoryReviewMode ? 'Category review' : 'Listing cleanup queue'}</h1>
+            <p className="mt-1 max-w-2xl text-sm text-gray-600">
+              {categoryReviewMode
+                ? 'Work through every listing in a selected category or town. Save edits as you go, then mark reviewed when that listing is clean.'
+                : 'Save edits as you go. A listing only leaves this queue when you click Submit complete, Research, or Remove from site.'}
+            </p>
+            <nav className="mt-3 flex flex-wrap gap-2 text-sm">
+              <a href="/admin/listing-qa" className={categoryReviewMode ? 'text-emerald-800 underline' : 'font-semibold text-gray-950'}>
+                Cleanup queue
+              </a>
+              <span className="text-gray-300">/</span>
+              <a href="/admin/category-review" className={categoryReviewMode ? 'font-semibold text-gray-950' : 'text-emerald-800 underline'}>
+                Category review
+              </a>
+            </nav>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
             <span>
-              Showing {listings.length} of {queueTotal} in queue
+              Showing {listings.length} of {queueTotal} {categoryReviewMode ? 'listings' : 'in queue'}
             </span>
             {selected ? <span>Reviewing {selectedIndex + 1} of {listings.length}</span> : null}
           </div>
@@ -774,7 +804,7 @@ export default function AdminListingQaClient() {
       <div className="mx-auto grid max-w-7xl gap-5 px-5 py-5 lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="space-y-4">
           <section className="rounded border border-gray-200 bg-white p-4">
-            <h2 className="text-sm font-semibold">Queue filters</h2>
+            <h2 className="text-sm font-semibold">{categoryReviewMode ? 'Review filters' : 'Queue filters'}</h2>
             <div className="mt-4 space-y-3">
               <input
                 value={q}
@@ -810,6 +840,13 @@ export default function AdminListingQaClient() {
                   ))}
                 </select>
               </div>
+              {categoryReviewMode ? (
+                <select value={verifiedFilter} onChange={(event) => setVerifiedFilter(event.target.value)} className="w-full rounded border border-gray-300 px-2 py-2 text-sm">
+                  <option value="all">Any review state</option>
+                  <option value="false">Not reviewed</option>
+                  <option value="true">Reviewed</option>
+                </select>
+              ) : null}
               <div className="grid grid-cols-2 gap-2">
                 <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded border border-gray-300 px-2 py-2 text-sm">
                   <option value="all">Any status</option>
@@ -826,7 +863,7 @@ export default function AdminListingQaClient() {
                 </select>
               </div>
               <button onClick={() => void loadListings()} className={buttonClass(true)} disabled={loading}>
-                {loading ? 'Loading...' : 'Refresh queue'}
+                {loading ? 'Loading...' : categoryReviewMode ? 'Refresh listings' : 'Refresh queue'}
               </button>
             </div>
           </section>
@@ -950,7 +987,7 @@ export default function AdminListingQaClient() {
                       )}
                       <div className="flex flex-wrap gap-2">
                         <button onClick={() => void completeListing()} className={buttonClass(true)} disabled={saving}>
-                          Submit complete
+                          {categoryReviewMode ? 'Mark reviewed' : 'Submit complete'}
                         </button>
                         <button onClick={() => void saveAndReload({ status: 'review' })} className={buttonClass()} disabled={saving}>
                           Research

@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
   const town = searchParams.get('town')?.trim()
   const category = searchParams.get('category')?.trim()
   const status = searchParams.get('status')?.trim()
+  const verified = searchParams.get('verified')?.trim()
   const image = searchParams.get('image')?.trim()
   const issue = searchParams.get('issue')?.trim()
   const requestedLimit = Number(searchParams.get('limit') ?? 500)
@@ -41,6 +42,8 @@ export async function GET(request: NextRequest) {
   if (status && statusValues.includes(status as (typeof statusValues)[number])) {
     conditions.push(eq(listings.status, status as (typeof statusValues)[number]))
   }
+  if (verified === 'true') conditions.push(eq(listings.verified, true))
+  if (verified === 'false') conditions.push(eq(listings.verified, false))
   if (image === 'missing') {
     conditions.push(sql`(${listings.images} is null or jsonb_typeof(${listings.images}) <> 'array' or jsonb_array_length(${listings.images}) = 0)`)
   }
