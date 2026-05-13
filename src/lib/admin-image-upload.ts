@@ -136,5 +136,15 @@ export async function uploadListingImage({
     .set({ images: sql`${JSON.stringify(images)}::jsonb`, updatedAt: new Date() })
     .where(eq(listings.id, listing.id))
 
+  const [savedListing] = await db
+    .select({ images: listings.images })
+    .from(listings)
+    .where(eq(listings.id, listing.id))
+    .limit(1)
+  const savedImages = normalizeImages(savedListing?.images)
+  if (!savedImages.some((savedImage) => savedImage.url === image.url)) {
+    throw new Error('Image uploaded to storage, but the listing gallery did not save. Try again before moving on.')
+  }
+
   return { image, images, storagePath }
 }
