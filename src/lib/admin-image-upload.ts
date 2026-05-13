@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { categories, listings, towns } from '@/lib/db/schema'
 import type { ListingImage } from '@/types/db-shapes'
@@ -20,6 +20,19 @@ export function supportedImageExt(contentType: string) {
 
 function storageSafe(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+}
+
+function normalizeImages(value: unknown): ListingImage[] {
+  if (Array.isArray(value)) return value as ListingImage[]
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
+  return []
 }
 
 function supabaseClient() {
@@ -115,10 +128,13 @@ export async function uploadListingImage({
     sourceUrl: sourceUrl || '',
     sourceType,
   }
-  const existingImages = Array.isArray(listing.images) ? listing.images : []
+  const existingImages = normalizeImages(listing.images)
   const images = existingImages.length === 0 ? [image] : [...existingImages, image]
 
-  await db.update(listings).set({ images, updatedAt: new Date() }).where(eq(listings.id, listing.id))
+  await db
+    .update(listings)
+    .set({ images: sql`${JSON.stringify(images)}::jsonb`, updatedAt: new Date() })
+    .where(eq(listings.id, listing.id))
 
   return { image, images, storagePath }
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { asc, desc, eq, inArray } from 'drizzle-orm'
+import { asc, desc, eq, inArray, sql } from 'drizzle-orm'
 import { adminToolsDisabledResponse, adminToolsEnabled, normalizeSlug } from '@/lib/admin-tools'
 import { db } from '@/lib/db'
 import { categories, listingCategories, listingSubcategories, listings, subcategories, towns } from '@/lib/db/schema'
@@ -12,8 +12,21 @@ type MergeBody = {
   sourceSlug?: string
 }
 
-function mergeArrays<T>(target: T[] | null | undefined, source: T[] | null | undefined) {
-  return [...(Array.isArray(target) ? target : []), ...(Array.isArray(source) ? source : [])]
+function normalizeJsonArray<T>(value: T[] | string | null | undefined) {
+  if (Array.isArray(value)) return value
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value)
+      return Array.isArray(parsed) ? parsed as T[] : []
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
+function mergeArrays<T>(target: T[] | string | null | undefined, source: T[] | string | null | undefined) {
+  return [...normalizeJsonArray<T>(target), ...normalizeJsonArray<T>(source)]
 }
 
 function betterText(target: string | null, source: string | null) {
@@ -107,8 +120,8 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
       longitude: target.longitude || source.longitude || null,
       shortSummary: betterText(target.shortSummary, source.shortSummary),
       longDescription: betterText(target.longDescription, source.longDescription),
-      images: mergedImages.length > 0 ? mergedImages : null,
-      faq: mergedFaq.length > 0 ? mergedFaq : null,
+      images: mergedImages.length > 0 ? sql`${JSON.stringify(mergedImages)}::jsonb` : null,
+      faq: mergedFaq.length > 0 ? sql`${JSON.stringify(mergedFaq)}::jsonb` : null,
       familyFriendly: target.familyFriendly ?? source.familyFriendly,
       dogFriendly: target.dogFriendly ?? source.dogFriendly,
       veganFriendly: target.veganFriendly ?? source.veganFriendly,

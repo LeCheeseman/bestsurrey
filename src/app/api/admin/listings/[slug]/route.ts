@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { eq, inArray } from 'drizzle-orm'
+import { eq, inArray, sql } from 'drizzle-orm'
 import { adminToolsDisabledResponse, adminToolsEnabled, normalizeSlug } from '@/lib/admin-tools'
 import { db } from '@/lib/db'
 import { categories, listingCategories, listingSubcategories, listings, subcategories } from '@/lib/db/schema'
@@ -75,7 +75,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { slug: 
   if (body.editorialNotes !== undefined) update.editorialNotes = body.editorialNotes || null
   if (body.images !== undefined) {
     if (!Array.isArray(body.images)) return NextResponse.json({ error: 'Images must be an array.' }, { status: 400 })
-    update.images = body.images.map((image, index) => ({
+    const images = body.images.map((image, index) => ({
       url: image.url,
       alt: image.alt || '',
       caption: image.caption || '',
@@ -83,6 +83,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { slug: 
       sourceUrl: image.sourceUrl || '',
       sourceType: image.sourceType || '',
     }))
+    update.images = sql`${JSON.stringify(images)}::jsonb` as unknown as typeof update.images
   }
 
   const requestedCategorySlugs = Array.isArray(body.categorySlugs)
