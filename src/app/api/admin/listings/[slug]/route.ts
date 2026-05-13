@@ -31,6 +31,10 @@ type PatchBody = {
 
 const priceBands = ['£', '££', '£££', '££££'] as const
 
+function jsonbValue(value: unknown) {
+  return sql.raw(`'${JSON.stringify(value).replace(/'/g, "''")}'::jsonb`)
+}
+
 function optionalText(value: string | null | undefined) {
   if (value === undefined) return undefined
   const trimmed = value?.trim() ?? ''
@@ -83,7 +87,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { slug: 
       sourceUrl: image.sourceUrl || '',
       sourceType: image.sourceType || '',
     }))
-    update.images = sql`${JSON.stringify(images)}::jsonb` as unknown as typeof update.images
+    update.images = jsonbValue(images) as unknown as typeof update.images
   }
 
   const requestedCategorySlugs = Array.isArray(body.categorySlugs)

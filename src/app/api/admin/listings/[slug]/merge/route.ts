@@ -35,6 +35,10 @@ function betterText(target: string | null, source: string | null) {
   return source.length > target.length ? source : target
 }
 
+function jsonbValue(value: unknown) {
+  return sql.raw(`'${JSON.stringify(value).replace(/'/g, "''")}'::jsonb`)
+}
+
 export async function POST(request: NextRequest, { params }: { params: { slug: string } }) {
   if (!adminToolsEnabled()) return adminToolsDisabledResponse()
 
@@ -120,8 +124,8 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
       longitude: target.longitude || source.longitude || null,
       shortSummary: betterText(target.shortSummary, source.shortSummary),
       longDescription: betterText(target.longDescription, source.longDescription),
-      images: mergedImages.length > 0 ? sql`${JSON.stringify(mergedImages)}::jsonb` : null,
-      faq: mergedFaq.length > 0 ? sql`${JSON.stringify(mergedFaq)}::jsonb` : null,
+      images: mergedImages.length > 0 ? jsonbValue(mergedImages) : null,
+      faq: mergedFaq.length > 0 ? jsonbValue(mergedFaq) : null,
       familyFriendly: target.familyFriendly ?? source.familyFriendly,
       dogFriendly: target.dogFriendly ?? source.dogFriendly,
       veganFriendly: target.veganFriendly ?? source.veganFriendly,

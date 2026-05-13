@@ -35,6 +35,10 @@ function normalizeImages(value: unknown): ListingImage[] {
   return []
 }
 
+function jsonbValue(value: unknown) {
+  return sql.raw(`'${JSON.stringify(value).replace(/'/g, "''")}'::jsonb`)
+}
+
 function supabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -133,7 +137,7 @@ export async function uploadListingImage({
 
   await db
     .update(listings)
-    .set({ images: sql`${JSON.stringify(images)}::jsonb`, updatedAt: new Date() })
+    .set({ images: jsonbValue(images), updatedAt: new Date() })
     .where(eq(listings.id, listing.id))
 
   const [savedListing] = await db
