@@ -166,6 +166,7 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
       websiteUrl: listings.websiteUrl,
       phoneNumber: listings.phoneNumber,
       addressLine1: listings.addressLine1,
+      addressLine2: listings.addressLine2,
       postcode: listings.postcode,
       latitude: listings.latitude,
       longitude: listings.longitude,

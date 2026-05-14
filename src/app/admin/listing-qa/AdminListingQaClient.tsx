@@ -33,6 +33,7 @@ type Listing = {
   websiteUrl: string | null
   phoneNumber: string | null
   addressLine1: string | null
+  addressLine2: string | null
   postcode: string | null
   latitude: string | null
   longitude: string | null
@@ -79,6 +80,7 @@ type DetailsForm = {
   websiteUrl: string
   phoneNumber: string
   addressLine1: string
+  addressLine2: string
   postcode: string
   shortSummary: string
   longDescription: string
@@ -185,6 +187,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
     websiteUrl: '',
     phoneNumber: '',
     addressLine1: '',
+    addressLine2: '',
     postcode: '',
     shortSummary: '',
     longDescription: '',
@@ -270,6 +273,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
       websiteUrl: selected.websiteUrl ?? '',
       phoneNumber: selected.phoneNumber ?? '',
       addressLine1: selected.addressLine1 ?? '',
+      addressLine2: selected.addressLine2 ?? '',
       postcode: selected.postcode ?? '',
       shortSummary: selected.shortSummary ?? '',
       longDescription: selected.longDescription ?? '',
@@ -335,6 +339,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                 websiteUrl: patch.websiteUrl === undefined ? item.websiteUrl : patch.websiteUrl,
                 phoneNumber: patch.phoneNumber === undefined ? item.phoneNumber : patch.phoneNumber,
                 addressLine1: patch.addressLine1 === undefined ? item.addressLine1 : patch.addressLine1,
+                addressLine2: patch.addressLine2 === undefined ? item.addressLine2 : patch.addressLine2,
                 postcode: patch.postcode === undefined ? item.postcode : patch.postcode,
                 shortSummary: patch.shortSummary === undefined ? item.shortSummary : patch.shortSummary,
                 longDescription: patch.longDescription === undefined ? item.longDescription : patch.longDescription,
@@ -519,6 +524,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
       websiteUrl: details.websiteUrl || null,
       phoneNumber: details.phoneNumber || null,
       addressLine1: details.addressLine1 || null,
+      addressLine2: details.addressLine2 || null,
       postcode: details.postcode || null,
       shortSummary: details.shortSummary || null,
       longDescription: details.longDescription || null,
@@ -1130,8 +1136,12 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                     <input value={details.phoneNumber} onChange={(event) => detailField('phoneNumber', event.target.value)} className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950" />
                   </label>
                   <label className="block text-xs font-medium text-gray-700">
-                    Address
+                    Address line 1
                     <input value={details.addressLine1} onChange={(event) => detailField('addressLine1', event.target.value)} className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950" />
+                  </label>
+                  <label className="block text-xs font-medium text-gray-700">
+                    Address line 2
+                    <input value={details.addressLine2} onChange={(event) => detailField('addressLine2', event.target.value)} className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950" />
                   </label>
                   <label className="block text-xs font-medium text-gray-700">
                     Postcode

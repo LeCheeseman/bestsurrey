@@ -15,6 +15,7 @@ type PatchBody = {
   websiteUrl?: string | null
   phoneNumber?: string | null
   addressLine1?: string | null
+  addressLine2?: string | null
   postcode?: string | null
   shortSummary?: string | null
   longDescription?: string | null
@@ -66,6 +67,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { slug: 
   if (body.websiteUrl !== undefined) update.websiteUrl = optionalText(body.websiteUrl)
   if (body.phoneNumber !== undefined) update.phoneNumber = optionalText(body.phoneNumber)
   if (body.addressLine1 !== undefined) update.addressLine1 = optionalText(body.addressLine1)
+  if (body.addressLine2 !== undefined) update.addressLine2 = optionalText(body.addressLine2)
   if (body.postcode !== undefined) update.postcode = optionalText(body.postcode)
   if (body.shortSummary !== undefined) update.shortSummary = optionalText(body.shortSummary)
   if (body.longDescription !== undefined) update.longDescription = optionalText(body.longDescription)

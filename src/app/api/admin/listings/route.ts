@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
       websiteUrl: listings.websiteUrl,
       phoneNumber: listings.phoneNumber,
       addressLine1: listings.addressLine1,
+      addressLine2: listings.addressLine2,
       postcode: listings.postcode,
       latitude: listings.latitude,
       longitude: listings.longitude,

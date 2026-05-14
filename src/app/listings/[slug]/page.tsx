@@ -78,6 +78,8 @@ export default async function ListingPage({ params }: Props) {
   const listingSchema = buildListingSchema(listing)
   const faqSchema     = faq.length > 0 ? buildFaqSchema(faq) : null
   const schema        = faqSchema ? [listingSchema, faqSchema] : listingSchema
+  const addressLine2 = listing.addressLine2?.trim()
+  const showAddressLine2 = addressLine2 && addressLine2.toLowerCase() !== listing.town.name.toLowerCase()
 
   return (
     <>
@@ -242,7 +244,7 @@ export default async function ListingPage({ params }: Props) {
                   {listing.addressLine1 && (
                     <address className="text-sm text-gray-600 font-body not-italic mb-4">
                       {listing.addressLine1}<br />
-                      {listing.addressLine2 && <>{listing.addressLine2}<br /></>}
+                      {showAddressLine2 && <>{addressLine2}<br /></>}
                       {listing.town.name}<br />
                       {listing.postcode}
                     </address>
