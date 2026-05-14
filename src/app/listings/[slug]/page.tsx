@@ -80,6 +80,17 @@ export default async function ListingPage({ params }: Props) {
   const schema        = faqSchema ? [listingSchema, faqSchema] : listingSchema
   const addressLine2 = listing.addressLine2?.trim()
   const showAddressLine2 = addressLine2 && addressLine2.toLowerCase() !== listing.town.name.toLowerCase()
+  const mapQuery = listing.latitude && listing.longitude
+    ? `${listing.latitude},${listing.longitude}`
+    : [
+        listing.addressLine1,
+        showAddressLine2 ? addressLine2 : null,
+        listing.town.name,
+        listing.postcode,
+      ].filter(Boolean).join(', ')
+  const mapSrc = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && listing.latitude && listing.longitude
+    ? `https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(mapQuery)}&zoom=15`
+    : `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`
 
   return (
     <>
@@ -241,26 +252,24 @@ export default async function ListingPage({ params }: Props) {
               {/* Address + map */}
               {(listing.addressLine1 || listing.latitude) && (
                 <SectionCard title={`Location${listing.town.name ? ` ${listing.town.name}` : ''}`} compact>
+                  <div className="aspect-[4/3] overflow-hidden rounded-lg border border-gray-100 bg-gray-100">
+                    <iframe
+                      title={`Map showing ${listing.name}`}
+                      width="100%"
+                      height="100%"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={mapSrc}
+                    />
+                  </div>
+
                   {listing.addressLine1 && (
-                    <address className="text-sm text-gray-600 font-body not-italic mb-4">
+                    <address className="mt-4 text-sm text-gray-600 font-body not-italic">
                       {listing.addressLine1}<br />
                       {showAddressLine2 && <>{addressLine2}<br /></>}
                       {listing.town.name}<br />
                       {listing.postcode}
                     </address>
-                  )}
-
-                  {/* Google Maps embed */}
-                  {listing.latitude && listing.longitude && process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && (
-                    <div className="aspect-square rounded overflow-hidden">
-                      <iframe
-                        title={`Map showing ${listing.name}`}
-                        width="100%"
-                        height="100%"
-                        loading="lazy"
-                        src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${listing.latitude},${listing.longitude}&zoom=15`}
-                      />
-                    </div>
                   )}
                 </SectionCard>
               )}
