@@ -169,79 +169,59 @@ export default async function ListingPage({ params }: Props) {
         </div>
 
         <div className="max-w-6xl mx-auto px-4 py-10">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 
             {/* ── Main content ───────────────────────────────────────── */}
-            <div className="lg:col-span-2 space-y-8">
-
-              {/* Why we like it */}
-              {listing.whyWeLikeIt && (
-                <section>
-                  <h2 className="font-display text-xl font-semibold text-forest-green mb-3">
-                    Why we like it
-                  </h2>
-                  <p className="text-base text-gray-700 font-body leading-relaxed italic border-l-4 border-warm-gold pl-4">
-                    &ldquo;{listing.whyWeLikeIt}&rdquo;
-                  </p>
-                </section>
-              )}
-
-              {/* Highlights */}
-              {listing.highlights && listing.highlights.length > 0 && (
-                <section>
-                  <h2 className="font-display text-xl font-semibold text-forest-green mb-3">
-                    Highlights
-                  </h2>
-                  <ul className="space-y-2">
-                    {listing.highlights.map((h, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-gray-700 font-body">
-                        <span className="text-warm-gold mt-0.5" aria-hidden="true">✓</span>
-                        {h}
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
+            <div className="lg:col-span-2 space-y-6">
 
               {/* Long description */}
-              {listing.longDescription && (
-                <section>
-                  <h2 className="font-display text-xl font-semibold text-forest-green mb-3">
-                    About
-                  </h2>
+              {(listing.longDescription || listing.highlights?.length || listing.whyWeLikeIt) && (
+                <SectionCard title={`About ${listing.name}`}>
                   <div className="text-base text-gray-700 font-body leading-relaxed whitespace-pre-line">
-                    {listing.longDescription}
+                    {listing.longDescription ?? listing.shortSummary}
                   </div>
-                </section>
+                  {listing.whyWeLikeIt && (
+                    <blockquote className="mt-6 border-l-4 border-warm-gold pl-4 text-base italic leading-relaxed text-gray-700">
+                      &ldquo;{listing.whyWeLikeIt}&rdquo;
+                    </blockquote>
+                  )}
+                  {listing.highlights && listing.highlights.length > 0 && (
+                    <div className="mt-7">
+                      <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Highlights</h3>
+                      <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+                        {listing.highlights.map((h, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm text-gray-700 font-body">
+                            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-mid-green" aria-hidden="true" />
+                            <span>{h}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </SectionCard>
               )}
 
               {/* Best for */}
               {listing.bestFor && listing.bestFor.length > 0 && (
-                <section>
-                  <h2 className="font-display text-xl font-semibold text-forest-green mb-3">
-                    Best for
-                  </h2>
+                <SectionCard title="Best for">
                   <div className="flex flex-wrap gap-2">
                     {listing.bestFor.map((tag) => (
                       <span
                         key={tag}
-                        className="text-sm bg-mist-green text-forest-green px-3 py-1 rounded-full font-body"
+                        className="text-sm bg-mist-green text-forest-green px-3 py-1.5 rounded-full font-body"
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
-                </section>
+                </SectionCard>
               )}
 
               {/* FAQ */}
               {faq.length > 0 && (
-                <section>
-                  <h2 className="font-display text-xl font-semibold text-forest-green mb-4">
-                    Frequently asked questions
-                  </h2>
+                <SectionCard title="Frequently asked questions">
                   <FaqSection items={faq} />
-                </section>
+                </SectionCard>
               )}
 
             </div>
@@ -251,20 +231,14 @@ export default async function ListingPage({ params }: Props) {
 
               {/* Opening hours */}
               {openingHours && (
-                <div className="bg-white rounded-lg p-5 border border-gray-100">
-                  <h2 className="font-display text-base font-semibold text-forest-green mb-4">
-                    Opening hours
-                  </h2>
+                <SectionCard title="Opening hours" compact>
                   <OpeningHoursTable hours={openingHours} />
-                </div>
+                </SectionCard>
               )}
 
               {/* Address + map */}
               {(listing.addressLine1 || listing.latitude) && (
-                <div className="bg-white rounded-lg p-5 border border-gray-100">
-                  <h2 className="font-display text-base font-semibold text-forest-green mb-3">
-                    Location
-                  </h2>
+                <SectionCard title={`Location${listing.town.name ? ` ${listing.town.name}` : ''}`} compact>
                   {listing.addressLine1 && (
                     <address className="text-sm text-gray-600 font-body not-italic mb-4">
                       {listing.addressLine1}<br />
@@ -286,15 +260,12 @@ export default async function ListingPage({ params }: Props) {
                       />
                     </div>
                   )}
-                </div>
+                </SectionCard>
               )}
 
               {/* Contact */}
               {(listing.phoneNumber || listing.websiteUrl) && (
-                <div className="bg-white rounded-lg p-5 border border-gray-100">
-                  <h2 className="font-display text-base font-semibold text-forest-green mb-3">
-                    Contact
-                  </h2>
+                <SectionCard title="Contact" compact>
                   <div className="space-y-2 text-sm font-body">
                     {listing.phoneNumber && (
                       <p>
@@ -316,7 +287,7 @@ export default async function ListingPage({ params }: Props) {
                       </p>
                     )}
                   </div>
-                </div>
+                </SectionCard>
               )}
 
             </aside>
@@ -345,6 +316,27 @@ function Badge({ children }: { children: React.ReactNode }) {
     <span className="text-xs bg-mist-green text-forest-green px-3 py-1 rounded-full font-body">
       {children}
     </span>
+  )
+}
+
+function SectionCard({
+  title,
+  children,
+  compact = false,
+}: {
+  title: string
+  children: React.ReactNode
+  compact?: boolean
+}) {
+  return (
+    <section className={`rounded-lg border border-gray-200 bg-white ${compact ? 'p-5' : 'p-6 md:p-7'}`}>
+      <h2 className={`${compact ? 'text-base' : 'text-2xl'} font-display font-semibold text-gray-950`}>
+        {title}
+      </h2>
+      <div className={compact ? 'mt-4' : 'mt-5'}>
+        {children}
+      </div>
+    </section>
   )
 }
 

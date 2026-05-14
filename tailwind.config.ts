@@ -10,13 +10,13 @@ const config: Config = {
     extend: {
       colors: {
         // Brand palette — see BestSurrey_BrandBook_v3
-        'forest-green':  '#1a4a35',
-        'mid-green':     '#2a6a4a',
-        'mist-green':    '#e8f0eb',
-        'warm-gold':     '#b8882a',
-        'light-gold':    '#c49a30',
-        'cream':         '#f5f2ec',
-        'parchment':     '#ede8de',
+        'forest-green':  '#0b5d4a',
+        'mid-green':     '#0e7c66',
+        'mist-green':    '#ecf8f4',
+        'warm-gold':     '#d49a2a',
+        'light-gold':    '#e0ad3d',
+        'cream':         '#ffffff',
+        'parchment':     '#f4f7f6',
       },
       fontFamily: {
         // Cinzel for display/headings, Poppins for body
