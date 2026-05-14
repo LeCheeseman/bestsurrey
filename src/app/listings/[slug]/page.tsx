@@ -98,21 +98,8 @@ export default async function ListingPage({ params }: Props) {
           <div className="max-w-6xl mx-auto px-4 py-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 
-              {/* Image */}
-              <div className="aspect-[4/3] rounded-lg overflow-hidden bg-mist-green relative">
-                {primaryImage ? (
-                  <ResponsiveListingImage
-                    src={primaryImage.url}
-                    alt={primaryImage.alt}
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-gray-300 text-4xl">
-                    📍
-                  </div>
-                )}
-              </div>
+              {/* Gallery */}
+              <ListingPhotoGallery images={images} listingName={listing.name} />
 
               {/* Info */}
               <div>
@@ -363,5 +350,63 @@ function Badge({ children }: { children: React.ReactNode }) {
     <span className="text-xs bg-mist-green text-forest-green px-3 py-1 rounded-full font-body">
       {children}
     </span>
+  )
+}
+
+function ListingPhotoGallery({
+  images,
+  listingName,
+}: {
+  images: ReturnType<typeof normalizeListingImages>
+  listingName: string
+}) {
+  const galleryImages = images.length > 0
+    ? [...images].sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary)).slice(0, 5)
+    : []
+  const [primary, ...secondary] = galleryImages
+
+  if (!primary) {
+    return (
+      <div className="aspect-[4/3] rounded-lg overflow-hidden bg-mist-green relative">
+        <div className="absolute inset-0 flex items-center justify-center text-gray-300 text-4xl">
+          📍
+        </div>
+      </div>
+    )
+  }
+
+  if (galleryImages.length === 1) {
+    return (
+      <div className="aspect-[4/3] rounded-lg overflow-hidden bg-mist-green relative">
+        <ResponsiveListingImage
+          src={primary.url}
+          alt={primary.alt}
+          priority
+          sizes="(max-width: 1024px) 100vw, 50vw"
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-2 overflow-hidden rounded-lg bg-mist-green md:grid-cols-4 md:grid-rows-2">
+      <div className="relative col-span-2 aspect-[4/3] md:col-span-3 md:row-span-2">
+        <ResponsiveListingImage
+          src={primary.url}
+          alt={primary.alt}
+          priority
+          sizes="(max-width: 768px) 100vw, 38vw"
+        />
+      </div>
+      {secondary.slice(0, 2).map((image, index) => (
+        <div key={image.url} className="relative aspect-[4/3]">
+          <ResponsiveListingImage
+            src={image.url}
+            alt={image.alt || `${listingName} photo ${index + 2}`}
+            sizes="14vw"
+          />
+        </div>
+      ))}
+    </div>
   )
 }

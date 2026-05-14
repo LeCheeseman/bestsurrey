@@ -3,7 +3,7 @@ import { eq, inArray, sql } from 'drizzle-orm'
 import { adminToolsDisabledResponse, adminToolsEnabled, normalizeSlug } from '@/lib/admin-tools'
 import { db } from '@/lib/db'
 import { categories, listingCategories, listingSubcategories, listings, subcategories } from '@/lib/db/schema'
-import type { ListingImage } from '@/types/db-shapes'
+import type { FaqItem, ListingImage } from '@/types/db-shapes'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -18,6 +18,10 @@ type PatchBody = {
   postcode?: string | null
   shortSummary?: string | null
   longDescription?: string | null
+  highlights?: string[] | null
+  whyWeLikeIt?: string | null
+  bestFor?: string[] | null
+  faq?: FaqItem[] | null
   familyFriendly?: boolean | null
   priceBand?: string | null
   status?: string
@@ -65,6 +69,28 @@ export async function PATCH(request: NextRequest, { params }: { params: { slug: 
   if (body.postcode !== undefined) update.postcode = optionalText(body.postcode)
   if (body.shortSummary !== undefined) update.shortSummary = optionalText(body.shortSummary)
   if (body.longDescription !== undefined) update.longDescription = optionalText(body.longDescription)
+  if (body.whyWeLikeIt !== undefined) update.whyWeLikeIt = optionalText(body.whyWeLikeIt)
+  if (body.highlights !== undefined) {
+    update.highlights = Array.isArray(body.highlights)
+      ? body.highlights.map((item) => item.trim()).filter(Boolean)
+      : null
+  }
+  if (body.bestFor !== undefined) {
+    update.bestFor = Array.isArray(body.bestFor)
+      ? body.bestFor.map((item) => item.trim()).filter(Boolean)
+      : null
+  }
+  if (body.faq !== undefined) {
+    const faq = Array.isArray(body.faq)
+      ? body.faq
+          .map((item) => ({
+            question: item.question?.trim() ?? '',
+            answer: item.answer?.trim() ?? '',
+          }))
+          .filter((item) => item.question && item.answer)
+      : []
+    update.faq = faq.length > 0 ? jsonbValue(faq) as unknown as typeof update.faq : null
+  }
   if (body.familyFriendly !== undefined) update.familyFriendly = body.familyFriendly
   if (body.priceBand !== undefined) {
     if (body.priceBand === null || body.priceBand === '') {
