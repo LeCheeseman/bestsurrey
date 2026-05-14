@@ -96,13 +96,9 @@ export default async function ListingPage({ params }: Props) {
         {/* ── Hero ─────────────────────────────────────────────────────── */}
         <div className="bg-white">
           <div className="max-w-6xl mx-auto px-4 py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <ListingPhotoGallery images={images} listingName={listing.name} />
 
-              {/* Gallery */}
-              <ListingPhotoGallery images={images} listingName={listing.name} />
-
-              {/* Info */}
-              <div>
+            <div className="mt-8 max-w-3xl">
                 {/* Sponsored label */}
                 {listing.sponsored && (
                   <span className="inline-block text-xs bg-parchment text-gray-600 px-2 py-0.5 rounded mb-3 font-body">
@@ -168,7 +164,6 @@ export default async function ListingPage({ params }: Props) {
                     Visit website ↗
                   </a>
                 )}
-              </div>
             </div>
           </div>
         </div>
@@ -367,7 +362,7 @@ function ListingPhotoGallery({
 
   if (!primary) {
     return (
-      <div className="aspect-[4/3] rounded-lg overflow-hidden bg-mist-green relative">
+      <div className="relative aspect-[16/7] overflow-hidden rounded-lg bg-mist-green">
         <div className="absolute inset-0 flex items-center justify-center text-gray-300 text-4xl">
           📍
         </div>
@@ -377,34 +372,39 @@ function ListingPhotoGallery({
 
   if (galleryImages.length === 1) {
     return (
-      <div className="aspect-[4/3] rounded-lg overflow-hidden bg-mist-green relative">
+      <div className="relative aspect-[16/7] overflow-hidden rounded-lg bg-mist-green">
         <ResponsiveListingImage
           src={primary.url}
           alt={primary.alt}
           priority
-          sizes="(max-width: 1024px) 100vw, 50vw"
+          sizes="(max-width: 1180px) 100vw, 72rem"
         />
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-2 gap-2 overflow-hidden rounded-lg bg-mist-green md:grid-cols-4 md:grid-rows-2">
-      <div className="relative col-span-2 aspect-[4/3] md:col-span-3 md:row-span-2">
+    <div className="grid overflow-hidden rounded-lg bg-white md:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)_minmax(0,0.85fr)] md:gap-1">
+      <div className="relative aspect-[4/3] md:aspect-[16/10]">
         <ResponsiveListingImage
           src={primary.url}
           alt={primary.alt}
           priority
-          sizes="(max-width: 768px) 100vw, 38vw"
+          sizes="(max-width: 768px) 100vw, 42vw"
         />
       </div>
       {secondary.slice(0, 2).map((image, index) => (
-        <div key={image.url} className="relative aspect-[4/3]">
+        <div key={image.url} className={index === 1 ? 'relative hidden aspect-[4/3] md:block md:aspect-[16/10]' : 'relative aspect-[4/3] md:aspect-[16/10]'}>
           <ResponsiveListingImage
             src={image.url}
             alt={image.alt || `${listingName} photo ${index + 2}`}
-            sizes="14vw"
+            sizes={index === 0 ? '(max-width: 768px) 100vw, 30vw' : '24vw'}
           />
+          {index === 1 && images.length > 3 ? (
+            <div className="absolute bottom-3 right-3 rounded-full bg-black/70 px-3 py-1 text-xs font-medium text-white">
+              {images.length} photos
+            </div>
+          ) : null}
         </div>
       ))}
     </div>
