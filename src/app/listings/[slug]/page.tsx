@@ -384,8 +384,8 @@ function ListingPhotoGallery({
   }
 
   return (
-    <div className="grid overflow-hidden rounded-lg bg-white md:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)_minmax(0,0.85fr)] md:gap-1">
-      <div className="relative aspect-[4/3] md:aspect-[16/10]">
+    <div className="grid overflow-hidden rounded-lg bg-white md:h-[360px] md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] md:gap-1 lg:h-[420px]">
+      <div className="relative aspect-[4/3] md:aspect-auto md:h-full">
         <ResponsiveListingImage
           src={primary.url}
           alt={primary.alt}
@@ -393,20 +393,22 @@ function ListingPhotoGallery({
           sizes="(max-width: 768px) 100vw, 42vw"
         />
       </div>
-      {secondary.slice(0, 2).map((image, index) => (
-        <div key={image.url} className={index === 1 ? 'relative hidden aspect-[4/3] md:block md:aspect-[16/10]' : 'relative aspect-[4/3] md:aspect-[16/10]'}>
-          <ResponsiveListingImage
-            src={image.url}
-            alt={image.alt || `${listingName} photo ${index + 2}`}
-            sizes={index === 0 ? '(max-width: 768px) 100vw, 30vw' : '24vw'}
-          />
-          {index === 1 && images.length > 3 ? (
-            <div className="absolute bottom-3 right-3 rounded-full bg-black/70 px-3 py-1 text-xs font-medium text-white">
-              {images.length} photos
-            </div>
-          ) : null}
-        </div>
-      ))}
+      <div className={secondary.length > 1 ? 'grid gap-1 md:h-full md:grid-rows-2' : 'md:h-full'}>
+        {secondary.slice(0, 2).map((image, index) => (
+          <div key={image.url} className={index === 1 ? 'relative hidden aspect-[4/3] md:block md:aspect-auto' : 'relative aspect-[4/3] md:aspect-auto md:h-full'}>
+            <ResponsiveListingImage
+              src={image.url}
+              alt={image.alt || `${listingName} photo ${index + 2}`}
+              sizes={index === 0 ? '(max-width: 768px) 100vw, 30vw' : '30vw'}
+            />
+            {index === Math.min(1, secondary.length - 1) && images.length > 3 ? (
+              <div className="absolute bottom-3 right-3 rounded-full bg-black/70 px-3 py-1 text-xs font-medium text-white">
+                {images.length} photos
+              </div>
+            ) : null}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
