@@ -80,17 +80,19 @@ export default async function ListingPage({ params }: Props) {
   const schema        = faqSchema ? [listingSchema, faqSchema] : listingSchema
   const addressLine2 = listing.addressLine2?.trim()
   const showAddressLine2 = addressLine2 && addressLine2.toLowerCase() !== listing.town.name.toLowerCase()
+  const addressParts = [
+    listing.addressLine1,
+    showAddressLine2 ? addressLine2 : null,
+    listing.town.name,
+    listing.postcode,
+  ].filter(Boolean)
   const mapQuery = listing.latitude && listing.longitude
     ? `${listing.latitude},${listing.longitude}`
-    : [
-        listing.addressLine1,
-        showAddressLine2 ? addressLine2 : null,
-        listing.town.name,
-        listing.postcode,
-      ].filter(Boolean).join(', ')
+    : addressParts.join(', ')
   const mapSrc = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && listing.latitude && listing.longitude
     ? `https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(mapQuery)}&zoom=15`
-    : `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`
+    : `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=15&output=embed`
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`
 
   return (
     <>
@@ -251,8 +253,8 @@ export default async function ListingPage({ params }: Props) {
 
               {/* Address + map */}
               {(listing.addressLine1 || listing.latitude) && (
-                <SectionCard title={`Location${listing.town.name ? ` ${listing.town.name}` : ''}`} compact>
-                  <div className="aspect-[4/3] overflow-hidden rounded-lg border border-gray-100 bg-gray-100">
+                <SectionCard title="Location" titleAccent={listing.town.name} compact>
+                  <div className="aspect-[16/10] overflow-hidden rounded-xl border border-gray-100 bg-gray-100 shadow-sm">
                     <iframe
                       title={`Map showing ${listing.name}`}
                       width="100%"
@@ -264,13 +266,31 @@ export default async function ListingPage({ params }: Props) {
                   </div>
 
                   {listing.addressLine1 && (
-                    <address className="mt-4 text-sm text-gray-600 font-body not-italic">
-                      {listing.addressLine1}<br />
-                      {showAddressLine2 && <>{addressLine2}<br /></>}
-                      {listing.town.name}<br />
-                      {listing.postcode}
+                    <address className="mt-4 text-sm font-semibold leading-relaxed text-gray-900 font-body not-italic">
+                      {addressParts.join(' · ')}
                     </address>
                   )}
+
+                  <div className="mt-4 flex flex-wrap gap-3 text-sm font-body">
+                    <a
+                      href={mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-forest-green hover:underline"
+                    >
+                      Open in Google Maps ↗
+                    </a>
+                    {listing.websiteUrl && (
+                      <a
+                        href={`/api/go/${listing.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-forest-green hover:underline"
+                      >
+                        {listing.websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                      </a>
+                    )}
+                  </div>
                 </SectionCard>
               )}
 
@@ -334,15 +354,18 @@ function SectionCard({
   title,
   children,
   compact = false,
+  titleAccent,
 }: {
   title: string
   children: React.ReactNode
   compact?: boolean
+  titleAccent?: string
 }) {
   return (
     <section className={`rounded-lg border border-gray-200 bg-white ${compact ? 'p-5' : 'p-6 md:p-7'}`}>
       <h2 className={`${compact ? 'text-base' : 'text-2xl'} font-display font-semibold text-gray-950`}>
         {title}
+        {titleAccent && <span className="ml-2 text-gray-400">{titleAccent}</span>}
       </h2>
       <div className={compact ? 'mt-4' : 'mt-5'}>
         {children}
