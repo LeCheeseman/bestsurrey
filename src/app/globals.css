@@ -38,8 +38,8 @@
 }
 
 @keyframes listing-card-fade {
-  0%, 23% { opacity: 1; }
-  42%, 100% { opacity: 0; }
+  0%, 28% { opacity: 1; }
+  45%, 100% { opacity: 0; }
 }
 
 @keyframes logo-petal-pulse {
@@ -72,6 +72,19 @@
   background-clip: text;
   -webkit-background-clip: text;
   animation: hero-arrive 700ms ease forwards var(--arrival-delay, 0ms), hero-title-shimmer 7s ease-in-out infinite;
+}
+
+.listing-card-image-layer {
+  opacity: 0;
+}
+
+.listing-card-image-layer:first-child {
+  opacity: 1;
+}
+
+.group:hover .listing-card-image-layer--rotating {
+  animation: listing-card-fade var(--photo-duration) infinite;
+  animation-delay: var(--photo-delay);
 }
 
 .animated-logo-petal {

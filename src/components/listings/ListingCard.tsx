@@ -7,6 +7,7 @@
  */
 
 import Link from 'next/link'
+import type { CSSProperties } from 'react'
 import { normalizeListingImages } from '@/lib/listing-json'
 import { ResponsiveListingImage } from './ResponsiveListingImage'
 import type { ListingCard as ListingCardData } from '@/types'
@@ -43,24 +44,20 @@ export function ListingCard({ listing }: ListingCardProps) {
       )}
 
       {/* Image */}
-      <div className="aspect-[4/3] bg-mist-green relative overflow-hidden">
+      <div className="listing-card-image aspect-[4/3] bg-mist-green relative overflow-hidden">
         {galleryImages.length > 0 ? (
           galleryImages.map((image, index) => (
             <div
               key={`${image.url}-${index}`}
-              className="absolute inset-0 opacity-0 transition-opacity"
+              className={[
+                'listing-card-image-layer absolute inset-0 transition-opacity',
+                canRotateImages ? 'listing-card-image-layer--rotating' : '',
+              ].join(' ')}
               style={{
-                opacity: index === 0 ? 1 : 0,
                 transitionDuration: `${fadeDuration}ms`,
-                ...(canRotateImages
-                  ? {
-                      animationName: 'listing-card-fade',
-                      animationDuration: rotationDuration,
-                      animationDelay: `${index * 1.8}s`,
-                      animationIterationCount: 'infinite',
-                    }
-                  : {}),
-              }}
+                '--photo-duration': rotationDuration,
+                '--photo-delay': `${index * 1.8}s`,
+              } as CSSProperties}
             >
               <ResponsiveListingImage
                 src={image.url}
