@@ -42,23 +42,23 @@ export default async function HomePage() {
         {/* ── Hero ─────────────────────────────────────────────────────── */}
         <section className="overflow-hidden bg-white">
           <div className="mx-auto flex max-w-6xl flex-col items-center px-4 py-20 text-center md:py-28">
-            <div className="hero-arrive mb-7 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm [--arrival-delay:80ms]">
+            <div className="hero-logo-arrive mb-7 [--arrival-delay:80ms]">
               <Image
                 src="/images/logo.svg"
                 alt="Best Surrey"
-                width={72}
-                height={72}
+                width={144}
+                height={144}
                 priority
               />
             </div>
 
-            <h1 className="hero-arrive font-display text-6xl font-semibold leading-none text-forest-green md:text-7xl [--arrival-delay:220ms]">
+            <h1 className="hero-title-shimmer font-display text-6xl font-bold leading-none md:text-8xl [--arrival-delay:320ms]">
               Best Surrey
             </h1>
             <p className="hero-arrive mt-4 font-body text-xs font-bold uppercase tracking-[0.32em] text-warm-gold [--arrival-delay:360ms]">
               The finest in the county
             </p>
-            <p className="hero-arrive mt-6 max-w-xl text-lg leading-relaxed text-gray-700 font-body [--arrival-delay:500ms]">
+            <p className="hero-arrive mt-6 max-w-xl text-lg font-semibold leading-relaxed text-gray-800 font-body [--arrival-delay:620ms]">
               Curated restaurants, cafés, activities and experiences across Surrey.
               Locally researched. Honestly ranked.
             </p>
@@ -74,7 +74,7 @@ export default async function HomePage() {
         {/* ── Categories ────────────────────────────────────────────────── */}
         <section className="bg-white">
           <div className="max-w-6xl mx-auto px-4 py-14">
-            <h2 className="font-display text-2xl font-semibold text-forest-green mb-6">
+            <h2 className="font-display text-4xl font-bold text-forest-green mb-7">
               Browse by category
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -93,7 +93,7 @@ export default async function HomePage() {
         {/* ── Towns ─────────────────────────────────────────────────────── */}
         <section className="bg-parchment">
           <div className="max-w-6xl mx-auto px-4 py-14">
-            <h2 className="font-display text-2xl font-semibold text-forest-green mb-6">
+            <h2 className="font-display text-4xl font-bold text-forest-green mb-7">
               Browse by town
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

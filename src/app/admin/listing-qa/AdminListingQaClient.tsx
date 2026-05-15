@@ -210,6 +210,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
   const [manualFiles, setManualFiles] = useState<File[]>([])
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [candidateLoading, setCandidateLoading] = useState(false)
+  const [dragImageIndex, setDragImageIndex] = useState<number | null>(null)
 
   const selected = listings.find((listing) => listing.slug === selectedSlug) ?? listings[0] ?? null
   const currentImage = primaryImage(selected)
@@ -297,6 +298,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
     setManualUrl('')
     setManualFiles([])
     setImageMessage('')
+    setDragImageIndex(null)
   }, [selected?.slug])
 
   useEffect(() => {
@@ -354,6 +356,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                 familyFriendly: patch.familyFriendly === undefined ? item.familyFriendly : patch.familyFriendly,
                 priceBand: patch.priceBand === undefined ? item.priceBand : patch.priceBand,
                 editorialNotes: patch.editorialNotes === undefined ? item.editorialNotes : patch.editorialNotes,
+                images: patch.images === undefined ? item.images : patch.images,
                 categorySlug: patch.categorySlugs?.[0] ?? patch.categorySlug ?? item.categorySlug,
                 categoryName: taxonomy.categories.find((cat) => cat.slug === (patch.categorySlugs?.[0] ?? patch.categorySlug))?.name ?? item.categoryName,
                 categories: patch.categorySlugs
@@ -648,6 +651,28 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
     }))
     const ok = await saveListing({ images })
     if (ok) updateListingImages(selected.slug, images)
+  }
+
+  async function reorderGalleryImages(fromIndex: number, toIndex: number) {
+    if (!selected || fromIndex === toIndex) {
+      setDragImageIndex(null)
+      return
+    }
+
+    const images = [...selected.images]
+    const [moved] = images.splice(fromIndex, 1)
+    if (!moved) {
+      setDragImageIndex(null)
+      return
+    }
+
+    images.splice(toIndex, 0, moved)
+    const orderedImages = images.map((image, imageIndex) => ({ ...image, isPrimary: imageIndex === 0 }))
+    const previousImages = selected.images
+    updateListingImages(selected.slug, orderedImages)
+    setDragImageIndex(null)
+    const ok = await saveListing({ images: orderedImages })
+    if (!ok) updateListingImages(selected.slug, previousImages)
   }
 
   async function findOfficialImages() {
@@ -1254,12 +1279,38 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
 
                 <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                   {selected.images.map((image, index) => (
-                    <article key={`${image.url}-${index}`} className="overflow-hidden rounded border border-gray-200 bg-white">
+                    <article
+                      key={`${image.url}-${index}`}
+                      draggable
+                      onDragStart={(event) => {
+                        setDragImageIndex(index)
+                        event.dataTransfer.effectAllowed = 'move'
+                        event.dataTransfer.setData('text/plain', String(index))
+                      }}
+                      onDragOver={(event) => {
+                        event.preventDefault()
+                        event.dataTransfer.dropEffect = 'move'
+                      }}
+                      onDrop={(event) => {
+                        event.preventDefault()
+                        const fromIndex = Number(event.dataTransfer.getData('text/plain'))
+                        void reorderGalleryImages(Number.isFinite(fromIndex) ? fromIndex : dragImageIndex ?? index, index)
+                      }}
+                      onDragEnd={() => setDragImageIndex(null)}
+                      className={[
+                        'cursor-grab overflow-hidden rounded border bg-white transition active:cursor-grabbing',
+                        dragImageIndex === index ? 'border-emerald-500 opacity-60 ring-2 ring-emerald-200' : 'border-gray-200',
+                      ].join(' ')}
+                    >
                       <div className="bg-gray-100">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={image.url} alt={image.alt} className="aspect-[4/3] w-full object-cover" loading="lazy" />
                       </div>
                       <div className="space-y-2 p-3">
+                        <div className="flex items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                          <span>Photo {index + 1}</span>
+                          <span>Drag to reorder</span>
+                        </div>
                         <p className="line-clamp-2 text-xs text-gray-600">{image.caption || image.alt || image.url}</p>
                         <div className="flex flex-wrap gap-2">
                           {index === 0 ? (

@@ -26,7 +26,7 @@ export function SiteHeader() {
         {/* Logo */}
         <Link
           href="/"
-          className="font-display text-forest-green font-semibold tracking-wide shrink-0"
+          className="font-display text-2xl font-bold tracking-wide text-forest-green shrink-0"
         >
           Best Surrey
         </Link>
