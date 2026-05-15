@@ -9,7 +9,6 @@ interface CategoryCardProps {
   count?:      number
   label?:      string
   accent?:     'green' | 'gold' | 'terracotta' | 'violet' | 'rose' | 'blue'
-  featured?:   boolean
 }
 
 const accentStyles = {
@@ -29,7 +28,6 @@ export function CategoryCard({
   count,
   label,
   accent = 'green',
-  featured = false,
 }: CategoryCardProps) {
   const styles = accentStyles[accent]
 
@@ -37,40 +35,39 @@ export function CategoryCard({
     <Link
       href={`/${slug}/`}
       className={[
-        'group flex min-h-64 flex-col rounded-2xl border border-gray-200 border-t-[5px] bg-white p-7 transition-all hover:-translate-y-1 hover:shadow-lg',
+        'group flex min-h-44 flex-col rounded-xl border border-gray-200 border-t-4 bg-white p-5 transition-all hover:-translate-y-0.5 hover:shadow-md',
         styles.border,
-        featured ? 'lg:col-span-2' : '',
       ].join(' ')}
     >
       {icon && (
-        <span className={`mb-7 flex h-16 w-16 items-center justify-center rounded-2xl ${styles.icon}`} aria-hidden="true">
+        <span className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl [&_svg]:h-6 [&_svg]:w-6 ${styles.icon}`} aria-hidden="true">
           {icon}
         </span>
       )}
       <div className="space-y-2">
-        <h3 className="font-body text-2xl font-bold leading-tight text-gray-950">
+        <h3 className="font-body text-lg font-bold leading-tight text-gray-950">
           {name}
         </h3>
         {count !== undefined && (
-          <p className="text-lg font-medium text-gray-700 font-body">
+          <p className="text-sm font-semibold text-gray-600 font-body">
             {count > 0 ? `${count} place${count === 1 ? '' : 's'}` : 'Coming soon'}
           </p>
         )}
       </div>
 
       {description && (
-        <p className={`mt-8 text-base leading-relaxed text-gray-700 font-body ${featured ? 'max-w-2xl' : 'line-clamp-3'}`}>
+        <p className="mt-4 line-clamp-2 text-sm leading-6 text-gray-700 font-body">
           {description}
         </p>
       )}
 
-      <div className="mt-auto flex items-end justify-between gap-4 pt-8">
+      <div className="mt-auto flex items-end justify-between gap-3 pt-4">
         {label && (
-          <span className={`rounded-full px-4 py-1.5 text-sm font-bold ${styles.label}`}>
+          <span className={`rounded-full px-3 py-1 text-xs font-bold ${styles.label}`}>
             {label}
           </span>
         )}
-        <span className="ml-auto text-3xl leading-none text-gray-500 transition-transform group-hover:translate-x-1">→</span>
+        <span className="ml-auto text-xl leading-none text-gray-500 transition-transform group-hover:translate-x-1">→</span>
       </div>
     </Link>
   )

@@ -26,7 +26,6 @@ const homeCategories = [
     slug: 'restaurants',
     label: 'Eat',
     accent: 'green' as const,
-    featured: true,
     description: 'From neighbourhood bistros to destination dining, these are the Surrey tables worth booking.',
     icon: <RestaurantIcon />,
   },
@@ -98,7 +97,7 @@ export default async function HomePage() {
               The finest in the county
             </p>
             <p className="hero-arrive mt-6 max-w-xl text-lg font-semibold leading-relaxed text-gray-800 font-body [--arrival-delay:620ms]">
-              A curated guide to the best places to dine, drink and explore.
+              The timesaving guide to the best places to dine, drink and visit in Surrey.
             </p>
             <Link
               href="/places/"
@@ -115,7 +114,7 @@ export default async function HomePage() {
             <h2 className="font-display text-4xl font-bold text-forest-green mb-7">
               Browse by category
             </h2>
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               {homeCategories.map((homeCategory) => {
                 const cat = CATEGORIES.find((item) => item.slug === homeCategory.slug)
                 if (!cat) return null
@@ -128,7 +127,6 @@ export default async function HomePage() {
                   icon={homeCategory.icon}
                   label={homeCategory.label}
                   accent={homeCategory.accent}
-                  featured={homeCategory.featured}
                   description={homeCategory.description}
                 />
                 )
