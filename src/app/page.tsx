@@ -21,6 +21,45 @@ export const metadata: Metadata = {
   },
 }
 
+const homeCategories = [
+  {
+    slug: 'restaurants',
+    label: 'Eat',
+    accent: 'green' as const,
+    featured: true,
+    description: 'From neighbourhood bistros to destination dining, these are the Surrey tables worth booking.',
+    icon: <RestaurantIcon />,
+  },
+  {
+    slug: 'pubs-bars',
+    label: 'Drink',
+    accent: 'gold' as const,
+    description: 'Characterful pubs, smart bars and proper locals for a well-made drink.',
+    icon: <DrinkIcon />,
+  },
+  {
+    slug: 'cafes-brunch',
+    label: 'Morning',
+    accent: 'terracotta' as const,
+    description: 'Brunch spots, coffee stops and bakeries for slower starts and good catch-ups.',
+    icon: <BrunchIcon />,
+  },
+  {
+    slug: 'things-to-do',
+    label: 'Explore',
+    accent: 'violet' as const,
+    description: 'Gardens, walks, culture and days out across the county.',
+    icon: <ExploreIcon />,
+  },
+  {
+    slug: 'kids-family',
+    label: 'Family',
+    accent: 'rose' as const,
+    description: 'Family-friendly days out, play spaces and child-approved Surrey picks.',
+    icon: <FamilyIcon />,
+  },
+]
+
 export default async function HomePage() {
   let categoryCounts: Record<string, number> = {}
   let townCounts: Record<string, number> = {}
@@ -76,15 +115,24 @@ export default async function HomePage() {
             <h2 className="font-display text-4xl font-bold text-forest-green mb-7">
               Browse by category
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {CATEGORIES.map((cat) => (
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {homeCategories.map((homeCategory) => {
+                const cat = CATEGORIES.find((item) => item.slug === homeCategory.slug)
+                if (!cat) return null
+                return (
                 <CategoryCard
                   key={cat.slug}
                   name={cat.name}
                   slug={cat.slug}
                   count={categoryCounts[cat.slug] ?? 0}
+                  icon={homeCategory.icon}
+                  label={homeCategory.label}
+                  accent={homeCategory.accent}
+                  featured={homeCategory.featured}
+                  description={homeCategory.description}
                 />
-              ))}
+                )
+              })}
             </div>
           </div>
         </section>
@@ -112,5 +160,58 @@ export default async function HomePage() {
 
       <SiteFooter />
     </>
+  )
+}
+
+function RestaurantIcon() {
+  return (
+    <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 3v8" />
+      <path d="M10 3v8" />
+      <path d="M8 3v18" />
+      <path d="M17 3c1.4 1.6 2 3.5 2 6 0 3-1.1 5-3 5h-1v7" />
+    </svg>
+  )
+}
+
+function DrinkIcon() {
+  return (
+    <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 3h10l-1 7a4 4 0 0 1-8 0L7 3Z" />
+      <path d="M8.5 8h7" />
+      <path d="M12 14v7" />
+      <path d="M9 21h6" />
+    </svg>
+  )
+}
+
+function BrunchIcon() {
+  return (
+    <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 11h13v3a6 6 0 0 1-6 6H9a4 4 0 0 1-4-4v-5Z" />
+      <path d="M18 12h1a2 2 0 0 1 0 4h-1" />
+      <path d="M8 7c-1-1 .8-2-.2-3" />
+      <path d="M12 7c-1-1 .8-2-.2-3" />
+    </svg>
+  )
+}
+
+function ExploreIcon() {
+  return (
+    <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  )
+}
+
+function FamilyIcon() {
+  return (
+    <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="8" />
+      <path d="M9 10h.01" />
+      <path d="M15 10h.01" />
+      <path d="M9 15c1.5 1.3 4.5 1.3 6 0" />
+    </svg>
   )
 }
