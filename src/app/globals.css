@@ -3,19 +3,19 @@
 @tailwind utilities;
 
 @keyframes listing-image-cycle-primary {
-  0%, 30% { opacity: 1; }
-  36%, 100% { opacity: 0; }
+  0%, 28% { opacity: 1; }
+  34%, 100% { opacity: 0; }
 }
 
 @keyframes listing-image-cycle-second {
-  0%, 30% { opacity: 0; }
-  36%, 63% { opacity: 1; }
-  69%, 100% { opacity: 0; }
+  0%, 28% { opacity: 0; }
+  34%, 62% { opacity: 1; }
+  68%, 100% { opacity: 0; }
 }
 
 @keyframes listing-image-cycle-third {
-  0%, 63% { opacity: 0; }
-  69%, 100% { opacity: 1; }
+  0%, 62% { opacity: 0; }
+  68%, 100% { opacity: 1; }
 }
 
 @keyframes hero-arrive {
@@ -31,15 +31,15 @@
 
 @media (hover: hover) {
   .group:hover .listing-image-primary {
-    animation: listing-image-cycle-primary 5.4s 1.5s infinite;
+    animation: listing-image-cycle-primary 4.8s infinite;
   }
 
   .group:hover .listing-image-second {
-    animation: listing-image-cycle-second 5.4s 1.5s infinite;
+    animation: listing-image-cycle-second 4.8s infinite;
   }
 
   .group:hover .listing-image-third {
-    animation: listing-image-cycle-third 5.4s 1.5s infinite;
+    animation: listing-image-cycle-third 4.8s infinite;
   }
 }
 
