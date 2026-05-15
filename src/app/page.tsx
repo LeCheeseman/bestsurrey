@@ -41,7 +41,7 @@ export default async function HomePage() {
       <main>
         {/* ── Hero ─────────────────────────────────────────────────────── */}
         <section className="overflow-hidden bg-white">
-          <div className="mx-auto flex max-w-6xl flex-col items-center px-4 py-20 text-center md:py-28">
+          <div className="mx-auto flex max-w-6xl flex-col items-center px-4 pb-16 pt-10 text-center md:pb-24 md:pt-14">
             <div className="hero-logo-arrive mb-7 [--arrival-delay:80ms]">
               <Image
                 src="/images/logo.svg"

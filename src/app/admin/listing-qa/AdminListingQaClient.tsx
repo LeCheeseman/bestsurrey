@@ -498,6 +498,14 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
     await saveCategories(nextCategorySlugs, nextSubcategorySlugs)
   }
 
+  async function makePrimaryCategory(slug: string) {
+    const baseCategorySlugs = currentCategorySlugs
+    if (baseCategorySlugs[0] === slug) return
+    const nextCategorySlugs = [slug, ...baseCategorySlugs.filter((item) => item !== slug)]
+    setSelectedCategorySlugs(nextCategorySlugs)
+    await saveCategories(nextCategorySlugs, selectedSubcategorySlugs)
+  }
+
   async function addCategoryChoice() {
     if (!categoryToAdd) return
     const [kind, slug] = categoryToAdd.split(':')
@@ -1092,6 +1100,16 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                               <span className="font-medium">{category?.name ?? slug}</span>
                               <span className="ml-1 text-xs text-gray-500">{index === 0 ? 'primary' : 'main'}</span>
                             </span>
+                            {index > 0 && (
+                              <button
+                                onClick={() => void makePrimaryCategory(slug)}
+                                className="rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800 hover:bg-emerald-100"
+                                type="button"
+                                disabled={saving}
+                              >
+                                Make primary
+                              </button>
+                            )}
                             <button
                               onClick={() => void removeCategory(slug)}
                               className="rounded px-1 text-base font-semibold leading-none text-rose-700 hover:bg-rose-50 disabled:text-gray-300"
@@ -1140,6 +1158,26 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                       </button>
                     </div>
                     <p className="text-xs leading-5 text-gray-600">Adding a main category now keeps the existing primary category and adds the new one alongside it. Use the red x to remove a category.</p>
+                    {currentCategorySlugs.length > 1 && (
+                      <label className="block text-xs font-medium text-gray-700">
+                        Primary main category
+                        <select
+                          value={currentCategorySlugs[0] ?? ''}
+                          onChange={(event) => void makePrimaryCategory(event.target.value)}
+                          className="mt-1 w-full rounded border border-gray-300 px-2 py-2 text-sm font-normal text-gray-950"
+                          disabled={saving}
+                        >
+                          {currentCategorySlugs.map((slug) => {
+                            const category = taxonomy.categories.find((item) => item.slug === slug)
+                            return (
+                              <option key={slug} value={slug}>
+                                {category?.name ?? slug}
+                              </option>
+                            )
+                          })}
+                        </select>
+                      </label>
+                    )}
                   </div>
                 </div>
               </section>

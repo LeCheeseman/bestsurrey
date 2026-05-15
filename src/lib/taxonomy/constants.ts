@@ -93,7 +93,6 @@ export const SUBCATEGORIES = [
 
   // Kids & Family
   { slug: 'soft-play',              name: 'Soft Play',           categorySlug: 'kids-family'       },
-  { slug: 'farms-animals',          name: 'Farms & Animals',     categorySlug: 'kids-family'       },
   { slug: 'outdoor-play',           name: 'Outdoor Play',        categorySlug: 'kids-family'       },
   { slug: 'museums-education',      name: 'Museums & Education', categorySlug: 'kids-family'       },
 

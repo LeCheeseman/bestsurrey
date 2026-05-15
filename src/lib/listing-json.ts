@@ -59,5 +59,18 @@ export function normalizeOpeningHours(value: unknown): OpeningHours | null {
     : parsed
 
   if (!hours || typeof hours !== 'object' || Array.isArray(hours)) return null
-  return hours as OpeningHours
+  const dayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
+  const normalized = Object.fromEntries(
+    dayKeys.map((key) => {
+      const day = (hours as Record<string, unknown>)[key]
+      if (!day || typeof day !== 'object' || Array.isArray(day)) return [key, null]
+      if ('closed' in day && day.closed === true) return [key, { closed: true }]
+      if ('open' in day && 'close' in day && typeof day.open === 'string' && typeof day.close === 'string') {
+        return [key, { open: day.open, close: day.close }]
+      }
+      return [key, null]
+    })
+  ) as OpeningHours
+
+  return dayKeys.some((key) => normalized[key] !== null) ? normalized : null
 }

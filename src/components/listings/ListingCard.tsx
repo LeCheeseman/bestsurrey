@@ -30,11 +30,11 @@ export function ListingCard({ listing }: ListingCardProps) {
     <article className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg">
 
       {/* Entire card is clickable */}
-      <Link href={`/listings/${listing.slug}/`} className="absolute inset-0 z-0" aria-label={listing.name} />
+      <Link href={`/listings/${listing.slug}/`} className="absolute inset-0 z-10" aria-label={listing.name} />
 
       {/* Sponsored label — always visible, always distinct from organic */}
       {listing.sponsored && (
-        <div className="absolute top-2 left-2 z-10 bg-parchment text-gray-600 text-xs px-2 py-0.5 rounded font-body">
+        <div className="absolute top-2 left-2 z-20 bg-parchment text-gray-600 text-xs px-2 py-0.5 rounded font-body">
           Sponsored
         </div>
       )}
