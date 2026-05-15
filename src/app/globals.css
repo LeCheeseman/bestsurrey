@@ -1,3 +1,50 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes listing-image-cycle-primary {
+  0%, 30% { opacity: 1; }
+  36%, 100% { opacity: 0; }
+}
+
+@keyframes listing-image-cycle-second {
+  0%, 30% { opacity: 0; }
+  36%, 63% { opacity: 1; }
+  69%, 100% { opacity: 0; }
+}
+
+@keyframes listing-image-cycle-third {
+  0%, 63% { opacity: 0; }
+  69%, 100% { opacity: 1; }
+}
+
+@keyframes hero-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (hover: hover) {
+  .group:hover .listing-image-primary {
+    animation: listing-image-cycle-primary 5.4s 1.5s infinite;
+  }
+
+  .group:hover .listing-image-second {
+    animation: listing-image-cycle-second 5.4s 1.5s infinite;
+  }
+
+  .group:hover .listing-image-third {
+    animation: listing-image-cycle-third 5.4s 1.5s infinite;
+  }
+}
+
+.hero-arrive {
+  opacity: 0;
+  animation: hero-arrive 700ms ease forwards;
+  animation-delay: var(--arrival-delay, 0ms);
+}

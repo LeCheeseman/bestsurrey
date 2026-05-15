@@ -40,32 +40,31 @@ export default async function HomePage() {
 
       <main>
         {/* ── Hero ─────────────────────────────────────────────────────── */}
-        <section className="bg-forest-green text-white">
-          <div className="max-w-6xl mx-auto px-4 py-20 md:py-28 flex flex-col items-center text-center">
-            {/* Logo mark */}
-            <div className="mb-6">
+        <section className="overflow-hidden bg-white">
+          <div className="mx-auto flex max-w-6xl flex-col items-center px-4 py-20 text-center md:py-28">
+            <div className="hero-arrive mb-7 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm [--arrival-delay:80ms]">
               <Image
                 src="/images/logo.svg"
                 alt="Best Surrey"
-                width={80}
-                height={80}
+                width={72}
+                height={72}
                 priority
               />
             </div>
 
-            <h1 className="font-display text-5xl md:text-6xl font-semibold tracking-wide">
+            <h1 className="hero-arrive font-display text-6xl font-semibold leading-none text-forest-green md:text-7xl [--arrival-delay:220ms]">
               Best Surrey
             </h1>
-            <p className="mt-3 font-display text-xl text-light-gold tracking-wider">
+            <p className="hero-arrive mt-4 font-body text-xs font-bold uppercase tracking-[0.32em] text-warm-gold [--arrival-delay:360ms]">
               The finest in the county
             </p>
-            <p className="mt-5 text-base text-white/80 max-w-lg font-body">
+            <p className="hero-arrive mt-6 max-w-xl text-lg leading-relaxed text-gray-700 font-body [--arrival-delay:500ms]">
               Curated restaurants, cafés, activities and experiences across Surrey.
               Locally researched. Honestly ranked.
             </p>
             <Link
               href="/places/"
-              className="mt-8 inline-block bg-warm-gold hover:bg-light-gold text-white font-body font-medium px-8 py-3 rounded-lg transition-colors"
+              className="hero-arrive mt-9 inline-flex rounded-full bg-forest-green px-8 py-3 font-body text-sm font-semibold text-white shadow-sm transition-colors hover:bg-mid-green [--arrival-delay:640ms]"
             >
               Start exploring
             </Link>
@@ -73,7 +72,7 @@ export default async function HomePage() {
         </section>
 
         {/* ── Categories ────────────────────────────────────────────────── */}
-        <section className="bg-cream">
+        <section className="bg-white">
           <div className="max-w-6xl mx-auto px-4 py-14">
             <h2 className="font-display text-2xl font-semibold text-forest-green mb-6">
               Browse by category
@@ -92,7 +91,7 @@ export default async function HomePage() {
         </section>
 
         {/* ── Towns ─────────────────────────────────────────────────────── */}
-        <section className="bg-white">
+        <section className="bg-parchment">
           <div className="max-w-6xl mx-auto px-4 py-14">
             <h2 className="font-display text-2xl font-semibold text-forest-green mb-6">
               Browse by town

@@ -16,10 +16,10 @@ export function SubcategoryPills({ subcategories, activeSlug }: SubcategoryPills
           <Link
             key={sub.slug}
             href={`/surrey/${sub.slug}/`}
-            className={`text-sm px-3 py-1.5 rounded-full border font-body transition-colors ${
+            className={`rounded-full border px-4 py-2 text-sm font-medium font-body transition-all duration-300 hover:scale-105 ${
               isActive
                 ? 'bg-forest-green text-white border-forest-green'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-forest-green hover:text-forest-green'
+                : 'bg-white text-gray-800 border-gray-200 hover:border-mid-green hover:bg-mist-green hover:text-forest-green'
             }`}
           >
             {sub.name}

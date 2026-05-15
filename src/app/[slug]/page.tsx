@@ -104,12 +104,12 @@ async function CategoryIndexPage({ slug }: { slug: import('@/lib/taxonomy/consta
       />
 
       <main className="bg-cream min-h-screen">
-        <div className="max-w-6xl mx-auto px-4 py-10 space-y-10">
+        <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
 
           {/* Subcategory filter pills */}
           {subcategories.length > 0 && (
-            <section>
-              <h2 className="font-display text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+            <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <h2 className="font-body text-xs font-bold uppercase tracking-[0.18em] text-gray-900 mb-4">
                 Browse by type
               </h2>
               <SubcategoryPills subcategories={subcategories} />
@@ -118,8 +118,8 @@ async function CategoryIndexPage({ slug }: { slug: import('@/lib/taxonomy/consta
 
           {/* Browse by town */}
           {townsWithListings.length > 0 && (
-            <section>
-              <h2 className="font-display text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+            <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <h2 className="font-body text-xs font-bold uppercase tracking-[0.18em] text-gray-900 mb-4">
                 Browse by town
               </h2>
               <TownFilterRow towns={townsWithListings} categorySlug={slug} />
@@ -127,8 +127,8 @@ async function CategoryIndexPage({ slug }: { slug: import('@/lib/taxonomy/consta
           )}
 
           {/* Listings */}
-          <section>
-            <ListingGrid listings={pageListings} showRankingPosition />
+          <section className="pt-2">
+            <ListingGrid listings={pageListings} />
             {pageListings.length === 0 && (
               <p className="text-sm text-gray-500 font-body">
                 We&apos;re adding {category.name.toLowerCase()} soon. Check back shortly.
@@ -137,8 +137,8 @@ async function CategoryIndexPage({ slug }: { slug: import('@/lib/taxonomy/consta
           </section>
 
           {/* Related categories */}
-          <section>
-            <h2 className="font-display text-lg font-semibold text-forest-green mb-4">
+          <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <h2 className="font-body text-xs font-bold uppercase tracking-[0.18em] text-gray-900 mb-4">
               Also on Best Surrey
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

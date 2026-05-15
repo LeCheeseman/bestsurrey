@@ -2,11 +2,25 @@
  * SiteHeader — primary navigation with inline search.
  */
 
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
+const navItems = [
+  { label: 'Eat', href: '/restaurants/', match: ['/restaurants/', '/pubs-bars/', '/brunch/'] },
+  { label: 'Do', href: '/things-to-do/', match: ['/things-to-do/'] },
+  { label: 'Family', href: '/kids-family/', match: ['/kids-family/'] },
+  { label: 'Activities', href: '/indoor-activities/', match: ['/indoor-activities/'] },
+  { label: 'Places', href: '/places/', match: ['/places/'] },
+]
 
 export function SiteHeader() {
+  const pathname = usePathname()
+  const pathSegments = pathname.split('/').filter(Boolean)
+
   return (
-    <header className="bg-white border-b border-gray-100">
+    <header className="sticky top-0 z-40 bg-white/95 border-b border-gray-100 backdrop-blur">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center gap-6">
 
         {/* Logo */}
@@ -31,11 +45,27 @@ export function SiteHeader() {
         {/* Primary nav */}
         <nav aria-label="Primary navigation" className="hidden sm:block">
           <ul className="flex items-center gap-5 text-sm font-body text-gray-600">
-            <li><Link href="/restaurants/"   className="hover:text-forest-green transition-colors">Eat</Link></li>
-            <li><Link href="/things-to-do/"  className="hover:text-forest-green transition-colors">Do</Link></li>
-            <li><Link href="/kids-family/" className="hover:text-forest-green transition-colors">Family</Link></li>
-            <li><Link href="/indoor-activities/" className="hover:text-forest-green transition-colors">Activities</Link></li>
-            <li><Link href="/places/"      className="hover:text-forest-green transition-colors">Places</Link></li>
+            {navItems.map((item) => {
+              const active = item.match.some((href) => {
+                const segment = href.replaceAll('/', '')
+                return pathname === href || pathname.startsWith(href) || pathSegments.includes(segment)
+              })
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={[
+                      'rounded-full px-3 py-1.5 transition-colors',
+                      active
+                        ? 'bg-mist-green font-semibold text-forest-green'
+                        : 'hover:bg-parchment hover:text-forest-green',
+                    ].join(' ')}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              )
+            })}
           </ul>
         </nav>
 

@@ -13,15 +13,21 @@ import type { ListingCard as ListingCardData } from '@/types'
 
 interface ListingCardProps {
   listing: ListingCardData
-  position?: number  // ranking position label (1, 2, 3...) shown on "best of" pages
+  position?: number
 }
 
-export function ListingCard({ listing, position }: ListingCardProps) {
+export function ListingCard({ listing }: ListingCardProps) {
   const images = normalizeListingImages(listing.images)
   const primaryImage = images.find((img) => img.isPrimary) ?? images[0]
+  const galleryImages = primaryImage
+    ? [
+        primaryImage,
+        ...images.filter((image) => image.url !== primaryImage.url),
+      ].slice(0, 3)
+    : []
 
   return (
-    <article className="group relative bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+    <article className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg">
 
       {/* Entire card is clickable */}
       <Link href={`/listings/${listing.slug}/`} className="absolute inset-0 z-0" aria-label={listing.name} />
@@ -33,21 +39,26 @@ export function ListingCard({ listing, position }: ListingCardProps) {
         </div>
       )}
 
-      {/* Ranking position — shown on "best of" ranked pages */}
-      {position && !listing.sponsored && (
-        <div className="absolute top-2 right-2 z-10 bg-white/90 text-forest-green text-xs w-7 h-7 flex items-center justify-center rounded-full font-display font-bold border border-forest-green/20 shadow-sm">
-          {position}
-        </div>
-      )}
-
       {/* Image */}
       <div className="aspect-[4/3] bg-mist-green relative overflow-hidden">
-        {primaryImage ? (
-          <ResponsiveListingImage
-            src={primaryImage.url}
-            alt={primaryImage.alt}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
+        {galleryImages.length > 0 ? (
+          galleryImages.map((image, index) => (
+            <div
+              key={`${image.url}-${index}`}
+              className={[
+                'absolute inset-0 transition-opacity duration-500',
+                index === 0 ? 'listing-image-primary opacity-100' : '',
+                index === 1 ? 'listing-image-second opacity-0' : '',
+                index === 2 ? 'listing-image-third opacity-0' : '',
+              ].join(' ')}
+            >
+              <ResponsiveListingImage
+                src={image.url}
+                alt={image.alt}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              />
+            </div>
+          ))
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-mist-green">
             {/* Placeholder: category icon in Phase 2 */}
@@ -58,7 +69,7 @@ export function ListingCard({ listing, position }: ListingCardProps) {
       {/* Content */}
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-1">
-          <span className="font-display text-base font-semibold text-forest-green line-clamp-2">
+          <span className="font-display text-xl font-semibold leading-tight text-forest-green line-clamp-2">
             {listing.name}
           </span>
           {listing.priceBand && (

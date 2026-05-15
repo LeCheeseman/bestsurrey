@@ -150,6 +150,21 @@ export async function GET(request: NextRequest) {
     .where(eq(listings.status, 'published'))
 
   const normalizeName = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '')
+  const possibleLowResolutionImage = (url: string) => {
+    try {
+      const parsed = new URL(url)
+      const sizeSignals = ['w', 'width', 'h', 'height', 's']
+      for (const key of sizeSignals) {
+        const value = parsed.searchParams.get(key)
+        if (!value) continue
+        const size = Number(value.replace(/[^0-9]/g, ''))
+        if (Number.isFinite(size) && size > 0 && size < 700) return true
+      }
+      return /(?:thumb|thumbnail|small|\/s(?:[1-6][0-9]{2}|[1-9][0-9])(?:-|\/)|_\d{2,3}x\d{2,3})/i.test(url)
+    } catch {
+      return /(?:thumb|thumbnail|small|_\d{2,3}x\d{2,3})/i.test(url)
+    }
+  }
   const nameTownCounts = new Map<string, number>()
   const websiteCounts = new Map<string, number>()
   const nameTownMatches = new Map<string, typeof publishedRows>()
@@ -173,6 +188,14 @@ export async function GET(request: NextRequest) {
     if (website.includes('collectivelycamberley.co.uk/business/camberley-public-house')) flags.push('dead_website')
     if (images && !Array.isArray(images)) flags.push('invalid_image_json')
     if (!Array.isArray(images) || images.length === 0) flags.push('missing_image')
+    if (Array.isArray(images) && images.length > 0 && images.length <= 2) flags.push('low_photo_count')
+    if (Array.isArray(images) && images.some((image) => (
+      image &&
+      typeof image === 'object' &&
+      'url' in image &&
+      typeof image.url === 'string' &&
+      possibleLowResolutionImage(image.url)
+    ))) flags.push('possible_low_res_image')
     if ((row.shortSummary?.length ?? 0) < 80) flags.push('thin_summary')
     if ((row.longDescription?.length ?? 0) < 250) flags.push('thin_description')
     if ((nameTownCounts.get(`${row.townId}:${normalizeName(row.name)}`) ?? 0) > 1) flags.push('duplicate_name_town')

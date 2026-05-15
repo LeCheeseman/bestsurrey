@@ -19,10 +19,9 @@ const config: Config = {
         'parchment':     '#f4f7f6',
       },
       fontFamily: {
-        // Cinzel for display/headings, Poppins for body
         // Loaded via next/font in layout.tsx
-        display: ['var(--font-cinzel)', 'Georgia', 'serif'],
-        body:    ['var(--font-poppins)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Georgia', 'serif'],
+        body:    ['var(--font-body)', 'system-ui', 'sans-serif'],
       },
     },
   },

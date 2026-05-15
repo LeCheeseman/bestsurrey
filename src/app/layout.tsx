@@ -1,19 +1,18 @@
 import type { Metadata } from 'next'
-import { Cinzel, Poppins } from 'next/font/google'
+import { Cormorant_Garamond, Inter } from 'next/font/google'
 import { buildOrganizationSchema, buildWebSiteSchema } from '@/lib/schema/organization'
 import './globals.css'
 
-// Brand typography — see BestSurrey_BrandBook_v3
-const cinzel = Cinzel({
+const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
-  variable: '--font-cinzel',
+  weight: ['500', '600', '700'],
+  variable: '--font-display',
   display: 'swap',
 })
 
-const poppins = Poppins({
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['300', '400', '500'],
-  variable: '--font-poppins',
+  variable: '--font-body',
   display: 'swap',
 })
 
@@ -41,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const websiteSchema = buildWebSiteSchema()
 
   return (
-    <html lang="en-GB" className={`${cinzel.variable} ${poppins.variable}`}>
+    <html lang="en-GB" className={`${cormorant.variable} ${inter.variable}`}>
       <body className="font-body bg-white text-gray-900 antialiased">
         {children}
 

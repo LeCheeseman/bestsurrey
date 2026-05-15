@@ -103,12 +103,12 @@ export default async function TownCategoryPage({ params }: Props) {
       />
 
       <main className="bg-cream min-h-screen">
-        <div className="max-w-6xl mx-auto px-4 py-10 space-y-10">
+        <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
 
           {/* Subcategory filter pills */}
           {subcategories.length > 0 && (
-            <section>
-              <h2 className="font-display text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+            <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <h2 className="font-body text-xs font-bold uppercase tracking-[0.18em] text-gray-900 mb-4">
                 Browse by type
               </h2>
               <SubcategoryPills subcategories={subcategories} />
@@ -117,8 +117,8 @@ export default async function TownCategoryPage({ params }: Props) {
 
           {/* Nearby towns */}
           {nearbyTowns.length > 0 && (
-            <section>
-              <h2 className="font-display text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+            <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <h2 className="font-body text-xs font-bold uppercase tracking-[0.18em] text-gray-900 mb-4">
                 {category.name} in nearby towns
               </h2>
               <TownFilterRow
@@ -130,8 +130,8 @@ export default async function TownCategoryPage({ params }: Props) {
           )}
 
           {/* Listings */}
-          <section>
-            <ListingGrid listings={pageListings} showRankingPosition />
+          <section className="pt-2">
+            <ListingGrid listings={pageListings} />
             {pageListings.length === 0 && (
               <p className="text-sm text-gray-500 font-body">
                 We&apos;re adding {category.name.toLowerCase()} in {town.name} soon. Check back shortly.
