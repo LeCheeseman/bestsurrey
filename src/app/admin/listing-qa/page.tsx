@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import { adminToolsEnabled } from '@/lib/admin-tools'
 import AdminListingQaClient from './AdminListingQaClient'
 
@@ -9,5 +10,9 @@ export const metadata = {
 
 export default function AdminListingQaPage() {
   if (!adminToolsEnabled()) notFound()
-  return <AdminListingQaClient />
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-gray-600">Loading admin...</div>}>
+      <AdminListingQaClient />
+    </Suspense>
+  )
 }

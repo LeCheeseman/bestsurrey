@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import { adminToolsEnabled } from '@/lib/admin-tools'
 import AdminListingQaClient from '../listing-qa/AdminListingQaClient'
 
@@ -9,5 +10,9 @@ export const metadata = {
 
 export default function AdminCategoryReviewPage() {
   if (!adminToolsEnabled()) notFound()
-  return <AdminListingQaClient mode="category-review" />
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-gray-600">Loading admin...</div>}>
+      <AdminListingQaClient mode="category-review" />
+    </Suspense>
+  )
 }
