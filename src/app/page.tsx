@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
+import { AnimatedLogo } from '@/components/ui/AnimatedLogo'
 import { CategoryCard } from '@/components/ui/CategoryCard'
 import { TownCard } from '@/components/ui/TownCard'
 import { getListingCountsByCategory, getListingCountsByTown } from '@/lib/queries/taxonomy'
@@ -43,13 +43,7 @@ export default async function HomePage() {
         <section className="overflow-hidden bg-white">
           <div className="mx-auto flex max-w-6xl flex-col items-center px-4 pb-16 pt-10 text-center md:pb-24 md:pt-14">
             <div className="hero-logo-arrive mb-7 [--arrival-delay:80ms]">
-              <Image
-                src="/images/logo.svg"
-                alt="Best Surrey"
-                width={144}
-                height={144}
-                priority
-              />
+              <AnimatedLogo className="h-36 w-36" />
             </div>
 
             <h1 className="hero-title-shimmer font-display text-6xl font-bold leading-none md:text-8xl [--arrival-delay:320ms]">

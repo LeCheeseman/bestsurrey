@@ -26,6 +26,8 @@ export function ListingCard({ listing }: ListingCardProps) {
       ].slice(0, 3)
     : []
   const canRotateImages = galleryImages.length > 1
+  const rotationDuration = `${galleryImages.length * 1.8}s`
+  const fadeDuration = 900
 
   return (
     <article className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg">
@@ -46,12 +48,19 @@ export function ListingCard({ listing }: ListingCardProps) {
           galleryImages.map((image, index) => (
             <div
               key={`${image.url}-${index}`}
-              className={[
-                'absolute inset-0 transition-opacity duration-500',
-                index === 0 ? `${canRotateImages ? 'listing-image-primary' : ''} opacity-100` : '',
-                index === 1 ? 'listing-image-second opacity-0' : '',
-                index === 2 ? 'listing-image-third opacity-0' : '',
-              ].join(' ')}
+              className="absolute inset-0 opacity-0 transition-opacity"
+              style={{
+                opacity: index === 0 ? 1 : 0,
+                transitionDuration: `${fadeDuration}ms`,
+                ...(canRotateImages
+                  ? {
+                      animationName: 'listing-card-fade',
+                      animationDuration: rotationDuration,
+                      animationDelay: `${index * 1.8}s`,
+                      animationIterationCount: 'infinite',
+                    }
+                  : {}),
+              }}
             >
               <ResponsiveListingImage
                 src={image.url}
