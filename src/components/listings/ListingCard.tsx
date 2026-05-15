@@ -25,6 +25,7 @@ export function ListingCard({ listing }: ListingCardProps) {
         ...images.filter((image) => image.url !== primaryImage.url),
       ].slice(0, 3)
     : []
+  const canRotateImages = galleryImages.length > 1
 
   return (
     <article className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg">
@@ -47,7 +48,7 @@ export function ListingCard({ listing }: ListingCardProps) {
               key={`${image.url}-${index}`}
               className={[
                 'absolute inset-0 transition-opacity duration-500',
-                index === 0 ? 'listing-image-primary opacity-100' : '',
+                index === 0 ? `${canRotateImages ? 'listing-image-primary' : ''} opacity-100` : '',
                 index === 1 ? 'listing-image-second opacity-0' : '',
                 index === 2 ? 'listing-image-third opacity-0' : '',
               ].join(' ')}

@@ -13,6 +13,8 @@ export interface ListingImage {
   isPrimary: boolean
   sourceUrl?: string
   sourceType?: string
+  byteSize?: number
+  contentType?: string
 }
 
 export interface OpeningHoursDay {

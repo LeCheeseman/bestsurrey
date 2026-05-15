@@ -55,15 +55,15 @@
 
 @media (hover: hover) {
   .group:hover .listing-image-primary {
-    animation: listing-image-cycle-primary 4.8s infinite;
+    animation: listing-image-cycle-primary 2.4s infinite;
   }
 
   .group:hover .listing-image-second {
-    animation: listing-image-cycle-second 4.8s infinite;
+    animation: listing-image-cycle-second 2.4s infinite;
   }
 
   .group:hover .listing-image-third {
-    animation: listing-image-cycle-third 4.8s infinite;
+    animation: listing-image-cycle-third 2.4s infinite;
   }
 }
 

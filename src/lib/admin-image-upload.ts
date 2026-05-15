@@ -131,6 +131,8 @@ export async function uploadListingImage({
     isPrimary: !Array.isArray(listing.images) || listing.images.length === 0,
     sourceUrl: sourceUrl || '',
     sourceType,
+    byteSize: bytes.length,
+    contentType,
   }
   const existingImages = normalizeImages(listing.images)
   const images = existingImages.length === 0 ? [image] : [...existingImages, image]

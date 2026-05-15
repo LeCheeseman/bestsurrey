@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 type ListingImage = {
   url: string
@@ -9,6 +10,8 @@ type ListingImage = {
   isPrimary: boolean
   sourceUrl?: string
   sourceType?: string
+  byteSize?: number
+  contentType?: string
 }
 
 type FaqItem = {
@@ -170,6 +173,7 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
 
 export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClientProps) {
   const categoryReviewMode = mode === 'category-review'
+  const searchParams = useSearchParams()
   const [taxonomy, setTaxonomy] = useState<Taxonomy>(emptyTaxonomy)
   const [listings, setListings] = useState<Listing[]>([])
   const [queueTotal, setQueueTotal] = useState(0)
@@ -181,7 +185,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
   const [status, setStatus] = useState('published')
   const [verifiedFilter, setVerifiedFilter] = useState(categoryReviewMode ? 'all' : 'all')
   const [imageFilter, setImageFilter] = useState('all')
-  const [issueFilter, setIssueFilter] = useState(categoryReviewMode ? 'all' : 'has_issues')
+  const [issueFilter, setIssueFilter] = useState(searchParams.get('issue') || (categoryReviewMode ? 'all' : 'has_issues'))
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
@@ -634,7 +638,17 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
     setListings((items) =>
       items.map((item) => {
         if (item.slug !== slug) return item
-        const issueFlags = item.issueFlags.filter((flag) => !['missing_image', 'invalid_image_json'].includes(flag))
+        const issueFlags = item.issueFlags.filter((flag) => ![
+          'missing_image',
+          'invalid_image_json',
+          'low_photo_count',
+          'possible_low_res_image',
+        ].includes(flag))
+        if (images.length === 0) issueFlags.push('missing_image')
+        if (images.length > 0 && images.length <= 2) issueFlags.push('low_photo_count')
+        if (images.some((image) => typeof image.byteSize === 'number' && image.byteSize > 0 && image.byteSize < 90_000)) {
+          issueFlags.push('possible_low_res_image')
+        }
         return { ...item, images, issueFlags, issueCount: issueFlags.length }
       }),
     )

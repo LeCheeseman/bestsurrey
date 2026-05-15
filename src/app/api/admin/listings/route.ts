@@ -165,6 +165,14 @@ export async function GET(request: NextRequest) {
       return /(?:thumb|thumbnail|small|_\d{2,3}x\d{2,3})/i.test(url)
     }
   }
+  const lowFileSizeImage = (image: unknown) => (
+    !!image &&
+    typeof image === 'object' &&
+    'byteSize' in image &&
+    typeof image.byteSize === 'number' &&
+    image.byteSize > 0 &&
+    image.byteSize < 90_000
+  )
   const nameTownCounts = new Map<string, number>()
   const websiteCounts = new Map<string, number>()
   const nameTownMatches = new Map<string, typeof publishedRows>()
@@ -192,9 +200,14 @@ export async function GET(request: NextRequest) {
     if (Array.isArray(images) && images.some((image) => (
       image &&
       typeof image === 'object' &&
-      'url' in image &&
-      typeof image.url === 'string' &&
-      possibleLowResolutionImage(image.url)
+      (
+        lowFileSizeImage(image) ||
+        (
+          'url' in image &&
+          typeof image.url === 'string' &&
+          possibleLowResolutionImage(image.url)
+        )
+      )
     ))) flags.push('possible_low_res_image')
     if ((row.shortSummary?.length ?? 0) < 80) flags.push('thin_summary')
     if ((row.longDescription?.length ?? 0) < 250) flags.push('thin_description')

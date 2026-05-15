@@ -114,6 +114,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { slug: 
       isPrimary: index === 0,
       sourceUrl: image.sourceUrl || '',
       sourceType: image.sourceType || '',
+      byteSize: image.byteSize,
+      contentType: image.contentType,
     }))
     update.images = jsonbValue(images) as unknown as typeof update.images
   }
