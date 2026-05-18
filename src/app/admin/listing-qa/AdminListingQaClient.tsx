@@ -103,6 +103,8 @@ type QueueOverrides = Partial<{
   imageFilter: string
   issueFilter: string
   selectedSlug: string
+  offset: number
+  append: boolean
 }>
 
 type ListingPaging = {
@@ -113,6 +115,7 @@ type ListingPaging = {
 }
 
 const emptyTaxonomy: Taxonomy = { towns: [], categories: [], subcategories: [] }
+const adminListingPageSize = 40
 const statuses = ['published', 'review', 'draft', 'unpublished'] as const
 const issueLabels: Record<string, string> = {
   has_issues: 'Needs cleanup',
@@ -247,15 +250,19 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
     if (nextVerifiedFilter !== 'all') params.set('verified', nextVerifiedFilter)
     if (nextImageFilter !== 'all') params.set('image', nextImageFilter)
     if (nextIssueFilter !== 'all') params.set('issue', nextIssueFilter)
-    params.set('limit', '120')
+    const nextOffset = overrides.offset ?? 0
+    const append = overrides.append === true
+    params.set('limit', String(adminListingPageSize))
+    params.set('offset', String(nextOffset))
 
     try {
       const data = await api<{ listings: Listing[]; paging: ListingPaging }>(`/api/admin/listings?${params.toString()}`)
-      setListings(data.listings)
+      const nextListings = append ? [...listings, ...data.listings] : data.listings
+      setListings(nextListings)
       setQueueTotal(data.paging.total)
       setSelectedSlug((current) => {
         const preferred = overrides.selectedSlug ?? current
-        return data.listings.find((listing) => listing.slug === preferred)?.slug ?? data.listings[0]?.slug ?? ''
+        return nextListings.find((listing) => listing.slug === preferred)?.slug ?? nextListings[0]?.slug ?? ''
       })
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Could not load listings.')
@@ -802,6 +809,14 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
     if (next) setSelectedSlug(next.slug)
   }
 
+  async function loadMoreListings() {
+    await loadListings({
+      offset: listings.length,
+      append: true,
+      selectedSlug: selected?.slug,
+    })
+  }
+
   async function returnToOriginal() {
     if (!returnToSlug) return
     const targetSlug = returnToSlug
@@ -998,6 +1013,18 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
               </button>
             ))}
             {!loading && listings.length === 0 ? <p className="p-4 text-sm text-gray-600">No listings match these filters.</p> : null}
+            {listings.length > 0 && listings.length < queueTotal ? (
+              <div className="p-3">
+                <button
+                  onClick={() => void loadMoreListings()}
+                  className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-800 hover:border-gray-500"
+                  disabled={loading}
+                  type="button"
+                >
+                  {loading ? 'Loading...' : `Load more (${listings.length} of ${queueTotal})`}
+                </button>
+              </div>
+            ) : null}
           </section>
         </aside>
 
@@ -1044,7 +1071,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                     <div className="overflow-hidden rounded border border-gray-200 bg-gray-100">
                       {currentImage ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={currentImage.url} alt={currentImage.alt} className="aspect-[4/3] w-full object-cover" />
+                        <img src={currentImage.url} alt={currentImage.alt} className="aspect-[4/3] w-full object-cover" loading="lazy" decoding="async" />
                       ) : (
                         <div className="flex aspect-[4/3] items-center justify-center p-6 text-center text-sm text-gray-600">No current image</div>
                       )}
@@ -1356,7 +1383,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                     >
                       <div className="bg-gray-100">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={image.url} alt={image.alt} className="aspect-[4/3] w-full object-cover" loading="lazy" />
+                        <img src={image.url} alt={image.alt} className="aspect-[4/3] w-full object-cover" loading="lazy" decoding="async" />
                       </div>
                       <div className="space-y-2 p-3">
                         <div className="flex items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
@@ -1438,7 +1465,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                     <article key={candidate.url} className="overflow-hidden rounded border border-gray-200 bg-white">
                       <div className="bg-gray-100">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={candidate.url} alt="" className="aspect-[4/3] w-full object-cover" loading="lazy" />
+                        <img src={candidate.url} alt="" className="aspect-[4/3] w-full object-cover" loading="lazy" decoding="async" />
                       </div>
                       <div className="space-y-3 p-3">
                         <p className="line-clamp-2 text-xs text-gray-600">{candidate.reason}</p>
