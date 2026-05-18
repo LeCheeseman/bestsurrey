@@ -8,11 +8,11 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const navItems = [
-  { label: 'Eat', href: '/restaurants/', match: ['/restaurants/', '/pubs-bars/', '/brunch/'] },
-  { label: 'Do', href: '/things-to-do/', match: ['/things-to-do/'] },
-  { label: 'Family', href: '/kids-family/', match: ['/kids-family/'] },
-  { label: 'Activities', href: '/indoor-activities/', match: ['/indoor-activities/'] },
-  { label: 'Places', href: '/places/', match: ['/places/'] },
+  { label: 'Eat', href: '/restaurants', match: ['/restaurants', '/pubs-bars', '/cafes-brunch'] },
+  { label: 'Do', href: '/things-to-do', match: ['/things-to-do'] },
+  { label: 'Family', href: '/kids-family', match: ['/kids-family'] },
+  { label: 'Activities', href: '/indoor-activities', match: ['/indoor-activities'] },
+  { label: 'Places', href: '/places', match: ['/places'] },
 ]
 
 export function SiteHeader() {
@@ -48,7 +48,7 @@ export function SiteHeader() {
             {navItems.map((item) => {
               const active = item.match.some((href) => {
                 const segment = href.replaceAll('/', '')
-                return pathname === href || pathname.startsWith(href) || pathSegments.includes(segment)
+                return pathname === href || pathname.startsWith(`${href}/`) || pathSegments.includes(segment)
               })
               return (
                 <li key={item.href}>

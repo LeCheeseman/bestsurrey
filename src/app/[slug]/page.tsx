@@ -84,7 +84,7 @@ async function CategoryIndexPage({ slug }: { slug: import('@/lib/taxonomy/consta
     ...buildCollectionSchema({
       name:        `Best ${category.name} in Surrey`,
       description: `The best ${category.name.toLowerCase()} across Surrey, curated and ranked.`,
-      path:        `/${slug}/`,
+      path:        `/${slug}`,
       listings:    pageListings,
     }),
   ]
@@ -176,7 +176,7 @@ async function TownHubPage({ slug }: { slug: import('@/lib/taxonomy/constants').
     ...buildCollectionSchema({
       name:        `Best Places in ${town.name}`,
       description: `The best restaurants, activities and things to do in ${town.name}, Surrey.`,
-      path:        `/${slug}/`,
+      path:        `/${slug}`,
       listings:    topListings,
     }),
   ]

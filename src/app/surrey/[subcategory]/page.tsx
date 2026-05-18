@@ -70,7 +70,7 @@ export default async function SubcategoryPage({ params }: Props) {
     ...buildCollectionSchema({
       name:        `Best ${sub.name} in Surrey`,
       description: `Discover the best ${sub.name.toLowerCase()} across Surrey.`,
-      path:        `/surrey/${params.subcategory}/`,
+      path:        `/surrey/${params.subcategory}`,
       listings:    pageListings,
     }),
   ]

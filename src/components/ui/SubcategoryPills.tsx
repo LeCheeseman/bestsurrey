@@ -15,7 +15,7 @@ export function SubcategoryPills({ subcategories, activeSlug }: SubcategoryPills
         return (
           <Link
             key={sub.slug}
-            href={`/surrey/${sub.slug}/`}
+            href={`/surrey/${sub.slug}`}
             className={`rounded-full border px-4 py-2 text-sm font-medium font-body transition-all duration-300 hover:scale-105 ${
               isActive
                 ? 'bg-forest-green text-white border-forest-green'

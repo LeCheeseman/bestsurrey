@@ -72,7 +72,7 @@ export default async function TownCategoryPage({ params }: Props) {
 
   const breadcrumbItems = [
     { name: 'Home',       path: '/'                        },
-    { name: category.name, path: `/${params.category}/`   },
+    { name: category.name, path: `/${params.category}`   },
     { name: `${category.name} in ${town.name}` },
   ]
 
@@ -81,7 +81,7 @@ export default async function TownCategoryPage({ params }: Props) {
     ...buildCollectionSchema({
       name:        `Best ${category.name} in ${town.name}`,
       description: intro,
-      path:        `/${params.slug}/${params.category}/`,
+      path:        `/${params.slug}/${params.category}`,
       listings:    pageListings,
     }),
   ]

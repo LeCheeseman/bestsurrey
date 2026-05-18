@@ -34,7 +34,7 @@ export function ListingCard({ listing }: ListingCardProps) {
     <article className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg">
 
       {/* Entire card is clickable */}
-      <Link href={`/listings/${listing.slug}/`} className="absolute inset-0 z-10" aria-label={listing.name} />
+      <Link href={`/listings/${listing.slug}`} className="absolute inset-0 z-10" aria-label={listing.name} />
 
       {/* Sponsored label — always visible, always distinct from organic */}
       {listing.sponsored && (

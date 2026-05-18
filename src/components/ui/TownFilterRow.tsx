@@ -12,7 +12,7 @@ export function TownFilterRow({ towns, categorySlug, activeTown }: TownFilterRow
   return (
     <div className="flex flex-wrap gap-2">
       {towns.map((town) => {
-        const href = categorySlug ? `/${town.slug}/${categorySlug}/` : `/${town.slug}/`
+        const href = categorySlug ? `/${town.slug}/${categorySlug}` : `/${town.slug}`
         const isActive = town.slug === activeTown
 
         return (

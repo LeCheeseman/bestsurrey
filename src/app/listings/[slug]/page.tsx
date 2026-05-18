@@ -70,8 +70,8 @@ export default async function ListingPage({ params }: Props) {
 
   const breadcrumbItems = [
     { name: 'Home',                                          path: '/'                                                  },
-    { name: listing.primaryCategory.name,                   path: `/${listing.primaryCategory.slug}/`                 },
-    { name: `${listing.primaryCategory.name} in ${listing.town.name}`, path: `/${listing.town.slug}/${listing.primaryCategory.slug}/` },
+    { name: listing.primaryCategory.name,                   path: `/${listing.primaryCategory.slug}`                 },
+    { name: `${listing.primaryCategory.name} in ${listing.town.name}`, path: `/${listing.town.slug}/${listing.primaryCategory.slug}` },
     { name: listing.name },
   ]
 
@@ -127,11 +127,11 @@ export default async function ListingPage({ params }: Props) {
 
                 {/* Key info row */}
                 <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-gray-500 font-body">
-                  <Link href={`/${listing.town.slug}/`} className="hover:text-forest-green">
+                  <Link href={`/${listing.town.slug}`} className="hover:text-forest-green">
                     {listing.town.name}
                   </Link>
                   <span>·</span>
-                  <Link href={`/${listing.primaryCategory.slug}/`} className="hover:text-forest-green">
+                  <Link href={`/${listing.primaryCategory.slug}`} className="hover:text-forest-green">
                     {listing.primaryCategory.name}
                   </Link>
                   {listing.priceBand && (

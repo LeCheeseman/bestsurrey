@@ -100,7 +100,7 @@ export default async function HomePage() {
               The timesaving guide to the best places to dine, drink and visit in Surrey.
             </p>
             <Link
-              href="/places/"
+              href="/places"
               className="hero-arrive mt-9 inline-flex rounded-full bg-forest-green px-8 py-3 font-body text-sm font-semibold text-white shadow-sm transition-colors hover:bg-mid-green [--arrival-delay:640ms]"
             >
               Start exploring

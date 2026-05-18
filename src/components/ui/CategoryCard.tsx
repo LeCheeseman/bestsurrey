@@ -33,7 +33,7 @@ export function CategoryCard({
 
   return (
     <Link
-      href={`/${slug}/`}
+      href={`/${slug}`}
       className={[
         'group flex min-h-44 flex-col rounded-xl border border-gray-200 border-t-4 bg-white p-5 transition-all hover:-translate-y-0.5 hover:shadow-md',
         styles.border,

@@ -10,7 +10,7 @@ interface TownCardProps {
 export function TownCard({ name, slug, description, count }: TownCardProps) {
   return (
     <Link
-      href={`/${slug}/`}
+      href={`/${slug}`}
       className="group flex min-h-32 flex-col gap-3 rounded-xl border border-gray-100 bg-white p-6 transition-all hover:-translate-y-1 hover:border-forest-green hover:shadow-md"
     >
       <h3 className="font-display text-2xl font-bold leading-tight text-forest-green">
