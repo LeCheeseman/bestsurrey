@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { eq, sql } from 'drizzle-orm'
+import sharp from 'sharp'
 import { db } from '@/lib/db'
 import { categories, listings, towns } from '@/lib/db/schema'
 import type { ListingImage } from '@/types/db-shapes'
@@ -16,6 +17,44 @@ const contentTypeToExt: Record<string, string> = {
 
 export function supportedImageExt(contentType: string) {
   return contentTypeToExt[contentType.toLowerCase()]
+}
+
+async function optimiseImageForStorage(bytes: Buffer, contentType: string) {
+  const metadata = await sharp(bytes, { failOn: 'none' }).metadata()
+  const alreadySmallWebp = contentType.toLowerCase() === 'image/webp' &&
+    bytes.length <= 350_000 &&
+    (metadata.width ?? 0) <= 1600
+
+  if (alreadySmallWebp) {
+    return {
+      bytes,
+      contentType,
+      ext: 'webp',
+      originalBytes: bytes.length,
+      originalContentType: contentType,
+      width: metadata.width,
+      height: metadata.height,
+      optimised: false,
+    }
+  }
+
+  const output = await sharp(bytes, { failOn: 'none' })
+    .rotate()
+    .resize({ width: 1600, withoutEnlargement: true })
+    .webp({ quality: 82, effort: 4 })
+    .toBuffer()
+  const outputMetadata = await sharp(output).metadata()
+
+  return {
+    bytes: output,
+    contentType: 'image/webp',
+    ext: 'webp',
+    originalBytes: bytes.length,
+    originalContentType: contentType,
+    width: outputMetadata.width,
+    height: outputMetadata.height,
+    optimised: true,
+  }
 }
 
 function storageSafe(value: string) {
@@ -87,6 +126,9 @@ export async function uploadListingImage({
   if (!ext) throw new Error(`Unsupported image type: ${contentType || 'unknown'}. Use JPG, PNG, WebP or AVIF.`)
   if (bytes.length < 8_000) throw new Error('Image is too small to use as a listing photo.')
   if (bytes.length > 8 * 1024 * 1024) throw new Error('Image is over 8MB. Choose a smaller image.')
+  const storageImage = await optimiseImageForStorage(bytes, contentType)
+  if (storageImage.bytes.length < 8_000) throw new Error('Optimised image is too small to use as a listing photo.')
+  if (storageImage.bytes.length > 5 * 1024 * 1024) throw new Error('Optimised image is still over 5MB. Choose a smaller image.')
 
   const [listing] = await db
     .select({
@@ -113,11 +155,11 @@ export async function uploadListingImage({
     storageSafe(listing.townSlug),
     storageSafe(listing.categorySlug),
     storageSafe(listing.slug),
-    `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`,
+    `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${storageImage.ext}`,
   ].join('/')
 
-  const { error: uploadError } = await supabase.storage.from(listingImageBucket).upload(storagePath, bytes, {
-    contentType,
+  const { error: uploadError } = await supabase.storage.from(listingImageBucket).upload(storagePath, storageImage.bytes, {
+    contentType: storageImage.contentType,
     cacheControl: '31536000',
     upsert: true,
   })
@@ -131,8 +173,8 @@ export async function uploadListingImage({
     isPrimary: !Array.isArray(listing.images) || listing.images.length === 0,
     sourceUrl: sourceUrl || '',
     sourceType,
-    byteSize: bytes.length,
-    contentType,
+    byteSize: storageImage.bytes.length,
+    contentType: storageImage.contentType,
   }
   const existingImages = normalizeImages(listing.images)
   const images = existingImages.length === 0 ? [image] : [...existingImages, image]
