@@ -16,6 +16,8 @@
     "content:audit": "node --env-file=.env.local --import=tsx drizzle/maintenance/content-audit.ts",
     "data:cleanup:audit": "node --env-file=.env.local --import=tsx drizzle/maintenance/cleanup-data-quality.ts",
     "data:cleanup:apply-safe": "node --env-file=.env.local --import=tsx drizzle/maintenance/cleanup-data-quality.ts --apply-safe",
+    "images:optimise:dry-run": "node --env-file=.env.local --import=tsx drizzle/maintenance/optimise-listing-images.ts",
+    "images:optimise": "node --env-file=.env.local --import=tsx drizzle/maintenance/optimise-listing-images.ts --apply",
     "images:upload": "node --env-file=.env.local --import=tsx drizzle/maintenance/upload-listing-images.ts --",
     "import:csv": "node --env-file=.env.local --import=tsx drizzle/import/run-import.ts --",
     "upload:image": "node --env-file=.env.local --import=tsx drizzle/import/upload-image.ts --"
@@ -26,7 +28,8 @@
     "next": "^14.2.0",
     "postgres": "^3.4.4",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
