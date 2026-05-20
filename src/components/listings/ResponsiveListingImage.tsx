@@ -24,6 +24,7 @@ export function ResponsiveListingImage({
         className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
         priority={priority}
         sizes={sizes}
+        unoptimized
       />
     )
   }
