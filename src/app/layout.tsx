@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Cormorant_Garamond, Inter } from 'next/font/google'
+import Script from 'next/script'
 import { buildOrganizationSchema, buildWebSiteSchema } from '@/lib/schema/organization'
 import './globals.css'
 
@@ -15,6 +16,8 @@ const inter = Inter({
   variable: '--font-body',
   display: 'swap',
 })
+
+const googleAnalyticsId = 'G-W01CN1CCGV'
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bestsurrey.co.uk'),
@@ -52,6 +55,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-GB" className={`${cormorant.variable} ${inter.variable}`}>
       <body className="font-body bg-white text-gray-900 antialiased">
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${googleAnalyticsId}');
+          `}
+        </Script>
+
         {children}
 
         {/* Sitewide JSON-LD — Organization + WebSite (inline, server-rendered) */}
