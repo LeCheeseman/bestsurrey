@@ -8,7 +8,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const navItems = [
-  { label: 'Eat', href: '/restaurants', match: ['/restaurants', '/pubs-bars', '/cafes-brunch'] },
+  { label: 'Eat', href: '/restaurants', match: ['/restaurants', '/cafes-brunch'] },
+  { label: 'Drink', href: '/pubs-bars', match: ['/pubs-bars'] },
   { label: 'Do', href: '/things-to-do', match: ['/things-to-do'] },
   { label: 'Family', href: '/kids-family', match: ['/kids-family'] },
   { label: 'Activities', href: '/indoor-activities', match: ['/indoor-activities'] },
