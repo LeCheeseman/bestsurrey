@@ -12,10 +12,9 @@ import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { ListingGrid } from '@/components/listings/ListingGrid'
 import { ResponsiveListingImage } from '@/components/listings/ResponsiveListingImage'
 import { OpeningHoursTable } from '@/components/listings/OpeningHoursTable'
-import { FaqSection } from '@/components/listings/FaqSection'
 import { JsonLd } from '@/components/schema/JsonLd'
-import { buildListingSchema, buildFaqSchema } from '@/lib/schema/listing'
-import { normalizeFaq, normalizeListingImages, normalizeOpeningHours } from '@/lib/listing-json'
+import { buildListingSchema } from '@/lib/schema/listing'
+import { normalizeListingImages, normalizeOpeningHours } from '@/lib/listing-json'
 import { getListingBySlug, getRelatedListings } from '@/lib/queries/listings'
 
 export const revalidate = 3600
@@ -64,7 +63,6 @@ export default async function ListingPage({ params }: Props) {
   )
 
   const images       = normalizeListingImages(listing.images)
-  const faq          = normalizeFaq(listing.faq)
   const openingHours = normalizeOpeningHours(listing.openingHours)
   const primaryImage = images.find((i) => i.isPrimary) ?? images[0]
 
@@ -76,8 +74,6 @@ export default async function ListingPage({ params }: Props) {
   ]
 
   const listingSchema = buildListingSchema(listing)
-  const faqSchema     = faq.length > 0 ? buildFaqSchema(faq) : null
-  const schema        = faqSchema ? [listingSchema, faqSchema] : listingSchema
   const addressLine2 = listing.addressLine2?.trim()
   const showAddressLine2 = addressLine2 && addressLine2.toLowerCase() !== listing.town.name.toLowerCase()
   const addressParts = [
@@ -97,7 +93,7 @@ export default async function ListingPage({ params }: Props) {
   return (
     <>
       <SiteHeader />
-      <JsonLd id={`schema-listing-${listing.slug}`} schema={schema} />
+      <JsonLd id={`schema-listing-${listing.slug}`} schema={listingSchema} />
 
       {/* Breadcrumbs */}
       <div className="bg-white border-b border-gray-100">
@@ -190,16 +186,11 @@ export default async function ListingPage({ params }: Props) {
             <div className="lg:col-span-2 space-y-6">
 
               {/* Long description */}
-              {(listing.longDescription || listing.highlights?.length || listing.whyWeLikeIt) && (
+              {(listing.longDescription || listing.highlights?.length) && (
                 <SectionCard title={`About ${listing.name}`}>
                   <div className="text-base text-gray-700 font-body leading-relaxed whitespace-pre-line">
                     {listing.longDescription ?? listing.shortSummary}
                   </div>
-                  {listing.whyWeLikeIt && (
-                    <blockquote className="mt-6 border-l-4 border-warm-gold pl-4 text-base italic leading-relaxed text-gray-700">
-                      &ldquo;{listing.whyWeLikeIt}&rdquo;
-                    </blockquote>
-                  )}
                   {listing.highlights && listing.highlights.length > 0 && (
                     <div className="mt-7">
                       <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Highlights</h3>
@@ -229,13 +220,6 @@ export default async function ListingPage({ params }: Props) {
                       </span>
                     ))}
                   </div>
-                </SectionCard>
-              )}
-
-              {/* FAQ */}
-              {faq.length > 0 && (
-                <SectionCard title="Frequently asked questions">
-                  <FaqSection items={faq} />
                 </SectionCard>
               )}
 
