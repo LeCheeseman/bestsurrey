@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminToolsDisabledResponse, adminToolsEnabled, normalizeSlug } from '@/lib/admin-tools'
+import { normalizeSlug, requireAdminRequest } from '@/lib/admin-tools'
 import { uploadListingImage } from '@/lib/admin-image-upload'
 
 export const runtime = 'nodejs'
@@ -15,7 +15,8 @@ type ApplyBody = {
 }
 
 export async function POST(request: NextRequest) {
-  if (!adminToolsEnabled()) return adminToolsDisabledResponse()
+  const adminError = requireAdminRequest(request)
+  if (adminError) return adminError
 
   const body = (await request.json()) as ApplyBody
   const slug = normalizeSlug(body.slug || '')

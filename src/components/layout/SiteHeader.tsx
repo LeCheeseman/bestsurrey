@@ -12,7 +12,6 @@ const navItems = [
   { label: 'Drink', href: '/pubs-bars', match: ['/pubs-bars'] },
   { label: 'Do', href: '/things-to-do', match: ['/things-to-do'] },
   { label: 'Family', href: '/kids-family', match: ['/kids-family'] },
-  { label: 'Activities', href: '/indoor-activities', match: ['/indoor-activities'] },
   { label: 'Places', href: '/places', match: ['/places'] },
 ]
 

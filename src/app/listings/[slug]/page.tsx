@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
+import { AdminEditLink } from '@/components/admin/AdminEditLink'
 import { ListingGrid } from '@/components/listings/ListingGrid'
 import { ResponsiveListingImage } from '@/components/listings/ResponsiveListingImage'
 import { OpeningHoursTable } from '@/components/listings/OpeningHoursTable'
@@ -117,9 +118,18 @@ export default async function ListingPage({ params }: Props) {
                   </span>
                 )}
 
-                <h1 className="font-display text-4xl font-semibold text-forest-green">
-                  {listing.name}
-                </h1>
+                <div className="flex items-start gap-3">
+                  <h1 className="font-display text-4xl font-semibold text-forest-green">
+                    {listing.name}
+                  </h1>
+                  <AdminEditLink
+                    slug={listing.slug}
+                    label={`Edit ${listing.name}`}
+                    className="mt-1 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-semibold text-forest-green shadow-sm hover:bg-mist-green"
+                  >
+                    ✎ Edit
+                  </AdminEditLink>
+                </div>
 
                 {/* Key info row */}
                 <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-gray-500 font-body">

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { asc, desc, eq, inArray, sql } from 'drizzle-orm'
-import { adminToolsDisabledResponse, adminToolsEnabled, normalizeSlug } from '@/lib/admin-tools'
+import { normalizeSlug, requireAdminRequest } from '@/lib/admin-tools'
 import { db } from '@/lib/db'
 import { categories, listingCategories, listingSubcategories, listings, subcategories, towns } from '@/lib/db/schema'
 import type { FaqItem, ListingImage } from '@/types/db-shapes'
@@ -40,7 +40,8 @@ function jsonbValue(value: unknown) {
 }
 
 export async function POST(request: NextRequest, { params }: { params: { slug: string } }) {
-  if (!adminToolsEnabled()) return adminToolsDisabledResponse()
+  const adminError = requireAdminRequest(request)
+  if (adminError) return adminError
 
   const targetSlug = normalizeSlug(params.slug)
   const body = (await request.json()) as MergeBody

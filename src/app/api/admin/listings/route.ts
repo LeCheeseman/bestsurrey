@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { and, asc, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm'
-import { adminToolsDisabledResponse, adminToolsEnabled } from '@/lib/admin-tools'
+import { requireAdminRequest } from '@/lib/admin-tools'
 import { db } from '@/lib/db'
 import { categories, listingCategories, listingSubcategories, listings, subcategories, towns } from '@/lib/db/schema'
 
@@ -10,7 +10,8 @@ export const dynamic = 'force-dynamic'
 const statusValues = ['draft', 'review', 'published', 'unpublished'] as const
 
 export async function GET(request: NextRequest) {
-  if (!adminToolsEnabled()) return adminToolsDisabledResponse()
+  const adminError = requireAdminRequest(request)
+  if (adminError) return adminError
 
   const searchParams = request.nextUrl.searchParams
   const q = searchParams.get('q')?.trim()

@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { notFound, redirect } from 'next/navigation'
+import { adminToolsConfigured, isAdminLoggedIn } from '@/lib/admin-auth'
 
 const flagLinks = [
   { label: 'Needs cleanup', issue: 'has_issues' },
@@ -11,12 +13,24 @@ const flagLinks = [
   { label: 'Missing website', issue: 'missing_website' },
 ]
 
+export const dynamic = 'force-dynamic'
+
 export default function AdminPage() {
+  if (!adminToolsConfigured()) notFound()
+  if (!isAdminLoggedIn()) redirect('/admin/login?next=/admin')
+
   return (
     <main className="min-h-screen bg-gray-50 px-5 py-8 text-gray-950">
       <div className="mx-auto max-w-5xl space-y-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Best Surrey admin</p>
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Best Surrey admin</p>
+            <form action="/api/admin/logout" method="POST">
+              <button className="rounded border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-gray-500">
+                Log out
+              </button>
+            </form>
+          </div>
           <h1 className="mt-1 text-3xl font-semibold">Admin</h1>
           <p className="mt-2 max-w-2xl text-sm text-gray-600">
             Jump into the cleanup queue by issue type, or work through every listing by category.

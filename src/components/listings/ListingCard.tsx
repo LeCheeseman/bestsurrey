@@ -9,6 +9,7 @@
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
 import { normalizeListingImages } from '@/lib/listing-json'
+import { AdminEditLink } from '@/components/admin/AdminEditLink'
 import { ResponsiveListingImage } from './ResponsiveListingImage'
 import type { ListingCard as ListingCardData } from '@/types'
 
@@ -42,6 +43,14 @@ export function ListingCard({ listing }: ListingCardProps) {
           Sponsored
         </div>
       )}
+
+      <AdminEditLink
+        slug={listing.slug}
+        label={`Edit ${listing.name}`}
+        className="absolute right-2 top-2 z-30 rounded-full bg-white/95 px-2.5 py-1.5 text-sm font-semibold text-forest-green shadow-sm ring-1 ring-gray-200 transition hover:bg-mist-green"
+      >
+        ✎
+      </AdminEditLink>
 
       {/* Image */}
       <div className="listing-card-image aspect-[4/3] bg-mist-green relative overflow-hidden">

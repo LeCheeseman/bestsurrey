@@ -53,7 +53,6 @@ export const CATEGORIES = [
   { slug: 'cafes-brunch',      name: 'Brunch'            },
   { slug: 'things-to-do',      name: 'Things To Do'      },
   { slug: 'kids-family',       name: 'Kids & Family'     },
-  { slug: 'indoor-activities', name: 'Indoor Activities' },
 ] as const
 
 export type CategorySlug = (typeof CATEGORIES)[number]['slug']
@@ -90,18 +89,16 @@ export const SUBCATEGORIES = [
   { slug: 'days-out',               name: 'Days Out',            categorySlug: 'things-to-do'      },
   { slug: 'arts-culture',           name: 'Arts & Culture',      categorySlug: 'things-to-do'      },
   { slug: 'entertainment',          name: 'Entertainment',       categorySlug: 'things-to-do'      },
+  { slug: 'escape-rooms',           name: 'Escape Rooms',        categorySlug: 'things-to-do'      },
 
   // Kids & Family
   { slug: 'soft-play',              name: 'Soft Play',           categorySlug: 'kids-family'       },
   { slug: 'outdoor-play',           name: 'Outdoor Play',        categorySlug: 'kids-family'       },
   { slug: 'museums-education',      name: 'Museums & Education', categorySlug: 'kids-family'       },
-
-  // Indoor Activities
-  { slug: 'escape-rooms',           name: 'Escape Rooms',        categorySlug: 'indoor-activities' },
-  { slug: 'bowling',                name: 'Bowling',             categorySlug: 'indoor-activities' },
-  { slug: 'climbing',               name: 'Climbing',            categorySlug: 'indoor-activities' },
-  { slug: 'mini-golf',              name: 'Mini Golf',           categorySlug: 'indoor-activities' },
-  { slug: 'trampoline-parks',       name: 'Trampoline Parks',    categorySlug: 'indoor-activities' },
+  { slug: 'bowling',                name: 'Bowling',             categorySlug: 'kids-family'       },
+  { slug: 'climbing',               name: 'Climbing',            categorySlug: 'kids-family'       },
+  { slug: 'mini-golf',              name: 'Mini Golf',           categorySlug: 'kids-family'       },
+  { slug: 'trampoline-parks',       name: 'Trampoline Parks',    categorySlug: 'kids-family'       },
 ] as const
 
 export type SubcategorySlug = (typeof SUBCATEGORIES)[number]['slug']

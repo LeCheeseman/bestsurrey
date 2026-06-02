@@ -1,15 +1,16 @@
 import { revalidatePath } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
 import { eq } from 'drizzle-orm'
-import { adminToolsDisabledResponse, adminToolsEnabled, normalizeSlug } from '@/lib/admin-tools'
+import { normalizeSlug, requireAdminRequest } from '@/lib/admin-tools'
 import { db } from '@/lib/db'
 import { categories, listingSubcategories, listings, towns } from '@/lib/db/schema'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export async function POST(_request: NextRequest, { params }: { params: { slug: string } }) {
-  if (!adminToolsEnabled()) return adminToolsDisabledResponse()
+export async function POST(request: NextRequest, { params }: { params: { slug: string } }) {
+  const adminError = requireAdminRequest(request)
+  if (adminError) return adminError
 
   const slug = normalizeSlug(params.slug)
   if (!slug) return NextResponse.json({ error: 'Listing slug is required.' }, { status: 400 })

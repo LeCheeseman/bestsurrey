@@ -14,7 +14,6 @@ export const MIN_INDEXABLE_LISTINGS_BY_CATEGORY: Record<CategorySlug, number> = 
   'cafes-brunch':    5,
   'things-to-do':    5,
   'kids-family':     4,
-  'indoor-activities': 3,
 }
 
 export function getMinIndexableListings(categorySlug: string): number {

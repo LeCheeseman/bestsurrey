@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { eq, inArray, sql } from 'drizzle-orm'
-import { adminToolsDisabledResponse, adminToolsEnabled, normalizeSlug } from '@/lib/admin-tools'
+import { normalizeSlug, requireAdminRequest } from '@/lib/admin-tools'
 import { db } from '@/lib/db'
 import { categories, listingCategories, listingSubcategories, listings, subcategories } from '@/lib/db/schema'
 import type { FaqItem, ListingImage } from '@/types/db-shapes'
@@ -47,7 +47,8 @@ function optionalText(value: string | null | undefined) {
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: { slug: string } }) {
-  if (!adminToolsEnabled()) return adminToolsDisabledResponse()
+  const adminError = requireAdminRequest(request)
+  if (adminError) return adminError
 
   const body = (await request.json()) as PatchBody
   const slug = normalizeSlug(params.slug)

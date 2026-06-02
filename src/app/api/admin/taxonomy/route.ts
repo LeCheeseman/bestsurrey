@@ -1,14 +1,15 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { asc } from 'drizzle-orm'
-import { adminToolsDisabledResponse, adminToolsEnabled } from '@/lib/admin-tools'
+import { requireAdminRequest } from '@/lib/admin-tools'
 import { db } from '@/lib/db'
 import { categories, subcategories, towns } from '@/lib/db/schema'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
-  if (!adminToolsEnabled()) return adminToolsDisabledResponse()
+export async function GET(request: NextRequest) {
+  const adminError = requireAdminRequest(request)
+  if (adminError) return adminError
 
   const [townRows, categoryRows, subcategoryRows] = await Promise.all([
     db.select({ id: towns.id, name: towns.name, slug: towns.slug }).from(towns).orderBy(asc(towns.name)),

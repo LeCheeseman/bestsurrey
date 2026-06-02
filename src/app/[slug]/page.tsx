@@ -3,7 +3,7 @@
  * See docs/phase-1/01-information-architecture.md for routing rationale.
  */
 
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
@@ -53,6 +53,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function TopLevelSlugPage({ params }: Props) {
+  if (params.slug === 'indoor-activities') redirect('/kids-family')
+
   const classified = classifyTopLevelSlug(params.slug)
   if (!classified) notFound()
 

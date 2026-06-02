@@ -177,18 +177,19 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
 export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClientProps) {
   const categoryReviewMode = mode === 'category-review'
   const searchParams = useSearchParams()
+  const initialListingSlug = searchParams.get('listing')?.trim() || ''
   const [taxonomy, setTaxonomy] = useState<Taxonomy>(emptyTaxonomy)
   const [listings, setListings] = useState<Listing[]>([])
   const [queueTotal, setQueueTotal] = useState(0)
   const [selectedSlug, setSelectedSlug] = useState<string>('')
   const [returnToSlug, setReturnToSlug] = useState('')
-  const [q, setQ] = useState('')
+  const [q, setQ] = useState(initialListingSlug)
   const [town, setTown] = useState('')
   const [category, setCategory] = useState('')
   const [status, setStatus] = useState('published')
   const [verifiedFilter, setVerifiedFilter] = useState(categoryReviewMode ? 'all' : 'all')
   const [imageFilter, setImageFilter] = useState('all')
-  const [issueFilter, setIssueFilter] = useState(searchParams.get('issue') || (categoryReviewMode ? 'all' : 'has_issues'))
+  const [issueFilter, setIssueFilter] = useState(searchParams.get('issue') || (initialListingSlug ? 'all' : categoryReviewMode ? 'all' : 'has_issues'))
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')

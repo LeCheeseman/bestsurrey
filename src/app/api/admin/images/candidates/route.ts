@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { get as httpsGet, RequestOptions } from 'node:https'
-import { adminToolsDisabledResponse, adminToolsEnabled } from '@/lib/admin-tools'
+import { requireAdminRequest } from '@/lib/admin-tools'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -165,7 +165,8 @@ function extractCandidates(html: string, pageUrl: string) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!adminToolsEnabled()) return adminToolsDisabledResponse()
+  const adminError = requireAdminRequest(request)
+  if (adminError) return adminError
 
   const body = (await request.json()) as CandidateBody
   const manualUrl = body.manualUrl?.trim()

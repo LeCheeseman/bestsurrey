@@ -3,7 +3,7 @@
  * The primary SEO landing pages for high-intent local queries.
  */
 
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
@@ -31,6 +31,14 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  if (isTownSlug(params.slug) && params.category === 'indoor-activities') {
+    return {
+      title: 'Kids & Family | Best Surrey',
+      alternates: { canonical: `/${params.slug}/kids-family` },
+      robots: { index: false, follow: true },
+    }
+  }
+
   if (!isTownSlug(params.slug) || !isCategorySlug(params.category)) return {}
 
   const town     = TOWN_BY_SLUG[params.slug]
@@ -55,6 +63,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function TownCategoryPage({ params }: Props) {
+  if (isTownSlug(params.slug) && params.category === 'indoor-activities') {
+    redirect(`/${params.slug}/kids-family`)
+  }
+
   if (!isTownSlug(params.slug) || !isCategorySlug(params.category)) notFound()
 
   const town     = TOWN_BY_SLUG[params.slug]
