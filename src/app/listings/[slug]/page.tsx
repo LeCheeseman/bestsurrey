@@ -83,13 +83,15 @@ export default async function ListingPage({ params }: Props) {
     listing.town.name,
     listing.postcode,
   ].filter(Boolean)
-  const mapQuery = listing.latitude && listing.longitude
+  const placeSearchQuery = [listing.name, ...addressParts].filter(Boolean).join(', ')
+  const coordinateQuery = listing.latitude && listing.longitude
     ? `${listing.latitude},${listing.longitude}`
-    : addressParts.join(', ')
+    : null
+  const mapEmbedQuery = coordinateQuery ?? placeSearchQuery
   const mapSrc = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && listing.latitude && listing.longitude
-    ? `https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(mapQuery)}&zoom=15`
-    : `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=15&output=embed`
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`
+    ? `https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(mapEmbedQuery)}&zoom=15`
+    : `https://www.google.com/maps?q=${encodeURIComponent(placeSearchQuery)}&z=15&output=embed`
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeSearchQuery)}`
 
   return (
     <>

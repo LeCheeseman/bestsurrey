@@ -23,24 +23,20 @@ interface CompletenessFields {
   latitude:        NewListing['latitude']
   longitude:       NewListing['longitude']
   highlights:      NewListing['highlights']
-  whyWeLikeIt:     NewListing['whyWeLikeIt']
-  faq:             NewListing['faq']
 }
 
 /** Field weights. Must sum to 100. */
 const FIELD_WEIGHTS: Array<{ check: (f: CompletenessFields) => boolean; points: number }> = [
   { check: (f) => Boolean(f.shortSummary?.trim()),           points: 10 },
-  { check: (f) => Boolean(f.longDescription?.trim()),        points: 15 },
-  { check: (f) => (f.images?.length ?? 0) >= 1,             points: 15 },
+  { check: (f) => Boolean(f.longDescription?.trim()),        points: 20 },
+  { check: (f) => (f.images?.length ?? 0) >= 1,             points: 20 },
   { check: (f) => Boolean(f.openingHours),                  points: 10 },
-  { check: (f) => Boolean(f.websiteUrl?.trim()),             points: 5  },
+  { check: (f) => Boolean(f.websiteUrl?.trim()),             points: 10 },
   { check: (f) => Boolean(f.phoneNumber?.trim()),            points: 5  },
   { check: (f) => Boolean(f.addressLine1?.trim()),           points: 5  },
   { check: (f) => Boolean(f.postcode?.trim()),               points: 5  },
   { check: (f) => f.latitude != null && f.longitude != null, points: 5  },
   { check: (f) => (f.highlights?.length ?? 0) >= 3,         points: 10 },
-  { check: (f) => Boolean(f.whyWeLikeIt?.trim()),           points: 10 },
-  { check: (f) => (f.faq?.length ?? 0) >= 1,               points: 5  },
 ] // total: 100
 
 export function computeCompletenessScore(fields: CompletenessFields): number {

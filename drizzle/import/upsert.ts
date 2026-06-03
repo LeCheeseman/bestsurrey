@@ -93,11 +93,9 @@ export async function upsertListings(
       const completenessScore = computeCompletenessScore({
         shortSummary:    r.short_summary    ?? null,
         longDescription: r.long_description ?? null,
-        whyWeLikeIt:     r.why_we_like_it   ?? null,
         highlights:      highlights.length > 0 ? highlights : null,
         images:          images ?? null,
         openingHours:    openingHours ?? null,
-        faq:             faq ?? null,
         websiteUrl:      r.website_url   ?? null,
         phoneNumber:     r.phone_number  ?? null,
         addressLine1:    r.address_line1 ?? null,

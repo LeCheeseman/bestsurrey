@@ -14,11 +14,6 @@ type ListingImage = {
   contentType?: string
 }
 
-type FaqItem = {
-  question: string
-  answer: string
-}
-
 type TaxonomyItem = { id: string; name: string; slug: string; categoryId?: string }
 type ListingCategory = TaxonomyItem & { isPrimary: boolean }
 type ListingMatch = {
@@ -43,9 +38,7 @@ type Listing = {
   shortSummary: string | null
   longDescription: string | null
   highlights: string[] | null
-  whyWeLikeIt: string | null
   bestFor: string[] | null
-  faq: FaqItem[] | null
   images: ListingImage[]
   status: 'draft' | 'review' | 'published' | 'unpublished'
   verified: boolean
@@ -87,7 +80,6 @@ type DetailsForm = {
   postcode: string
   shortSummary: string
   longDescription: string
-  whyWeLikeIt: string
   highlightsText: string
   bestForText: string
   familyFriendly: '' | 'true' | 'false'
@@ -203,14 +195,12 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
     postcode: '',
     shortSummary: '',
     longDescription: '',
-    whyWeLikeIt: '',
     highlightsText: '',
     bestForText: '',
     familyFriendly: '',
     priceBand: '',
   })
   const [notes, setNotes] = useState('')
-  const [faqItems, setFaqItems] = useState<FaqItem[]>([])
   const [selectedSubcategorySlugs, setSelectedSubcategorySlugs] = useState<string[]>([])
   const [selectedCategorySlugs, setSelectedCategorySlugs] = useState<string[]>([])
   const [categoryToAdd, setCategoryToAdd] = useState('')
@@ -294,14 +284,12 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
       postcode: selected.postcode ?? '',
       shortSummary: selected.shortSummary ?? '',
       longDescription: selected.longDescription ?? '',
-      whyWeLikeIt: selected.whyWeLikeIt ?? '',
       highlightsText: selected.highlights?.join('\n') ?? '',
       bestForText: selected.bestFor?.join('\n') ?? '',
       familyFriendly: selected.familyFriendly === null ? '' : selected.familyFriendly ? 'true' : 'false',
       priceBand: selected.priceBand ?? '',
     })
     setNotes(selected.editorialNotes ?? '')
-    setFaqItems(selected.faq?.length ? selected.faq : [])
     const categories = selected.categories?.length ? selected.categories : [{ id: selected.categorySlug, name: selected.categoryName, slug: selected.categorySlug, isPrimary: true }]
     setSelectedCategorySlugs(categories.map((item) => item.slug))
     setSelectedSubcategorySlugs(selected.subcategories.map((item) => item.slug))
@@ -361,10 +349,8 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                 postcode: patch.postcode === undefined ? item.postcode : patch.postcode,
                 shortSummary: patch.shortSummary === undefined ? item.shortSummary : patch.shortSummary,
                 longDescription: patch.longDescription === undefined ? item.longDescription : patch.longDescription,
-                whyWeLikeIt: patch.whyWeLikeIt === undefined ? item.whyWeLikeIt : patch.whyWeLikeIt,
                 highlights: patch.highlights === undefined ? item.highlights : patch.highlights,
                 bestFor: patch.bestFor === undefined ? item.bestFor : patch.bestFor,
-                faq: patch.faq === undefined ? item.faq : patch.faq,
                 familyFriendly: patch.familyFriendly === undefined ? item.familyFriendly : patch.familyFriendly,
                 priceBand: patch.priceBand === undefined ? item.priceBand : patch.priceBand,
                 editorialNotes: patch.editorialNotes === undefined ? item.editorialNotes : patch.editorialNotes,
@@ -543,9 +529,6 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
   async function saveDetails() {
     const highlights = details.highlightsText.split('\n').map((item) => item.trim()).filter(Boolean)
     const bestFor = details.bestForText.split('\n').map((item) => item.trim()).filter(Boolean)
-    const faq = faqItems
-      .map((item) => ({ question: item.question.trim(), answer: item.answer.trim() }))
-      .filter((item) => item.question && item.answer)
     await saveListing({
       name: details.name,
       websiteUrl: details.websiteUrl || null,
@@ -555,10 +538,8 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
       postcode: details.postcode || null,
       shortSummary: details.shortSummary || null,
       longDescription: details.longDescription || null,
-      whyWeLikeIt: details.whyWeLikeIt || null,
       highlights,
       bestFor,
-      faq,
       familyFriendly: details.familyFriendly === '' ? null : details.familyFriendly === 'true',
       priceBand: details.priceBand || null,
     })
@@ -632,14 +613,6 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
 
   function detailField<K extends keyof DetailsForm>(key: K, value: DetailsForm[K]) {
     setDetails((current) => ({ ...current, [key]: value }))
-  }
-
-  function updateFaqItem(index: number, key: keyof FaqItem, value: string) {
-    setFaqItems((items) => items.map((item, itemIndex) => (itemIndex === index ? { ...item, [key]: value } : item)))
-  }
-
-  function removeFaqItem(index: number) {
-    setFaqItems((items) => items.filter((_, itemIndex) => itemIndex !== index))
   }
 
   function updateListingImages(slug: string, images: ListingImage[]) {
@@ -1282,10 +1255,6 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                   <textarea value={details.shortSummary} onChange={(event) => detailField('shortSummary', event.target.value)} className="mt-1 min-h-20 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950" />
                 </label>
                 <label className="mt-3 block text-xs font-medium text-gray-700">
-                  Why we like it
-                  <textarea value={details.whyWeLikeIt} onChange={(event) => detailField('whyWeLikeIt', event.target.value)} className="mt-1 min-h-24 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950" />
-                </label>
-                <label className="mt-3 block text-xs font-medium text-gray-700">
                   Highlights
                   <textarea value={details.highlightsText} onChange={(event) => detailField('highlightsText', event.target.value)} className="mt-1 min-h-28 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950" placeholder="One highlight per line" />
                 </label>
@@ -1297,40 +1266,6 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                   Best for
                   <textarea value={details.bestForText} onChange={(event) => detailField('bestForText', event.target.value)} className="mt-1 min-h-24 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal text-gray-950" placeholder="One tag per line" />
                 </label>
-                <div className="mt-3 rounded border border-gray-200 bg-gray-50 p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <h4 className="text-xs font-semibold text-gray-700">Frequently asked questions</h4>
-                    <button
-                      type="button"
-                      onClick={() => setFaqItems((items) => [...items, { question: '', answer: '' }])}
-                      className="text-xs font-medium text-emerald-800 underline"
-                    >
-                      Add FAQ
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-3">
-                    {faqItems.map((item, index) => (
-                      <div key={index} className="rounded border border-gray-200 bg-white p-3">
-                        <input
-                          value={item.question}
-                          onChange={(event) => updateFaqItem(index, 'question', event.target.value)}
-                          className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                          placeholder="Question"
-                        />
-                        <textarea
-                          value={item.answer}
-                          onChange={(event) => updateFaqItem(index, 'answer', event.target.value)}
-                          className="mt-2 min-h-24 w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                          placeholder="Answer"
-                        />
-                        <button type="button" onClick={() => removeFaqItem(index)} className="mt-2 text-xs font-medium text-rose-800 underline">
-                          Remove FAQ
-                        </button>
-                      </div>
-                    ))}
-                    {faqItems.length === 0 ? <p className="text-sm text-gray-600">No FAQs on this listing.</p> : null}
-                  </div>
-                </div>
                 <button onClick={() => void saveDetails()} className={`${buttonClass(true)} mt-3`} disabled={saving}>
                   Save public listing content
                 </button>
