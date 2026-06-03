@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
-  // Images: allow Supabase storage domain once configured
+  // Listing and brand images are pre-optimised before deployment/storage upload.
+  // Keep Vercel Image Optimization disabled so image requests never consume
+  // transformation quota via /_next/image.
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -40,17 +43,17 @@ const nextConfig = {
       },
       {
         source: '/surrey/go-karting',
-        destination: '/indoor-activities',
+        destination: '/kids-family',
         permanent: true,
       },
       {
         source: '/surrey/laser-tag',
-        destination: '/indoor-activities',
+        destination: '/kids-family',
         permanent: true,
       },
       {
         source: '/surrey/swimming',
-        destination: '/indoor-activities',
+        destination: '/kids-family',
         permanent: true,
       },
     ]
