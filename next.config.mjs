@@ -73,6 +73,11 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/surrey/brunch',
+        destination: '/cafes-brunch',
+        permanent: true,
+      },
+      {
         source: '/surrey/tea-rooms',
         destination: '/cafes-brunch',
         permanent: true,
