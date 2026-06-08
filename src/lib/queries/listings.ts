@@ -137,6 +137,36 @@ export async function getListingsBySubcategory(
   return rows as ListingCard[]
 }
 
+export async function getListingsByTownAndSubcategory(
+  townSlug: string,
+  subcategorySlug: string,
+  limit = 12
+): Promise<ListingCard[]> {
+  const sub = await db
+    .select({ id: subcategories.id })
+    .from(subcategories)
+    .where(eq(subcategories.slug, subcategorySlug))
+    .limit(1)
+
+  if (!sub[0]) return []
+
+  const rows = await db
+    .select(listingCardSelect)
+    .from(listings)
+    .innerJoin(towns,                eq(listings.townId,                    towns.id))
+    .innerJoin(categories,           eq(listings.primaryCategoryId,         categories.id))
+    .innerJoin(listingSubcategories, eq(listingSubcategories.listingId,     listings.id))
+    .where(and(
+      eq(listings.status,                        'published'),
+      eq(towns.slug,                             townSlug),
+      eq(listingSubcategories.subcategoryId,     sub[0].id)
+    ))
+    .orderBy(desc(listings.rankingScore))
+    .limit(limit)
+
+  return rows as ListingCard[]
+}
+
 export async function getFeaturedListings(limit = 6): Promise<ListingCard[]> {
   const rows = await db
     .select(listingCardSelect)

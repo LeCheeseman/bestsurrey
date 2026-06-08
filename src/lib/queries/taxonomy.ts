@@ -145,6 +145,29 @@ export async function getTownsWithListingsForCategory(
   return rows.map((r) => ({ slug: r.slug, name: r.name, count: r.total }))
 }
 
+export async function getTownsWithListingsForSubcategory(
+  subcategorySlug: string
+): Promise<Array<{ slug: string; name: string; count: number }>> {
+  const rows = await db
+    .select({
+      slug:  towns.slug,
+      name:  towns.name,
+      total: count(listings.id),
+    })
+    .from(towns)
+    .innerJoin(listings,              eq(listings.townId,                  towns.id))
+    .innerJoin(listingSubcategories,  eq(listingSubcategories.listingId,   listings.id))
+    .innerJoin(subcategories,         eq(listingSubcategories.subcategoryId, subcategories.id))
+    .where(and(
+      eq(listings.status,     'published'),
+      eq(subcategories.slug,  subcategorySlug)
+    ))
+    .groupBy(towns.slug, towns.name)
+    .having(sql`count(${listings.id}) > 0`)
+
+  return rows.map((r) => ({ slug: r.slug, name: r.name, count: r.total }))
+}
+
 /**
  * Returns subcategories for a category that have at least one published listing.
  * Used to render subcategory filter pills on category and town+category pages.
@@ -163,6 +186,33 @@ export async function getActiveSubcategoriesForCategory(
     .orderBy(subcategories.sortOrder)
 
   return rows
+}
+
+export async function getActiveSubcategoriesForTownCategory(
+  townSlug: string,
+  categorySlug: string
+): Promise<Array<{ slug: string; name: string; count: number }>> {
+  const rows = await db
+    .select({
+      slug:  subcategories.slug,
+      name:  subcategories.name,
+      total: count(listings.id),
+    })
+    .from(subcategories)
+    .innerJoin(categories,            eq(subcategories.categoryId,            categories.id))
+    .innerJoin(listingSubcategories,  eq(listingSubcategories.subcategoryId, subcategories.id))
+    .innerJoin(listings,              eq(listingSubcategories.listingId,      listings.id))
+    .innerJoin(towns,                 eq(listings.townId,                     towns.id))
+    .where(and(
+      eq(listings.status,  'published'),
+      eq(towns.slug,       townSlug),
+      eq(categories.slug,  categorySlug)
+    ))
+    .groupBy(subcategories.slug, subcategories.name, subcategories.sortOrder)
+    .having(sql`count(${listings.id}) > 0`)
+    .orderBy(subcategories.sortOrder)
+
+  return rows.map((row) => ({ slug: row.slug, name: row.name, count: row.total }))
 }
 
 // ─── Editorial overrides ──────────────────────────────────────────────────────

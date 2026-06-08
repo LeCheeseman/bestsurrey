@@ -12,10 +12,10 @@ import { ListingGrid } from '@/components/listings/ListingGrid'
 import { SubcategoryPills } from '@/components/ui/SubcategoryPills'
 import { TownFilterRow } from '@/components/ui/TownFilterRow'
 import { JsonLd } from '@/components/schema/JsonLd'
-import { isTownSlug, isCategorySlug } from '@/lib/taxonomy/validation'
-import { TOWN_BY_SLUG, CATEGORY_BY_SLUG } from '@/lib/taxonomy/constants'
-import { getListingsByTownAndCategory } from '@/lib/queries/listings'
-import { getActiveSubcategoriesForCategory, getCategoryTownOverride, getListingCountForTownCategory, getMinIndexableListings, getTownsWithListingsForCategory } from '@/lib/queries/taxonomy'
+import { isTownSlug, isCategorySlug, isSubcategorySlug } from '@/lib/taxonomy/validation'
+import { TOWN_BY_SLUG, CATEGORY_BY_SLUG, SUBCATEGORIES } from '@/lib/taxonomy/constants'
+import { getListingsByTownAndCategory, getListingsByTownAndSubcategory } from '@/lib/queries/listings'
+import { getActiveSubcategoriesForTownCategory, getCategoryTownOverride, getListingCountForTownCategory, getMinIndexableListings, getTownsWithListingsForCategory, getTownsWithListingsForSubcategory } from '@/lib/queries/taxonomy'
 import { buildBreadcrumbSchema } from '@/lib/schema/breadcrumbs'
 import { buildCollectionSchema } from '@/lib/schema/collection'
 
@@ -39,7 +39,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
   }
 
-  if (!isTownSlug(params.slug) || !isCategorySlug(params.category)) return {}
+  if (!isTownSlug(params.slug)) return {}
+
+  if (isSubcategorySlug(params.category)) {
+    const town = TOWN_BY_SLUG[params.slug]
+    const sub = SUBCATEGORIES.find((item) => item.slug === params.category)
+    if (!sub) return {}
+
+    const metadata: Metadata = {
+      title:       `Best ${sub.name} in ${town.name}, Surrey`,
+      description: `The best ${sub.name.toLowerCase()} in ${town.name}. Curated local picks from Best Surrey.`,
+      alternates:  { canonical: `/${params.slug}/${params.category}` },
+    }
+
+    try {
+      const listings = await getListingsByTownAndSubcategory(params.slug, params.category, 1)
+      if (listings.length === 0) {
+        metadata.robots = { index: false, follow: true }
+      }
+    } catch {
+      // If the DB is unavailable, keep default metadata and let ISR retry later.
+    }
+
+    return metadata
+  }
+
+  if (!isCategorySlug(params.category)) return {}
 
   const town     = TOWN_BY_SLUG[params.slug]
   const category = CATEGORY_BY_SLUG[params.category]
@@ -67,14 +92,20 @@ export default async function TownCategoryPage({ params }: Props) {
     redirect(`/${params.slug}/kids-family`)
   }
 
-  if (!isTownSlug(params.slug) || !isCategorySlug(params.category)) notFound()
+  if (!isTownSlug(params.slug)) notFound()
+
+  if (isSubcategorySlug(params.category)) {
+    return <TownSubcategoryPage townSlug={params.slug} subcategorySlug={params.category} />
+  }
+
+  if (!isCategorySlug(params.category)) notFound()
 
   const town     = TOWN_BY_SLUG[params.slug]
   const category = CATEGORY_BY_SLUG[params.category]
 
   const [pageListings, subcategories, override, townsWithListings] = await Promise.all([
     getListingsByTownAndCategory(params.slug, params.category, 12),
-    getActiveSubcategoriesForCategory(params.category),
+    getActiveSubcategoriesForTownCategory(params.slug, params.category),
     getCategoryTownOverride(params.slug, params.category),
     getTownsWithListingsForCategory(params.category),
   ])
@@ -121,9 +152,9 @@ export default async function TownCategoryPage({ params }: Props) {
           {subcategories.length > 0 && (
             <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
               <h2 className="font-body text-xs font-bold uppercase tracking-[0.18em] text-gray-900 mb-4">
-                Browse by type
+                Browse {category.name.toLowerCase()} by type in {town.name}
               </h2>
-              <SubcategoryPills subcategories={subcategories} />
+              <SubcategoryPills subcategories={subcategories} townSlug={params.slug} />
             </section>
           )}
 
@@ -147,6 +178,105 @@ export default async function TownCategoryPage({ params }: Props) {
             {pageListings.length === 0 && (
               <p className="text-sm text-gray-500 font-body">
                 We&apos;re adding {category.name.toLowerCase()} in {town.name} soon. Check back shortly.
+              </p>
+            )}
+          </section>
+
+        </div>
+      </main>
+
+      <SiteFooter />
+    </>
+  )
+}
+
+async function TownSubcategoryPage({
+  townSlug,
+  subcategorySlug,
+}: {
+  townSlug: string
+  subcategorySlug: string
+}) {
+  const town = TOWN_BY_SLUG[townSlug as keyof typeof TOWN_BY_SLUG]
+  const sub = SUBCATEGORIES.find((item) => item.slug === subcategorySlug)
+  if (!town || !sub) notFound()
+
+  const category = CATEGORY_BY_SLUG[sub.categorySlug]
+
+  const [pageListings, siblingSubcategories, townsWithListings] = await Promise.all([
+    getListingsByTownAndSubcategory(townSlug, subcategorySlug, 12),
+    getActiveSubcategoriesForTownCategory(townSlug, sub.categorySlug),
+    getTownsWithListingsForSubcategory(subcategorySlug),
+  ])
+
+  const intro = `The best ${sub.name.toLowerCase()} in ${town.name}. Curated local picks from Best Surrey.`
+
+  const breadcrumbItems = [
+    { name: 'Home', path: '/' },
+    { name: town.name, path: `/${townSlug}` },
+    { name: category.name, path: `/${townSlug}/${sub.categorySlug}` },
+    { name: `${sub.name} in ${town.name}` },
+  ]
+
+  const schema = [
+    buildBreadcrumbSchema(breadcrumbItems),
+    ...buildCollectionSchema({
+      name:        `Best ${sub.name} in ${town.name}`,
+      description: intro,
+      path:        `/${townSlug}/${subcategorySlug}`,
+      listings:    pageListings,
+    }),
+  ]
+
+  const nearbyTowns = townsWithListings
+    .filter((item) => item.slug !== townSlug)
+    .slice(0, 8)
+
+  return (
+    <>
+      <SiteHeader />
+      <JsonLd id={`schema-${townSlug}-${subcategorySlug}`} schema={schema} />
+
+      <PageHeader
+        h1={`Best ${sub.name} in ${town.name}`}
+        intro={intro}
+        breadcrumbs={breadcrumbItems}
+      />
+
+      <main className="bg-cream min-h-screen">
+        <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
+
+          {siblingSubcategories.length > 0 && (
+            <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <h2 className="font-body text-xs font-bold uppercase tracking-[0.18em] text-gray-900 mb-4">
+                Browse {category.name.toLowerCase()} by type in {town.name}
+              </h2>
+              <SubcategoryPills
+                subcategories={siblingSubcategories}
+                activeSlug={subcategorySlug}
+                townSlug={townSlug}
+              />
+            </section>
+          )}
+
+          {nearbyTowns.length > 0 && (
+            <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <h2 className="font-body text-xs font-bold uppercase tracking-[0.18em] text-gray-900 mb-4">
+                {sub.name} in nearby towns
+              </h2>
+              <TownFilterRow
+                towns={nearbyTowns}
+                categorySlug={subcategorySlug}
+                activeTown={townSlug}
+              />
+            </section>
+          )}
+
+          <section className="pt-2">
+            <ListingGrid listings={pageListings} />
+            {pageListings.length === 0 && (
+              <p className="text-sm text-gray-500 font-body">
+                We&apos;re adding {sub.name.toLowerCase()} in {town.name} soon. Check back shortly.
               </p>
             )}
           </section>

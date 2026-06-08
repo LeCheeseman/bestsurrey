@@ -3,19 +3,21 @@ import Link from 'next/link'
 interface SubcategoryPillsProps {
   subcategories: Array<{ slug: string; name: string }>
   activeSlug?:   string
+  townSlug?:     string
 }
 
-export function SubcategoryPills({ subcategories, activeSlug }: SubcategoryPillsProps) {
+export function SubcategoryPills({ subcategories, activeSlug, townSlug }: SubcategoryPillsProps) {
   if (subcategories.length === 0) return null
 
   return (
     <div className="flex flex-wrap gap-2">
       {subcategories.map((sub) => {
         const isActive = sub.slug === activeSlug
+        const href = townSlug ? `/${townSlug}/${sub.slug}` : `/surrey/${sub.slug}`
         return (
           <Link
             key={sub.slug}
-            href={`/surrey/${sub.slug}`}
+            href={href}
             className={`rounded-full border px-4 py-2 text-sm font-medium font-body transition-all duration-300 hover:scale-105 ${
               isActive
                 ? 'bg-forest-green text-white border-forest-green'
