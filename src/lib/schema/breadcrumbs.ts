@@ -3,7 +3,7 @@
  * Each page template constructs its own breadcrumb trail and passes it here.
  */
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bestsurrey.co.uk'
+import { SITE_URL } from '@/lib/site'
 
 export interface BreadcrumbItem {
   name: string

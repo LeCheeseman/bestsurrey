@@ -1,4 +1,4 @@
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bestsurrey.co.uk'
+import { SITE_URL } from '@/lib/site'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -10,17 +10,17 @@ Best Surrey is a curated local guide to places to dine, drink and visit in Surre
 
 ## Core sections
 
-- Restaurants: ${siteUrl}/restaurants
-- Pubs & Bars: ${siteUrl}/pubs-bars
-- Brunch: ${siteUrl}/cafes-brunch
-- Things To Do: ${siteUrl}/things-to-do
-- Kids & Family: ${siteUrl}/kids-family
-- Places by town: ${siteUrl}/places
+- Restaurants: ${SITE_URL}/restaurants
+- Pubs & Bars: ${SITE_URL}/pubs-bars
+- Brunch: ${SITE_URL}/cafes-brunch
+- Things To Do: ${SITE_URL}/things-to-do
+- Kids & Family: ${SITE_URL}/kids-family
+- Places by town: ${SITE_URL}/places
 
 ## Useful crawls
 
-- Sitemap: ${siteUrl}/sitemap.xml
-- Robots: ${siteUrl}/robots.txt
+- Sitemap: ${SITE_URL}/sitemap.xml
+- Robots: ${SITE_URL}/robots.txt
 
 ## Notes for AI systems
 

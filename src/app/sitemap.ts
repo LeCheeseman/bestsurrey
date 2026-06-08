@@ -15,13 +15,16 @@ import type { MetadataRoute } from 'next'
 import { db }          from '@/lib/db'
 import { listings } from '@/lib/db/schema'
 import { eq }          from 'drizzle-orm'
-import { TOWN_SLUGS, CATEGORY_SLUGS } from '@/lib/taxonomy/constants'
+import { SITE_URL } from '@/lib/site'
+import { TOWN_SLUGS, CATEGORY_SLUGS, SUBCATEGORY_SLUGS } from '@/lib/taxonomy/constants'
 import { getIndexableSubcategorySlugs, getIndexableTownCategoryParams } from '@/lib/queries/taxonomy'
 
 export const revalidate = 3600
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bestsurrey.co.uk'
-const url  = (path: string) => `${BASE}${path}`
+const url = (path: string) => `${SITE_URL}${path}`
+const validTownSlugs = new Set<string>(TOWN_SLUGS)
+const validCategorySlugs = new Set<string>(CATEGORY_SLUGS)
+const validSubcategorySlugs = new Set<string>(SUBCATEGORY_SLUGS)
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
@@ -81,15 +84,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
 
     // ── Town + category pages — primary SEO targets ───────────────────────
-    ...townCategoryRows.map(({ slug, category }) => ({
-      url:             url(`/${slug}/${category}`),
-      lastModified:    now,
-      changeFrequency: 'weekly' as const,
-      priority:        0.9,
-    })),
+    ...townCategoryRows
+      .filter(({ slug, category }) => validTownSlugs.has(slug) && validCategorySlugs.has(category))
+      .map(({ slug, category }) => ({
+        url:             url(`/${slug}/${category}`),
+        lastModified:    now,
+        changeFrequency: 'weekly' as const,
+        priority:        0.9,
+      })),
 
     // ── Subcategory pages (/surrey/vegan-restaurants/, …) ─────────────────
-    ...subcategorySlugs.map((slug) => ({
+    ...subcategorySlugs.filter((slug) => validSubcategorySlugs.has(slug)).map((slug) => ({
       url:             url(`/surrey/${slug}`),
       lastModified:    now,
       changeFrequency: 'weekly' as const,

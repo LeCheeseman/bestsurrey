@@ -17,6 +17,62 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'bestsurrey.co.uk',
+          },
+        ],
+        destination: 'https://www.bestsurrey.co.uk/:path*',
+        permanent: true,
+      },
+      {
+        source: '/indoor-activities',
+        destination: '/kids-family',
+        permanent: true,
+      },
+      {
+        source: '/activity-venues',
+        destination: '/kids-family',
+        permanent: true,
+      },
+      {
+        source: '/kids-activities',
+        destination: '/kids-family',
+        permanent: true,
+      },
+      {
+        source: '/surrey/indoor-activities',
+        destination: '/kids-family',
+        permanent: true,
+      },
+      {
+        source: '/surrey/activity-venues',
+        destination: '/kids-family',
+        permanent: true,
+      },
+      {
+        source: '/surrey/kids-activities',
+        destination: '/kids-family',
+        permanent: true,
+      },
+      {
+        source: '/:town/indoor-activities',
+        destination: '/:town/kids-family',
+        permanent: true,
+      },
+      {
+        source: '/:town/activity-venues',
+        destination: '/:town/kids-family',
+        permanent: true,
+      },
+      {
+        source: '/:town/kids-activities',
+        destination: '/:town/kids-family',
+        permanent: true,
+      },
+      {
         source: '/surrey/tea-rooms',
         destination: '/cafes-brunch',
         permanent: true,
@@ -44,6 +100,21 @@ const nextConfig = {
       {
         source: '/surrey/go-karting',
         destination: '/kids-family',
+        permanent: true,
+      },
+      {
+        source: '/surrey/cycling',
+        destination: '/things-to-do',
+        permanent: true,
+      },
+      {
+        source: '/surrey/axe-throwing',
+        destination: '/things-to-do',
+        permanent: true,
+      },
+      {
+        source: '/surrey/virtual-reality',
+        destination: '/things-to-do',
         permanent: true,
       },
       {
@@ -87,7 +158,7 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https:",
               "font-src 'self'",

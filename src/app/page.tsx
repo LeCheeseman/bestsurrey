@@ -7,6 +7,7 @@ import { CategoryCard } from '@/components/ui/CategoryCard'
 import { TownCard } from '@/components/ui/TownCard'
 import { getListingCountsByCategory, getListingCountsByTown } from '@/lib/queries/taxonomy'
 import { CATEGORIES, TOWNS } from '@/lib/taxonomy/constants'
+import { SITE_URL } from '@/lib/site'
 
 export const revalidate = 3600
 
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title:       'Best Surrey — The Finest in the County',
     description: 'The curated guide to the best restaurants, cafés, activities and things to do across Surrey.',
-    url:         'https://bestsurrey.co.uk',
+    url:         SITE_URL,
   },
 }
 

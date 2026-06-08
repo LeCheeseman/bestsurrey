@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Cormorant_Garamond, Inter } from 'next/font/google'
 import Script from 'next/script'
 import { buildOrganizationSchema, buildWebSiteSchema } from '@/lib/schema/organization'
+import { SITE_URL } from '@/lib/site'
 import './globals.css'
 
 const cormorant = Cormorant_Garamond({
@@ -20,7 +21,7 @@ const inter = Inter({
 const googleAnalyticsId = 'G-W01CN1CCGV'
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bestsurrey.co.uk'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default:  'Best Surrey — The Finest in the County',
     template: '%s | Best Surrey',

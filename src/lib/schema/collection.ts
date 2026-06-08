@@ -3,7 +3,7 @@
  * Used on all index pages: category, town, town+category, subcategory, roundup.
  */
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bestsurrey.co.uk'
+import { SITE_URL } from '@/lib/site'
 
 export interface CollectionListingItem {
   slug: string

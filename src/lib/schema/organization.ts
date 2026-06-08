@@ -3,7 +3,7 @@
  * Rendered once in the root layout — applies sitewide.
  */
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bestsurrey.co.uk'
+import { SITE_URL } from '@/lib/site'
 
 export function buildOrganizationSchema() {
   return {

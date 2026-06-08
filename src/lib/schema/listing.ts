@@ -15,8 +15,7 @@
 import type { ListingWithRelations } from '@/types'
 import type { FaqItem } from '@/types/db-shapes'
 import { normalizeListingImages, normalizeOpeningHours } from '@/lib/listing-json'
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bestsurrey.co.uk'
+import { SITE_URL } from '@/lib/site'
 
 const ENTITY_TYPE_TO_SCHEMA: Record<string, string> = {
   restaurant:       'Restaurant',
