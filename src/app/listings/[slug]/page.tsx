@@ -247,7 +247,7 @@ export default async function ListingPage({ params }: Props) {
                 </SectionCard>
               )}
 
-              {/* Address + map */}
+              {/* Location map */}
               {(listing.addressLine1 || listing.latitude) && (
                 <SectionCard title="Location" titleAccent={listing.town.name} compact>
                   <div className="aspect-[16/10] overflow-hidden rounded-xl border border-gray-100 bg-gray-100 shadow-sm">
@@ -260,60 +260,57 @@ export default async function ListingPage({ params }: Props) {
                       src={mapSrc}
                     />
                   </div>
-
-                  {listing.addressLine1 && (
-                    <address className="mt-4 text-sm font-semibold leading-relaxed text-gray-900 font-body not-italic">
-                      {addressParts.join(' · ')}
-                    </address>
-                  )}
-
-                  <div className="mt-4 flex flex-wrap gap-3 text-sm font-body">
-                    <a
-                      href={mapsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-forest-green hover:underline"
-                    >
-                      Open in Google Maps ↗
-                    </a>
-                    {listing.websiteUrl && (
-                      <a
-                        href={`/api/go/${listing.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-forest-green hover:underline"
-                      >
-                        {listing.websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                      </a>
-                    )}
-                  </div>
                 </SectionCard>
               )}
 
               {/* Contact */}
-              {(listing.phoneNumber || listing.websiteUrl) && (
+              {(listing.phoneNumber || listing.websiteUrl || listing.addressLine1) && (
                 <SectionCard title="Contact" compact>
-                  <div className="space-y-2 text-sm font-body">
+                  <dl className="space-y-4 text-sm font-body">
                     {listing.phoneNumber && (
-                      <p>
-                        <a href={`tel:${listing.phoneNumber}`} className="text-forest-green hover:underline">
-                          {listing.phoneNumber}
-                        </a>
-                      </p>
+                      <div>
+                        <dt className="text-xs font-bold uppercase tracking-wide text-gray-500">Phone</dt>
+                        <dd className="mt-1">
+                          <a href={`tel:${listing.phoneNumber}`} className="text-forest-green hover:underline">
+                            {listing.phoneNumber}
+                          </a>
+                        </dd>
+                      </div>
                     )}
                     {listing.websiteUrl && (
-                      <p>
-                        <a
-                          href={`/api/go/${listing.slug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-forest-green hover:underline truncate block"
-                        >
-                          {listing.websiteUrl.replace(/^https?:\/\//, '')}
-                        </a>
-                      </p>
+                      <div>
+                        <dt className="text-xs font-bold uppercase tracking-wide text-gray-500">Website</dt>
+                        <dd className="mt-1">
+                          <a
+                            href={`/api/go/${listing.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block truncate text-forest-green hover:underline"
+                          >
+                            {listing.websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                          </a>
+                        </dd>
+                      </div>
                     )}
-                  </div>
+                    {listing.addressLine1 && (
+                      <div>
+                        <dt className="text-xs font-bold uppercase tracking-wide text-gray-500">Address</dt>
+                        <dd className="mt-1">
+                          <address className="font-semibold leading-relaxed text-gray-900 not-italic">
+                            {addressParts.join(' · ')}
+                          </address>
+                          <a
+                            href={mapsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 inline-block text-forest-green hover:underline"
+                          >
+                            Open in Google Maps ↗
+                          </a>
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
                 </SectionCard>
               )}
 
