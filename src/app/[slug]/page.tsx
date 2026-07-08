@@ -5,7 +5,6 @@
 
 import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -13,6 +12,7 @@ import { ListingGrid } from '@/components/listings/ListingGrid'
 import { SubcategoryPills } from '@/components/ui/SubcategoryPills'
 import { TownFilterRow } from '@/components/ui/TownFilterRow'
 import { CategoryCard } from '@/components/ui/CategoryCard'
+import { EditorialPanel, type EditorialBlock } from '@/components/ui/EditorialPanel'
 import { JsonLd } from '@/components/schema/JsonLd'
 import { classifyTopLevelSlug } from '@/lib/taxonomy/validation'
 import { TOWN_SLUGS, CATEGORY_SLUGS, TOWN_BY_SLUG, CATEGORY_BY_SLUG, CATEGORIES } from '@/lib/taxonomy/constants'
@@ -25,19 +25,6 @@ export const revalidate = 3600
 
 interface Props {
   params: { slug: string }
-}
-
-type EditorialLink = {
-  label: string
-  href: string
-  description?: string
-}
-
-type EditorialBlock = {
-  eyebrow: string
-  title: string
-  body: string
-  links: EditorialLink[]
 }
 
 const categoryEditorial: Partial<Record<import('@/lib/taxonomy/constants').CategorySlug, {
@@ -74,19 +61,19 @@ const townEditorial: Partial<Record<import('@/lib/taxonomy/constants').TownSlug,
   panel: EditorialBlock
 }>> = {
   farnham: {
-    title: 'Best Places in Farnham, Surrey | Restaurants, Pubs & Things To Do',
+    title: 'Best Places in Farnham, Surrey | Restaurants, Pubs & Days Out',
     description:
-      'Explore the best places in Farnham, Surrey, including restaurants, pubs, brunch spots, family days out and things to do around the town.',
+      'Explore the best places in Farnham, Surrey, including restaurants, pubs, places to eat, brunch spots, family days out and things to do around town.',
     intro:
-      'Explore the best places in Farnham, from restaurants and proper pubs to brunch spots, family days out and things to do around the town.',
+      'Find the best places in Farnham, from restaurants and proper pubs to brunch spots, family days out and things to do around town.',
     panel: {
       eyebrow: 'Farnham guide',
-      title: 'Use Farnham as a proper local hub, not just a list of disconnected places.',
+      title: 'Start with food and pubs, then branch into easy local days out.',
       body:
-        'Farnham has useful search demand across food, pubs and days out, so this page now points visitors into the strongest sections first. The priority is to make the town page a clear jumping-off point for restaurants, pubs, brunch and things to do, while we keep improving the individual listings underneath.',
+        'Farnham is already attracting search visibility for restaurants, places to eat and pubs. This page is designed as the local hub: use it to move quickly into dining, pub guides, brunch and things to do, while the individual listings are cleaned and expanded.',
       links: [
-        { label: 'Restaurants in Farnham', href: '/farnham/restaurants', description: 'Dining pages to clean and strengthen next.' },
-        { label: 'Pubs & bars in Farnham', href: '/farnham/pubs-bars', description: 'Important because Farnham pub queries are already appearing.' },
+        { label: 'Restaurants in Farnham', href: '/farnham/restaurants', description: 'Places to eat, date-night picks and stronger dining listings.' },
+        { label: 'Pubs & bars in Farnham', href: '/farnham/pubs-bars', description: 'Traditional pubs, gastropubs, gardens and drinking spots.' },
         { label: 'Things to do in Farnham', href: '/farnham/things-to-do', description: 'Parks, heritage and local days out.' },
         { label: 'Brunch in Farnham', href: '/farnham/cafes-brunch', description: 'Cafes, coffee and weekend-friendly picks.' },
       ],
@@ -310,43 +297,5 @@ async function TownHubPage({ slug }: { slug: import('@/lib/taxonomy/constants').
 
       <SiteFooter />
     </>
-  )
-}
-
-function EditorialPanel({ block }: { block: EditorialBlock }) {
-  return (
-    <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm md:p-7">
-      <p className="font-body text-xs font-bold uppercase tracking-[0.18em] text-warm-gold">
-        {block.eyebrow}
-      </p>
-      <div className="mt-3 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.85fr)]">
-        <div>
-          <h2 className="max-w-3xl font-display text-2xl font-semibold leading-tight text-forest-green md:text-3xl">
-            {block.title}
-          </h2>
-          <p className="mt-4 max-w-3xl text-base leading-7 text-gray-700 font-body">
-            {block.body}
-          </p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-          {block.links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="group rounded-xl border border-gray-100 bg-parchment/60 p-4 transition-all hover:-translate-y-0.5 hover:border-mid-green hover:bg-mist-green"
-            >
-              <span className="font-body text-sm font-bold text-gray-950 group-hover:text-forest-green">
-                {link.label}
-              </span>
-              {link.description && (
-                <span className="mt-1 block text-sm leading-5 text-gray-600 font-body">
-                  {link.description}
-                </span>
-              )}
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
   )
 }
