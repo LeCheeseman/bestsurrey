@@ -8,18 +8,6 @@ import { listings, categories, subcategories, towns, categoryTownOverrides, list
 import { eq, and, count, sql } from 'drizzle-orm'
 import type { CategorySlug, SubcategorySlug, TownSlug } from '@/lib/taxonomy/constants'
 
-export const MIN_INDEXABLE_LISTINGS_BY_CATEGORY: Record<CategorySlug, number> = {
-  restaurants:       5,
-  'pubs-bars':       5,
-  'cafes-brunch':    5,
-  'things-to-do':    5,
-  'kids-family':     4,
-}
-
-export function getMinIndexableListings(categorySlug: string): number {
-  return MIN_INDEXABLE_LISTINGS_BY_CATEGORY[categorySlug as CategorySlug] ?? 5
-}
-
 // ─── Listing counts ────────────────────────────────────────────────────────────
 
 /** Returns published listing count per category slug. */
@@ -77,7 +65,7 @@ export async function getListingCountForTownCategory(
   return rows[0]?.total ?? 0
 }
 
-/** Returns town/category pages that have enough listings to be worth indexing. */
+/** Returns town/category pages that have at least one published listing. */
 export async function getIndexableTownCategoryParams(): Promise<Array<{ slug: TownSlug; category: CategorySlug; count: number }>> {
   const rows = await db
     .select({
@@ -93,7 +81,7 @@ export async function getIndexableTownCategoryParams(): Promise<Array<{ slug: To
     .groupBy(towns.slug, categories.slug)
 
   return rows
-    .filter((row) => row.total >= getMinIndexableListings(row.category))
+    .filter((row) => row.total > 0)
     .map((row) => ({
       slug:     row.slug as TownSlug,
       category: row.category as CategorySlug,

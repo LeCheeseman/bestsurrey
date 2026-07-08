@@ -15,7 +15,7 @@ import { JsonLd } from '@/components/schema/JsonLd'
 import { isTownSlug, isCategorySlug, isSubcategorySlug } from '@/lib/taxonomy/validation'
 import { TOWN_BY_SLUG, CATEGORY_BY_SLUG, SUBCATEGORIES } from '@/lib/taxonomy/constants'
 import { getListingsByTownAndCategory, getListingsByTownAndSubcategory } from '@/lib/queries/listings'
-import { getActiveSubcategoriesForTownCategory, getCategoryTownOverride, getListingCountForTownCategory, getMinIndexableListings, getTownsWithListingsForCategory, getTownsWithListingsForSubcategory } from '@/lib/queries/taxonomy'
+import { getActiveSubcategoriesForTownCategory, getCategoryTownOverride, getTownsWithListingsForCategory, getTownsWithListingsForSubcategory } from '@/lib/queries/taxonomy'
 import { buildBreadcrumbSchema } from '@/lib/schema/breadcrumbs'
 import { buildCollectionSchema } from '@/lib/schema/collection'
 
@@ -52,15 +52,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       alternates:  { canonical: `/${params.slug}/${params.category}` },
     }
 
-    try {
-      const listings = await getListingsByTownAndSubcategory(params.slug, params.category, 1)
-      if (listings.length === 0) {
-        metadata.robots = { index: false, follow: true }
-      }
-    } catch {
-      // If the DB is unavailable, keep default metadata and let ISR retry later.
-    }
-
     return metadata
   }
 
@@ -73,15 +64,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title:       `Best ${category.name} in ${town.name}, Surrey`,
     description: `The best ${category.name.toLowerCase()} in ${town.name}. Curated picks, ranked by quality and local knowledge.`,
     alternates:  { canonical: `/${params.slug}/${params.category}` },
-  }
-
-  try {
-    const count = await getListingCountForTownCategory(params.slug, params.category)
-    if (count < getMinIndexableListings(params.category)) {
-      metadata.robots = { index: false, follow: true }
-    }
-  } catch {
-    // If the DB is unavailable, keep default metadata and let ISR retry later.
   }
 
   return metadata
@@ -131,7 +113,6 @@ export default async function TownCategoryPage({ params }: Props) {
 
   const nearbyTowns = townsWithListings
     .filter((t) => t.slug !== params.slug)
-    .filter((t) => t.count >= getMinIndexableListings(params.category))
     .slice(0, 8)
 
   return (

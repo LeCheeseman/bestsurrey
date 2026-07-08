@@ -40,15 +40,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates:  { canonical: `/surrey/${params.subcategory}` },
   }
 
-  try {
-    const listings = await getListingsBySubcategory(params.subcategory, 1)
-    if (listings.length === 0) {
-      metadata.robots = { index: false, follow: true }
-    }
-  } catch {
-    // Keep default metadata when DB is unavailable; ISR can refresh later.
-  }
-
   return metadata
 }
 
