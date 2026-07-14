@@ -53,6 +53,10 @@ export default function AdminPage() {
         </section>
 
         <section className="grid gap-3 sm:grid-cols-2">
+          <Link href="/admin/listing-qa?status=review&issue=all" className="rounded border border-emerald-200 bg-emerald-50 p-5 hover:border-emerald-700">
+            <h2 className="text-sm font-semibold text-emerald-950">For approval</h2>
+            <p className="mt-2 text-sm text-emerald-900">Review newly researched listings before they go live.</p>
+          </Link>
           <Link href="/admin/listing-qa" className="rounded border border-gray-200 bg-white p-5 hover:border-emerald-700">
             <h2 className="text-sm font-semibold">Cleanup queue</h2>
             <p className="mt-2 text-sm text-gray-600">Review listings with issues.</p>

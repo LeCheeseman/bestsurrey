@@ -170,6 +170,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
   const categoryReviewMode = mode === 'category-review'
   const searchParams = useSearchParams()
   const initialListingSlug = searchParams.get('listing')?.trim() || ''
+  const initialStatus = searchParams.get('status')?.trim() || ''
   const [taxonomy, setTaxonomy] = useState<Taxonomy>(emptyTaxonomy)
   const [listings, setListings] = useState<Listing[]>([])
   const [queueTotal, setQueueTotal] = useState(0)
@@ -178,10 +179,10 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
   const [q, setQ] = useState(initialListingSlug)
   const [town, setTown] = useState('')
   const [category, setCategory] = useState('')
-  const [status, setStatus] = useState('published')
+  const [status, setStatus] = useState(statuses.includes(initialStatus as (typeof statuses)[number]) ? initialStatus : 'published')
   const [verifiedFilter, setVerifiedFilter] = useState(categoryReviewMode ? 'all' : 'all')
   const [imageFilter, setImageFilter] = useState('all')
-  const [issueFilter, setIssueFilter] = useState(searchParams.get('issue') || (initialListingSlug ? 'all' : categoryReviewMode ? 'all' : 'has_issues'))
+  const [issueFilter, setIssueFilter] = useState(searchParams.get('issue') || (initialListingSlug || initialStatus === 'review' ? 'all' : categoryReviewMode ? 'all' : 'has_issues'))
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
@@ -414,6 +415,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
     if (!selected) return
     const completedSlug = selected.slug
     const completedName = selected.name
+    const wasReviewListing = selected.status === 'review'
     const ok = await saveListing({ verified: true, status: 'published' })
     if (!ok) return
 
@@ -421,7 +423,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
     setListings(nextListings)
     setQueueTotal((total) => Math.max(0, total - 1))
     setSelectedSlug(nextListings[Math.min(selectedIndex, nextListings.length - 1)]?.slug ?? '')
-    setMessage(categoryReviewMode ? `${completedName} marked reviewed.` : `${completedName} marked complete and removed from this QA queue.`)
+    setMessage(wasReviewListing ? `${completedName} approved and published.` : categoryReviewMode ? `${completedName} marked reviewed.` : `${completedName} marked complete and removed from this QA queue.`)
   }
 
   async function removeSelectedFromSite() {
@@ -1086,7 +1088,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                       )}
                       <div className="flex flex-wrap gap-2">
                         <button onClick={() => void completeListing()} className={buttonClass(true)} disabled={saving}>
-                          {categoryReviewMode ? 'Mark reviewed' : 'Submit complete'}
+                          {selected.status === 'review' ? 'Approve and publish' : categoryReviewMode ? 'Mark reviewed' : 'Submit complete'}
                         </button>
                         <button onClick={() => void saveAndReload({ status: 'review' })} className={buttonClass()} disabled={saving}>
                           Research

@@ -14,13 +14,14 @@ export const dynamic = 'force-dynamic'
 export default function AdminListingQaPage({
   searchParams,
 }: {
-  searchParams?: { listing?: string; issue?: string }
+  searchParams?: { listing?: string; issue?: string; status?: string }
 }) {
   if (!adminToolsEnabled()) notFound()
   if (!isAdminLoggedIn()) {
     const params = new URLSearchParams()
     if (searchParams?.listing) params.set('listing', searchParams.listing)
     if (searchParams?.issue) params.set('issue', searchParams.issue)
+    if (searchParams?.status) params.set('status', searchParams.status)
     const next = `/admin/listing-qa${params.size ? `?${params.toString()}` : ''}`
     redirect(`/admin/login?next=${encodeURIComponent(next)}`)
   }
