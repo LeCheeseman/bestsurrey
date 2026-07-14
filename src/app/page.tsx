@@ -12,12 +12,12 @@ import { SITE_URL } from '@/lib/site'
 export const revalidate = 3600
 
 export const metadata: Metadata = {
-  title: 'Best Surrey — The Finest in the County',
+  title: 'Things to do in Surrey | BestSurrey.co.uk | The Curated Guide to the County',
   description:
-    'The curated guide to the best restaurants, cafés, activities and things to do across Surrey.',
+    'Discover the best restaurants, family days out, activities and things to do across Surrey.',
   openGraph: {
-    title:       'Best Surrey — The Finest in the County',
-    description: 'The curated guide to the best restaurants, cafés, activities and things to do across Surrey.',
+    title:       'Things to do in Surrey | BestSurrey.co.uk | The Curated Guide to the County',
+    description: 'Discover the best restaurants, family days out, activities and things to do across Surrey.',
     url:         SITE_URL,
   },
 }
