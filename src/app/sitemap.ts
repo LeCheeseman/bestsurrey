@@ -34,7 +34,6 @@ const excludedSitemapPaths = new Set([
   '/surrey/takeaway',
   '/surrey/outdoor-play',
   '/farnham/restaurants',
-  '/listings/bills-guildford',
 ].map(canonicalPath))
 
 const isSitemapEligible = (path: string) => !excludedSitemapPaths.has(canonicalPath(path))
