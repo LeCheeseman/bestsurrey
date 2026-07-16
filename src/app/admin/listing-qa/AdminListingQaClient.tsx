@@ -152,6 +152,31 @@ function buttonClass(active = false) {
   ].join(' ')
 }
 
+function CandidateImagePreview({ candidate }: { candidate: Candidate }) {
+  const [failed, setFailed] = useState(false)
+
+  if (failed) {
+    return (
+      <div className="flex aspect-[4/3] w-full items-center justify-center bg-gray-100 px-4 text-center text-xs text-gray-500">
+        Preview unavailable
+      </div>
+    )
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={candidate.url}
+      alt=""
+      className="aspect-[4/3] w-full bg-gray-100 object-cover"
+      loading="lazy"
+      decoding="async"
+      referrerPolicy="no-referrer"
+      onError={() => setFailed(true)}
+    />
+  )
+}
+
 function searchUrl(query: string) {
   return `https://www.google.com/search?${new URLSearchParams({ q: query }).toString()}`
 }
@@ -688,6 +713,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
     setCandidateLoading(true)
     setMessage('')
     setImageMessage('')
+    setCandidates([])
     try {
       const data = await api<{ candidates: Candidate[]; warning?: string }>('/api/admin/images/candidates', {
         method: 'POST',
@@ -1288,7 +1314,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                     <p className="mt-1 text-sm text-gray-600">Add multiple images, set the first image as primary, and remove any bad gallery images.</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <button onClick={() => void findOfficialImages()} className={buttonClass(true)} disabled={candidateLoading || !selected.websiteUrl}>
+                    <button type="button" onClick={() => void findOfficialImages()} className={buttonClass(true)} disabled={candidateLoading || !selected.websiteUrl}>
                       {candidateLoading ? 'Finding...' : 'Find from official site'}
                     </button>
                   </div>
@@ -1352,7 +1378,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
 
                 <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                   <input value={manualUrl} onChange={(event) => setManualUrl(event.target.value)} className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-sm" placeholder="Paste direct image URL" />
-                  <button onClick={() => void previewManualUrl()} className={buttonClass()} disabled={candidateLoading || !manualUrl.trim()}>
+                  <button type="button" onClick={() => void previewManualUrl()} className={buttonClass()} disabled={candidateLoading || !manualUrl.trim()}>
                     Preview URL
                   </button>
                 </div>
@@ -1370,7 +1396,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                       onChange={(event) => setManualFiles(Array.from(event.target.files ?? []))}
                       className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-3 py-2 text-sm"
                     />
-                    <button onClick={() => void uploadManualFiles()} className={buttonClass(true)} disabled={saving || manualFiles.length === 0}>
+                    <button type="button" onClick={() => void uploadManualFiles()} className={buttonClass(true)} disabled={saving || manualFiles.length === 0}>
                       Upload file{manualFiles.length === 1 ? '' : 's'}
                     </button>
                   </div>
@@ -1402,8 +1428,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                   {candidates.map((candidate) => (
                     <article key={candidate.url} className="overflow-hidden rounded border border-gray-200 bg-white">
                       <div className="bg-gray-100">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={candidate.url} alt="" className="aspect-[4/3] w-full object-cover" loading="lazy" decoding="async" />
+                        <CandidateImagePreview candidate={candidate} />
                       </div>
                       <div className="space-y-3 p-3">
                         <p className="line-clamp-2 text-xs text-gray-600">{candidate.reason}</p>
@@ -1411,7 +1436,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                           <a href={candidate.url} target="_blank" rel="noreferrer" className="text-xs font-medium text-emerald-800 underline">
                             Open image
                           </a>
-                          <button onClick={() => void applyImage(candidate)} className={buttonClass(true)} disabled={saving}>
+                          <button type="button" onClick={() => void applyImage(candidate)} className={buttonClass(true)} disabled={saving}>
                             Use image
                           </button>
                         </div>

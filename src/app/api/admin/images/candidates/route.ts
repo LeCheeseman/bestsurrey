@@ -18,6 +18,10 @@ type CandidateBody = {
   manualUrl?: string | null
 }
 
+const candidateLimit = 12
+const minimumPhotoWidth = 450
+const minimumPhotoHeight = 300
+
 const browserHeaders = {
   'user-agent':
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
@@ -66,11 +70,29 @@ function normalizeImageUrl(url: string) {
   return url
 }
 
-function isTinyTransformedImage(url: string) {
+function dimensionsFromUrl(url: string) {
+  const width = url.match(/[?&,/]w[_=](\d+)/i)?.[1] ?? url.match(/[?&]width=(\d+)/i)?.[1]
+  const height = url.match(/[?&,/]h[_=](\d+)/i)?.[1] ?? url.match(/[?&]height=(\d+)/i)?.[1]
+  const filenameSize = url.match(/[-_](\d{2,5})x(\d{2,5})(?=[^\d]|$)/i)
+  return {
+    width: Number(width ?? filenameSize?.[1] ?? 0) || null,
+    height: Number(height ?? filenameSize?.[2] ?? 0) || null,
+  }
+}
+
+function dimensionsFromAttrs(attrs: Record<string, string>) {
+  const width = Number(attrs.width?.replace(/[^\d.]/g, '') || 0) || null
+  const height = Number(attrs.height?.replace(/[^\d.]/g, '') || 0) || null
+  return { width, height }
+}
+
+function isTinyTransformedImage(url: string, attrs: Record<string, string> = {}) {
   if (url.includes('static.wixstatic.com/media/')) return false
-  const width = url.match(/[?&,/]w[_=](\d+)/i)?.[1]
-  const height = url.match(/[?&,/]h[_=](\d+)/i)?.[1]
-  return Boolean((width && Number(width) < 450) || (height && Number(height) < 300))
+  const urlDimensions = dimensionsFromUrl(url)
+  const attrDimensions = dimensionsFromAttrs(attrs)
+  const width = urlDimensions.width ?? attrDimensions.width
+  const height = urlDimensions.height ?? attrDimensions.height
+  return Boolean((width && width < minimumPhotoWidth) || (height && height < minimumPhotoHeight))
 }
 
 function srcsetBest(srcset: string) {
@@ -100,6 +122,10 @@ function scoreImage(url: string, attrs: Record<string, string>) {
 
 function isBlockedAsset(haystack: string) {
   return [
+    '1hr-',
+    'adobestock',
+    'depositphotos',
+    'escape-room-key',
     'logo',
     'icon',
     'sprite',
@@ -113,12 +139,27 @@ function isBlockedAsset(haystack: string) {
     'placeholder',
     'loading',
     'spinner',
+    'newsletter',
+    'mailchimp',
+    'shutterstock',
+    'istock',
+    'stock-photo',
+    'stock_photo',
     'favicon',
     'siteground',
     'cloudsbackground',
     'monitorwithgears',
     '.svg',
   ].some((word) => haystack.includes(word))
+}
+
+function imageKey(url: string) {
+  try {
+    const parsed = new URL(url)
+    return `${parsed.origin}${parsed.pathname.replace(/[-_]\d{2,5}x\d{2,5}(?=\.[a-z]+$)/i, '')}`.toLowerCase()
+  } catch {
+    return url.toLowerCase()
+  }
 }
 
 function extractCandidates(html: string, pageUrl: string) {
@@ -133,12 +174,12 @@ function extractCandidates(html: string, pageUrl: string) {
 
     if (tagName === 'meta' && ['og:image', 'og:image:secure_url', 'twitter:image', 'twitter:image:src'].includes(property)) {
       const url = absoluteUrl(pageUrl, attrs.content)
-      if (url && !isTinyTransformedImage(url)) candidates.push({ url: normalizeImageUrl(url), sourcePageUrl: pageUrl, sourceType: 'official_site', reason: property, score: 95 })
+      if (url && !isBlockedAsset(url.toLowerCase()) && !isTinyTransformedImage(url)) candidates.push({ url: normalizeImageUrl(url), sourcePageUrl: pageUrl, sourceType: 'official_site', reason: property, score: 95 })
     }
 
     if (tagName === 'link' && rel.includes('image_src')) {
       const url = absoluteUrl(pageUrl, attrs.href)
-      if (url && !isTinyTransformedImage(url)) candidates.push({ url: normalizeImageUrl(url), sourcePageUrl: pageUrl, sourceType: 'official_site', reason: 'link:image_src', score: 82 })
+      if (url && !isBlockedAsset(url.toLowerCase()) && !isTinyTransformedImage(url)) candidates.push({ url: normalizeImageUrl(url), sourcePageUrl: pageUrl, sourceType: 'official_site', reason: 'link:image_src', score: 82 })
     }
 
     if (tagName === 'img') {
@@ -146,7 +187,7 @@ function extractCandidates(html: string, pageUrl: string) {
       const url = absoluteUrl(pageUrl, raw)
       if (url) {
         const score = scoreImage(url, attrs)
-        if (score > 0 && !isTinyTransformedImage(url)) {
+        if (score > 0 && !isTinyTransformedImage(url, attrs)) {
           candidates.push({ url: normalizeImageUrl(url), sourcePageUrl: pageUrl, sourceType: 'official_site', reason: attrs.alt ? `img: ${attrs.alt}` : 'img tag', score })
         }
       }
@@ -157,11 +198,12 @@ function extractCandidates(html: string, pageUrl: string) {
   for (const candidate of candidates) {
     if (!/^https?:\/\//i.test(candidate.url)) continue
     if (isBlockedAsset([candidate.url, candidate.reason].join(' ').toLowerCase())) continue
-    const existing = unique.get(candidate.url)
-    if (!existing || candidate.score > existing.score) unique.set(candidate.url, candidate)
+    const key = imageKey(candidate.url)
+    const existing = unique.get(key)
+    if (!existing || candidate.score > existing.score) unique.set(key, candidate)
   }
 
-  return [...unique.values()].sort((a, b) => b.score - a.score).slice(0, 24)
+  return [...unique.values()].sort((a, b) => b.score - a.score).slice(0, candidateLimit)
 }
 
 export async function POST(request: NextRequest) {
