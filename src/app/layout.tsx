@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Analytics } from '@vercel/analytics/next'
 import { Cormorant_Garamond, Inter } from 'next/font/google'
 import Script from 'next/script'
 import { buildOrganizationSchema, buildWebSiteSchema } from '@/lib/schema/organization'
@@ -70,6 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
 
         {children}
+        <Analytics />
 
         {/* Sitewide JSON-LD — Organization + WebSite (inline, server-rendered) */}
         <script
