@@ -3,7 +3,7 @@
  * Used on all index pages: category, town, town+category, subcategory, roundup.
  */
 
-import { SITE_URL } from '@/lib/site'
+import { canonicalUrl } from '@/lib/site'
 
 export interface CollectionListingItem {
   slug: string
@@ -20,7 +20,7 @@ export function buildCollectionSchema({
   path: string
   listings: CollectionListingItem[]
 }) {
-  const pageUrl = `${SITE_URL}${path}`
+  const pageUrl = canonicalUrl(path)
 
   return [
     {
@@ -37,7 +37,7 @@ export function buildCollectionSchema({
       itemListElement: listings.map((listing, i) => ({
         '@type': 'ListItem',
         position: i + 1,
-        url: `${SITE_URL}/listings/${listing.slug}`,
+        url: canonicalUrl(`/listings/${listing.slug}`),
       })),
     },
   ]

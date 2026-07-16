@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
+  skipTrailingSlashRedirect: true,
   // Listing and brand images are pre-optimised before deployment/storage upload.
   // Keep Vercel Image Optimization disabled so image requests never consume
   // transformation quota via /_next/image.
@@ -13,126 +14,6 @@ const nextConfig = {
         pathname: '/storage/v1/object/public/**',
       },
     ],
-  },
-  async redirects() {
-    return [
-      {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
-            value: 'bestsurrey.co.uk',
-          },
-        ],
-        destination: 'https://www.bestsurrey.co.uk/:path*',
-        permanent: true,
-      },
-      {
-        source: '/indoor-activities',
-        destination: '/kids-family',
-        permanent: true,
-      },
-      {
-        source: '/activity-venues',
-        destination: '/kids-family',
-        permanent: true,
-      },
-      {
-        source: '/kids-activities',
-        destination: '/kids-family',
-        permanent: true,
-      },
-      {
-        source: '/surrey/indoor-activities',
-        destination: '/kids-family',
-        permanent: true,
-      },
-      {
-        source: '/surrey/activity-venues',
-        destination: '/kids-family',
-        permanent: true,
-      },
-      {
-        source: '/surrey/kids-activities',
-        destination: '/kids-family',
-        permanent: true,
-      },
-      {
-        source: '/:town/indoor-activities',
-        destination: '/:town/kids-family',
-        permanent: true,
-      },
-      {
-        source: '/:town/activity-venues',
-        destination: '/:town/kids-family',
-        permanent: true,
-      },
-      {
-        source: '/:town/kids-activities',
-        destination: '/:town/kids-family',
-        permanent: true,
-      },
-      {
-        source: '/surrey/brunch',
-        destination: '/cafes-brunch',
-        permanent: true,
-      },
-      {
-        source: '/surrey/tea-rooms',
-        destination: '/cafes-brunch',
-        permanent: true,
-      },
-      {
-        source: '/surrey/sports-bars',
-        destination: '/pubs-bars',
-        permanent: true,
-      },
-      {
-        source: '/surrey/arts-crafts',
-        destination: '/kids-family',
-        permanent: true,
-      },
-      {
-        source: '/surrey/theme-parks',
-        destination: '/kids-family',
-        permanent: true,
-      },
-      {
-        source: '/surrey/holiday-activities',
-        destination: '/kids-family',
-        permanent: true,
-      },
-      {
-        source: '/surrey/go-karting',
-        destination: '/kids-family',
-        permanent: true,
-      },
-      {
-        source: '/surrey/cycling',
-        destination: '/things-to-do',
-        permanent: true,
-      },
-      {
-        source: '/surrey/axe-throwing',
-        destination: '/things-to-do',
-        permanent: true,
-      },
-      {
-        source: '/surrey/virtual-reality',
-        destination: '/things-to-do',
-        permanent: true,
-      },
-      {
-        source: '/surrey/laser-tag',
-        destination: '/kids-family',
-        permanent: true,
-      },
-      {
-        source: '/surrey/swimming',
-        destination: '/kids-family',
-        permanent: true,
-      },
-    ]
   },
   async headers() {
     return [

@@ -19,6 +19,7 @@ import { getListingsByTownAndCategory, getListingsByTownAndSubcategory } from '@
 import { getActiveSubcategoriesForTownCategory, getCategoryTownOverride, getTownsWithListingsForCategory, getTownsWithListingsForSubcategory } from '@/lib/queries/taxonomy'
 import { buildBreadcrumbSchema } from '@/lib/schema/breadcrumbs'
 import { buildCollectionSchema } from '@/lib/schema/collection'
+import { canonicalUrl } from '@/lib/site'
 
 export const revalidate = 3600
 
@@ -125,7 +126,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (isTownSlug(params.slug) && params.category === 'indoor-activities') {
     return {
       title: 'Kids & Family | Best Surrey',
-      alternates: { canonical: `/${params.slug}/kids-family` },
+      alternates: { canonical: canonicalUrl(`/${params.slug}/kids-family`) },
       robots: { index: false, follow: true },
     }
   }
@@ -141,7 +142,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const metadata: Metadata = {
       title:       editorial?.title ?? `Best ${sub.name} in ${town.name}, Surrey`,
       description: editorial?.description ?? `The best ${sub.name.toLowerCase()} in ${town.name}. Curated local picks from Best Surrey.`,
-      alternates:  { canonical: `/${params.slug}/${params.category}` },
+      alternates:  { canonical: canonicalUrl(`/${params.slug}/${params.category}`) },
     }
 
     return metadata
@@ -156,7 +157,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const metadata: Metadata = {
     title:       editorial?.title ?? `Best ${category.name} in ${town.name}, Surrey`,
     description: editorial?.description ?? `The best ${category.name.toLowerCase()} in ${town.name}. Curated picks, ranked by quality and local knowledge.`,
-    alternates:  { canonical: `/${params.slug}/${params.category}` },
+    alternates:  { canonical: canonicalUrl(`/${params.slug}/${params.category}`) },
   }
 
   return metadata

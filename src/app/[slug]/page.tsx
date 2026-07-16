@@ -20,6 +20,7 @@ import { getListingsByCategory, getListingsByTown } from '@/lib/queries/listings
 import { getActiveSubcategoriesForCategory, getTownsWithListingsForCategory, getListingCountsByCategory } from '@/lib/queries/taxonomy'
 import { buildBreadcrumbSchema } from '@/lib/schema/breadcrumbs'
 import { buildCollectionSchema } from '@/lib/schema/collection'
+import { canonicalUrl } from '@/lib/site'
 
 export const revalidate = 3600
 
@@ -96,7 +97,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title:       editorial?.title ?? `Best Places in ${town.name}, Surrey`,
       description: editorial?.description ?? `The best restaurants, activities and things to do in ${town.name}, Surrey. Curated picks and local favourites.`,
-      alternates:  { canonical: `/${town.slug}` },
+      alternates:  { canonical: canonicalUrl(`/${town.slug}`) },
     }
   }
 
@@ -105,7 +106,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title:       editorial?.title ?? `Best ${category.name} in Surrey`,
     description: editorial?.description ?? `Discover the best ${category.name.toLowerCase()} across Surrey. Curated and ranked by the Best Surrey team.`,
-    alternates:  { canonical: `/${category.slug}` },
+    alternates:  { canonical: canonicalUrl(`/${category.slug}`) },
   }
 }
 

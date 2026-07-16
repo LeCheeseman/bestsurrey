@@ -5,13 +5,14 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { TownCard } from '@/components/ui/TownCard'
 import { getListingCountsByTown } from '@/lib/queries/taxonomy'
 import { TOWNS } from '@/lib/taxonomy/constants'
+import { canonicalUrl } from '@/lib/site'
 
 export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'Places in Surrey',
   description: 'Browse the Best Surrey directory by town, from Guildford and Woking to smaller Surrey towns and villages.',
-  alternates: { canonical: '/places' },
+  alternates: { canonical: canonicalUrl('/places') },
 }
 
 const TOWN_GROUPS = [

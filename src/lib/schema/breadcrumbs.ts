@@ -3,7 +3,7 @@
  * Each page template constructs its own breadcrumb trail and passes it here.
  */
 
-import { SITE_URL } from '@/lib/site'
+import { canonicalUrl } from '@/lib/site'
 
 export interface BreadcrumbItem {
   name: string
@@ -19,7 +19,7 @@ export function buildBreadcrumbSchema(items: BreadcrumbItem[]) {
       '@type': 'ListItem',
       position: i + 1,
       name: item.name,
-      ...(item.path ? { item: `${SITE_URL}${item.path}` } : {}),
+      ...(item.path ? { item: canonicalUrl(item.path) } : {}),
     })),
   }
 }

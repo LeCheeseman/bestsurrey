@@ -15,13 +15,13 @@ import type { MetadataRoute } from 'next'
 import { db }          from '@/lib/db'
 import { listings } from '@/lib/db/schema'
 import { eq }          from 'drizzle-orm'
-import { SITE_URL } from '@/lib/site'
+import { canonicalUrl } from '@/lib/site'
 import { TOWN_SLUGS, CATEGORY_SLUGS, SUBCATEGORY_SLUGS } from '@/lib/taxonomy/constants'
 import { getIndexableSubcategorySlugs, getIndexableTownCategoryParams } from '@/lib/queries/taxonomy'
 
 export const revalidate = 3600
 
-const url = (path: string) => `${SITE_URL}${path}`
+const url = (path: string) => canonicalUrl(path)
 const validTownSlugs = new Set<string>(TOWN_SLUGS)
 const validCategorySlugs = new Set<string>(CATEGORY_SLUGS)
 const validSubcategorySlugs = new Set<string>(SUBCATEGORY_SLUGS)

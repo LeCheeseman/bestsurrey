@@ -7,7 +7,7 @@ import { CategoryCard } from '@/components/ui/CategoryCard'
 import { TownCard } from '@/components/ui/TownCard'
 import { getListingCountsByCategory, getListingCountsByTown } from '@/lib/queries/taxonomy'
 import { CATEGORIES, TOWNS } from '@/lib/taxonomy/constants'
-import { SITE_URL } from '@/lib/site'
+import { canonicalUrl } from '@/lib/site'
 
 export const revalidate = 3600
 
@@ -18,8 +18,9 @@ export const metadata: Metadata = {
   openGraph: {
     title:       'Things to do in Surrey | BestSurrey.co.uk | The Curated Guide to the County',
     description: 'Discover the best restaurants, family days out, activities and things to do across Surrey.',
-    url:         SITE_URL,
+    url:         canonicalUrl('/'),
   },
+  alternates: { canonical: canonicalUrl('/') },
 }
 
 const homeCategories = [

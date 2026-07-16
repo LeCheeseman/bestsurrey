@@ -17,6 +17,7 @@ import { JsonLd } from '@/components/schema/JsonLd'
 import { buildListingSchema } from '@/lib/schema/listing'
 import { normalizeListingImages, normalizeOpeningHours } from '@/lib/listing-json'
 import { getListingBySlug, getRelatedListings } from '@/lib/queries/listings'
+import { canonicalUrl } from '@/lib/site'
 
 export const revalidate = 3600
 
@@ -40,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title:       `${listing.name} — ${listing.town.name} ${listing.primaryCategory.name}`,
       description: listing.shortSummary ?? undefined,
-      alternates:  { canonical: `/listings/${listing.slug}` },
+      alternates:  { canonical: canonicalUrl(`/listings/${listing.slug}`) },
       openGraph: {
         title:       listing.name,
         description: listing.shortSummary ?? undefined,

@@ -16,6 +16,7 @@ import { SUBCATEGORY_SLUGS, SUBCATEGORIES, TOWNS } from '@/lib/taxonomy/constant
 import { getListingsBySubcategory } from '@/lib/queries/listings'
 import { buildBreadcrumbSchema } from '@/lib/schema/breadcrumbs'
 import { buildCollectionSchema } from '@/lib/schema/collection'
+import { canonicalUrl } from '@/lib/site'
 
 export const revalidate = 3600
 
@@ -37,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const metadata: Metadata = {
     title:       `Best ${sub.name} in Surrey`,
     description: `Discover the best ${sub.name.toLowerCase()} across Surrey. Curated and ranked.`,
-    alternates:  { canonical: `/surrey/${params.subcategory}` },
+    alternates:  { canonical: canonicalUrl(`/surrey/${params.subcategory}`) },
   }
 
   return metadata

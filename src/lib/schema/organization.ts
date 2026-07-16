@@ -3,14 +3,14 @@
  * Rendered once in the root layout — applies sitewide.
  */
 
-import { SITE_URL } from '@/lib/site'
+import { SITE_URL, canonicalUrl } from '@/lib/site'
 
 export function buildOrganizationSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Best Surrey',
-    url: SITE_URL,
+    url: canonicalUrl('/'),
     logo: `${SITE_URL}/images/logo.svg`,
     description:
       'The finest local guide to Surrey — curated restaurants, activities, and experiences.',
@@ -26,7 +26,7 @@ export function buildWebSiteSchema() {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Best Surrey',
-    url: SITE_URL,
+    url: canonicalUrl('/'),
     potentialAction: {
       '@type':       'SearchAction',
       target: {

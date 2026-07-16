@@ -15,7 +15,7 @@
 import type { ListingWithRelations } from '@/types'
 import type { FaqItem } from '@/types/db-shapes'
 import { normalizeListingImages, normalizeOpeningHours } from '@/lib/listing-json'
-import { SITE_URL } from '@/lib/site'
+import { canonicalUrl } from '@/lib/site'
 
 const ENTITY_TYPE_TO_SCHEMA: Record<string, string> = {
   restaurant:       'Restaurant',
@@ -27,7 +27,7 @@ const ENTITY_TYPE_TO_SCHEMA: Record<string, string> = {
 
 export function buildListingSchema(listing: ListingWithRelations) {
   const schemaType = ENTITY_TYPE_TO_SCHEMA[listing.entityType] ?? 'LocalBusiness'
-  const listingUrl = `${SITE_URL}/listings/${listing.slug}/`
+  const listingUrl = canonicalUrl(`/listings/${listing.slug}`)
 
   const schema: Record<string, unknown> = {
     '@context': 'https://schema.org',

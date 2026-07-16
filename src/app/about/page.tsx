@@ -2,11 +2,12 @@ import type { Metadata } from 'next'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { canonicalUrl } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'About Best Surrey',
   description: 'How Best Surrey researches, curates and ranks local restaurants, cafés, pubs, activities and places to visit across Surrey.',
-  alternates: { canonical: '/about' },
+  alternates: { canonical: canonicalUrl('/about') },
 }
 
 export default function AboutPage() {
