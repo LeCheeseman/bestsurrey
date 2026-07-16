@@ -15,7 +15,7 @@ import type { MetadataRoute } from 'next'
 import { db }          from '@/lib/db'
 import { listings } from '@/lib/db/schema'
 import { eq }          from 'drizzle-orm'
-import { canonicalUrl } from '@/lib/site'
+import { canonicalPath, canonicalUrl } from '@/lib/site'
 import { TOWN_SLUGS, CATEGORY_SLUGS, SUBCATEGORY_SLUGS } from '@/lib/taxonomy/constants'
 import { getIndexableSubcategorySlugs, getIndexableTownCategoryParams } from '@/lib/queries/taxonomy'
 
@@ -25,6 +25,19 @@ const url = (path: string) => canonicalUrl(path)
 const validTownSlugs = new Set<string>(TOWN_SLUGS)
 const validCategorySlugs = new Set<string>(CATEGORY_SLUGS)
 const validSubcategorySlugs = new Set<string>(SUBCATEGORY_SLUGS)
+const excludedSitemapPaths = new Set([
+  '/camberley/bowling',
+  '/camberley/trampoline-parks',
+  '/surrey/museums-education',
+  '/surrey/gastropubs',
+  '/surrey/country-pubs',
+  '/surrey/takeaway',
+  '/surrey/outdoor-play',
+  '/farnham/restaurants',
+  '/listings/bills-guildford',
+].map(canonicalPath))
+
+const isSitemapEligible = (path: string) => !excludedSitemapPaths.has(canonicalPath(path))
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
@@ -68,7 +81,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
 
     // ── Category index pages (/restaurants/, /cafes-brunch/, …) ──────────
-    ...CATEGORY_SLUGS.map((slug) => ({
+    ...CATEGORY_SLUGS.filter((slug) => isSitemapEligible(`/${slug}`)).map((slug) => ({
       url:             url(`/${slug}`),
       lastModified:    now,
       changeFrequency: 'weekly' as const,
@@ -76,7 +89,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
 
     // ── Town hub pages (/guildford/, /woking/, …) ─────────────────────────
-    ...TOWN_SLUGS.map((slug) => ({
+    ...TOWN_SLUGS.filter((slug) => isSitemapEligible(`/${slug}`)).map((slug) => ({
       url:             url(`/${slug}`),
       lastModified:    now,
       changeFrequency: 'weekly' as const,
@@ -85,7 +98,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // ── Town + category pages — primary SEO targets ───────────────────────
     ...townCategoryRows
-      .filter(({ slug, category }) => validTownSlugs.has(slug) && validCategorySlugs.has(category))
+      .filter(({ slug, category }) =>
+        validTownSlugs.has(slug)
+        && validCategorySlugs.has(category)
+        && isSitemapEligible(`/${slug}/${category}`)
+      )
       .map(({ slug, category }) => ({
         url:             url(`/${slug}/${category}`),
         lastModified:    now,
@@ -94,7 +111,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
 
     // ── Subcategory pages (/surrey/vegan-restaurants/, …) ─────────────────
-    ...subcategorySlugs.filter((slug) => validSubcategorySlugs.has(slug)).map((slug) => ({
+    ...subcategorySlugs.filter((slug) =>
+      validSubcategorySlugs.has(slug)
+      && isSitemapEligible(`/surrey/${slug}`)
+    ).map((slug) => ({
       url:             url(`/surrey/${slug}`),
       lastModified:    now,
       changeFrequency: 'weekly' as const,
@@ -102,7 +122,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
 
     // ── Listing detail pages (/listings/[slug]/) ──────────────────────────
-    ...listingRows.map((row) => ({
+    ...listingRows.filter((row) => isSitemapEligible(`/listings/${row.slug}`)).map((row) => ({
       url:             url(`/listings/${row.slug}`),
       lastModified:    row.updatedAt ?? now,
       changeFrequency: 'weekly' as const,
