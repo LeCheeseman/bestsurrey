@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import { notFound, redirect } from 'next/navigation'
-import { adminToolsConfigured, isAdminLoggedIn } from '@/lib/admin-auth'
+import { notFound } from 'next/navigation'
+import { adminToolsConfigured } from '@/lib/admin-auth'
 
 const flagLinks = [
   { label: 'Needs cleanup', issue: 'has_issues' },
@@ -17,7 +17,6 @@ export const dynamic = 'force-dynamic'
 
 export default function AdminPage() {
   if (!adminToolsConfigured()) notFound()
-  if (!isAdminLoggedIn()) redirect('/admin/login?next=/admin')
 
   return (
     <main className="min-h-screen bg-gray-50 px-5 py-8 text-gray-950">

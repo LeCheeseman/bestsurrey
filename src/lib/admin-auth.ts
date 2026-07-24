@@ -14,6 +14,10 @@ function adminPassword() {
   return process.env.ADMIN_PASSWORD || (process.env.NODE_ENV !== 'production' ? 'admin' : '')
 }
 
+function adminUsername() {
+  return process.env.ADMIN_USERNAME || 'admin'
+}
+
 function sessionSecret() {
   return process.env.ADMIN_SESSION_SECRET || adminPassword()
 }
@@ -25,9 +29,26 @@ export function adminSessionToken() {
 export function validAdminPassword(value: string) {
   const expected = adminPassword()
   if (!expected) return false
-  const actualBuffer = Buffer.from(value)
+  return timingSafeStringEqual(value, expected)
+}
+
+function timingSafeStringEqual(actual: string, expected: string) {
+  const actualBuffer = Buffer.from(actual)
   const expectedBuffer = Buffer.from(expected)
   return actualBuffer.length === expectedBuffer.length && timingSafeEqual(actualBuffer, expectedBuffer)
+}
+
+export function validAdminBasicAuthHeader(value: string | null) {
+  if (!value?.startsWith('Basic ')) return false
+
+  const decoded = Buffer.from(value.slice('Basic '.length), 'base64').toString('utf8')
+  const separator = decoded.indexOf(':')
+  if (separator < 0) return false
+
+  const username = decoded.slice(0, separator)
+  const password = decoded.slice(separator + 1)
+
+  return timingSafeStringEqual(username, adminUsername()) && validAdminPassword(password)
 }
 
 export function isAdminSessionValue(value?: string) {
@@ -38,7 +59,10 @@ export function isAdminSessionValue(value?: string) {
 }
 
 export function isAdminRequest(request: NextRequest) {
-  return isAdminSessionValue(request.cookies.get(adminSessionCookie)?.value)
+  return (
+    isAdminSessionValue(request.cookies.get(adminSessionCookie)?.value) ||
+    validAdminBasicAuthHeader(request.headers.get('authorization'))
+  )
 }
 
 export function isAdminLoggedIn() {
