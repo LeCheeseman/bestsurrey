@@ -145,6 +145,19 @@ function primaryImage(listing: Listing | null) {
   return listing?.images?.find((image) => image.isPrimary) ?? listing?.images?.[0] ?? null
 }
 
+function formatImageSize(byteSize?: number) {
+  if (typeof byteSize !== 'number' || !Number.isFinite(byteSize) || byteSize <= 0) {
+    return 'Size: not available'
+  }
+
+  const kilobytes = byteSize / 1024
+  const label = kilobytes < 10
+    ? kilobytes.toFixed(1)
+    : Math.round(kilobytes).toLocaleString()
+
+  return `Size: ${label} KB`
+}
+
 function buttonClass(active = false) {
   return [
     'rounded border px-3 py-2 text-sm font-medium transition',
@@ -1350,6 +1363,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                         <img src={image.url} alt={image.alt} className="aspect-[4/3] w-full object-cover" loading="lazy" decoding="async" />
                       </div>
                       <div className="space-y-2 p-3">
+                        <p className="text-xs font-medium text-gray-500">{formatImageSize(image.byteSize)}</p>
                         <div className="flex items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
                           <span>Photo {index + 1}</span>
                           <span>Drag to reorder</span>
