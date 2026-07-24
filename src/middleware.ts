@@ -79,10 +79,13 @@ function adminToolsAvailable() {
   return process.env.ENABLE_ADMIN_TOOLS === 'true' && Boolean(process.env.ADMIN_PASSWORD)
 }
 
-function adminCookieToken() {
-  const username = process.env.ADMIN_USERNAME || 'admin'
-  const password = process.env.ADMIN_PASSWORD || ''
-  return btoa(`${username}:${password}`)
+async function adminCookieToken() {
+  const sessionSecret = process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || ''
+  const data = new TextEncoder().encode(`best-surrey-admin:${sessionSecret}`)
+  const digest = await crypto.subtle.digest('SHA-256', data)
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
 }
 
 function unauthorized() {
@@ -94,9 +97,9 @@ function unauthorized() {
   })
 }
 
-function adminCookieAuthenticated(request: NextRequest) {
+async function adminCookieAuthenticated(request: NextRequest) {
   if (process.env.NODE_ENV !== 'production') return true
-  return request.cookies.get(adminCookieName)?.value === adminCookieToken()
+  return request.cookies.get(adminCookieName)?.value === await adminCookieToken()
 }
 
 function adminBasicAuthenticated(request: NextRequest) {
@@ -118,23 +121,29 @@ function adminBasicAuthenticated(request: NextRequest) {
   return username === expectedUsername && providedPassword === password
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const redirect = canonicalRedirect(request)
   if (redirect) return redirect
 
   if (!isAdminPath(request.nextUrl.pathname)) return NextResponse.next()
 
   if (!adminToolsAvailable()) return new NextResponse('Not found', { status: 404 })
-  if (adminCookieAuthenticated(request)) return NextResponse.next()
+  if (await adminCookieAuthenticated(request)) return NextResponse.next()
   if (!adminBasicAuthenticated(request)) return unauthorized()
 
   const response = NextResponse.next()
-  response.cookies.set(adminCookieName, adminCookieToken(), {
+  response.cookies.set(adminCookieName, await adminCookieToken(), {
     httpOnly: true,
     sameSite: 'lax',
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     path: '/',
-    maxAge: 60 * 60 * 12,
+    maxAge: 60 * 60 * 24 * 14,
+  })
+  response.cookies.set('best_surrey_admin_ui', '1', {
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 14,
   })
   return response
 }
