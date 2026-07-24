@@ -121,6 +121,26 @@ function adminBasicAuthenticated(request: NextRequest) {
   return username === expectedUsername && providedPassword === password
 }
 
+function requestHeadersWithAdminSession(request: NextRequest, token: string) {
+  const headers = new Headers(request.headers)
+  const cookies = new Map<string, string>()
+
+  for (const cookie of headers.get('cookie')?.split(';') ?? []) {
+    const [name, ...valueParts] = cookie.trim().split('=')
+    if (!name) continue
+    cookies.set(name, valueParts.join('='))
+  }
+
+  cookies.set(adminCookieName, token)
+  cookies.set('best_surrey_admin_ui', '1')
+  headers.set(
+    'cookie',
+    Array.from(cookies, ([name, value]) => `${name}=${value}`).join('; ')
+  )
+
+  return headers
+}
+
 export async function middleware(request: NextRequest) {
   const redirect = canonicalRedirect(request)
   if (redirect) return redirect
@@ -131,8 +151,13 @@ export async function middleware(request: NextRequest) {
   if (await adminCookieAuthenticated(request)) return NextResponse.next()
   if (!adminBasicAuthenticated(request)) return unauthorized()
 
-  const response = NextResponse.next()
-  response.cookies.set(adminCookieName, await adminCookieToken(), {
+  const token = await adminCookieToken()
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeadersWithAdminSession(request, token),
+    },
+  })
+  response.cookies.set(adminCookieName, token, {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
