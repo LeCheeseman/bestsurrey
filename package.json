@@ -25,6 +25,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.43.0",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "drizzle-orm": "^0.30.10",
     "next": "^14.2.0",
     "postgres": "^3.4.4",
