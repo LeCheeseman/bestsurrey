@@ -17,6 +17,7 @@ import { JsonLd } from '@/components/schema/JsonLd'
 import { buildListingSchema } from '@/lib/schema/listing'
 import { normalizeListingImages, normalizeOpeningHours } from '@/lib/listing-json'
 import { getListingBySlug, getRelatedListings } from '@/lib/queries/listings'
+import { isCategorySlug, isTownSlug } from '@/lib/taxonomy/validation'
 import { canonicalUrl } from '@/lib/site'
 
 export const revalidate = 3600
@@ -67,11 +68,22 @@ export default async function ListingPage({ params }: Props) {
   const images       = normalizeListingImages(listing.images)
   const openingHours = normalizeOpeningHours(listing.openingHours)
   const primaryImage = images.find((i) => i.isPrimary) ?? images[0]
+  const hasPublicTownPage = isTownSlug(listing.town.slug)
+  const hasPublicCategoryPage = isCategorySlug(listing.primaryCategory.slug)
+  const townCategoryPath = hasPublicTownPage && hasPublicCategoryPage
+    ? `/${listing.town.slug}/${listing.primaryCategory.slug}`
+    : undefined
 
   const breadcrumbItems = [
     { name: 'Home',                                          path: '/'                                                  },
-    { name: listing.primaryCategory.name,                   path: `/${listing.primaryCategory.slug}`                 },
-    { name: `${listing.primaryCategory.name} in ${listing.town.name}`, path: `/${listing.town.slug}/${listing.primaryCategory.slug}` },
+    {
+      name: listing.primaryCategory.name,
+      path: hasPublicCategoryPage ? `/${listing.primaryCategory.slug}` : undefined,
+    },
+    {
+      name: `${listing.primaryCategory.name} in ${listing.town.name}`,
+      path: townCategoryPath,
+    },
     { name: listing.name },
   ]
 
@@ -136,13 +148,21 @@ export default async function ListingPage({ params }: Props) {
 
                 {/* Key info row */}
                 <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-gray-500 font-body">
-                  <Link href={`/${listing.town.slug}`} className="hover:text-forest-green">
-                    {listing.town.name}
-                  </Link>
+                  {hasPublicTownPage ? (
+                    <Link href={`/${listing.town.slug}`} className="hover:text-forest-green">
+                      {listing.town.name}
+                    </Link>
+                  ) : (
+                    <span>{listing.town.name}</span>
+                  )}
                   <span>·</span>
-                  <Link href={`/${listing.primaryCategory.slug}`} className="hover:text-forest-green">
-                    {listing.primaryCategory.name}
-                  </Link>
+                  {hasPublicCategoryPage ? (
+                    <Link href={`/${listing.primaryCategory.slug}`} className="hover:text-forest-green">
+                      {listing.primaryCategory.name}
+                    </Link>
+                  ) : (
+                    <span>{listing.primaryCategory.name}</span>
+                  )}
                   {listing.priceBand && (
                     <>
                       <span>·</span>

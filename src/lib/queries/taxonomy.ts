@@ -6,7 +6,18 @@
 import { db } from '@/lib/db'
 import { listings, categories, subcategories, towns, categoryTownOverrides, listingCategories, listingSubcategories } from '@/lib/db/schema'
 import { eq, and, count, sql } from 'drizzle-orm'
-import type { CategorySlug, SubcategorySlug, TownSlug } from '@/lib/taxonomy/constants'
+import {
+  CATEGORY_SLUGS,
+  SUBCATEGORY_SLUGS,
+  TOWN_SLUGS,
+  type CategorySlug,
+  type SubcategorySlug,
+  type TownSlug,
+} from '@/lib/taxonomy/constants'
+
+const publicTownSlugs = new Set<string>(TOWN_SLUGS)
+const publicCategorySlugs = new Set<string>(CATEGORY_SLUGS)
+const publicSubcategorySlugs = new Set<string>(SUBCATEGORY_SLUGS)
 
 // ─── Listing counts ────────────────────────────────────────────────────────────
 
@@ -81,7 +92,11 @@ export async function getIndexableTownCategoryParams(): Promise<Array<{ slug: To
     .groupBy(towns.slug, categories.slug)
 
   return rows
-    .filter((row) => row.total > 0)
+    .filter((row) =>
+      row.total > 0
+      && publicTownSlugs.has(row.slug)
+      && publicCategorySlugs.has(row.category)
+    )
     .map((row) => ({
       slug:     row.slug as TownSlug,
       category: row.category as CategorySlug,
@@ -103,7 +118,9 @@ export async function getIndexableSubcategorySlugs(): Promise<SubcategorySlug[]>
     .groupBy(subcategories.slug)
     .having(sql`count(${listings.id}) > 0`)
 
-  return rows.map((row) => row.slug as SubcategorySlug)
+  return rows
+    .filter((row) => publicSubcategorySlugs.has(row.slug))
+    .map((row) => row.slug as SubcategorySlug)
 }
 
 /**
@@ -130,7 +147,9 @@ export async function getTownsWithListingsForCategory(
     .groupBy(towns.slug, towns.name)
     .having(sql`count(${listings.id}) > 0`)
 
-  return rows.map((r) => ({ slug: r.slug, name: r.name, count: r.total }))
+  return rows
+    .filter((r) => publicTownSlugs.has(r.slug))
+    .map((r) => ({ slug: r.slug, name: r.name, count: r.total }))
 }
 
 export async function getTownsWithListingsForSubcategory(
@@ -153,7 +172,9 @@ export async function getTownsWithListingsForSubcategory(
     .groupBy(towns.slug, towns.name)
     .having(sql`count(${listings.id}) > 0`)
 
-  return rows.map((r) => ({ slug: r.slug, name: r.name, count: r.total }))
+  return rows
+    .filter((r) => publicTownSlugs.has(r.slug))
+    .map((r) => ({ slug: r.slug, name: r.name, count: r.total }))
 }
 
 /**
@@ -173,7 +194,7 @@ export async function getActiveSubcategoriesForCategory(
     .where(eq(categories.slug, categorySlug))
     .orderBy(subcategories.sortOrder)
 
-  return rows
+  return rows.filter((row) => publicSubcategorySlugs.has(row.slug))
 }
 
 export async function getActiveSubcategoriesForTownCategory(
@@ -200,7 +221,9 @@ export async function getActiveSubcategoriesForTownCategory(
     .having(sql`count(${listings.id}) > 0`)
     .orderBy(subcategories.sortOrder)
 
-  return rows.map((row) => ({ slug: row.slug, name: row.name, count: row.total }))
+  return rows
+    .filter((row) => publicSubcategorySlugs.has(row.slug))
+    .map((row) => ({ slug: row.slug, name: row.name, count: row.total }))
 }
 
 // ─── Editorial overrides ──────────────────────────────────────────────────────
