@@ -23,6 +23,8 @@ const legacyRedirects = new Map<string, string>([
   ['/surrey/virtual-reality', '/things-to-do'],
   ['/surrey/laser-tag', '/kids-family'],
   ['/surrey/swimming', '/kids-family'],
+  ['/listings/the-ivy-brasserie-guildford', '/listings/the-ivy-castle-view-guildford'],
+  ['/listings/the-ivy-guildford-brasserie', '/listings/the-ivy-castle-view-guildford'],
 ])
 
 function requestHost(request: NextRequest) {

@@ -3,7 +3,7 @@
  * The primary SEO landing pages for high-intent local queries.
  */
 
-import { notFound, redirect } from 'next/navigation'
+import { notFound, permanentRedirect, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
@@ -22,6 +22,7 @@ import { buildCollectionSchema } from '@/lib/schema/collection'
 import { canonicalUrl } from '@/lib/site'
 
 export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 
 interface Props {
   params: { slug: string; category: string }
@@ -117,11 +118,6 @@ function editorialFor(townSlug: string, routeSlug: string) {
   return townCategoryEditorial[`${townSlug}/${routeSlug}`]
 }
 
-export function generateStaticParams() {
-  // Generated on first request via ISR — build env has no DB/network access
-  return []
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (isTownSlug(params.slug) && params.category === 'indoor-activities') {
     return {
@@ -186,6 +182,10 @@ export default async function TownCategoryPage({ params }: Props) {
     getCategoryTownOverride(params.slug, params.category),
     getTownsWithListingsForCategory(params.category),
   ])
+
+  if (pageListings.length === 0) {
+    permanentRedirect(`/${params.slug}`)
+  }
 
   const intro = override?.intro ?? editorial?.intro
     ?? `The best ${category.name.toLowerCase()} in ${town.name}. Curated picks, ranked by quality and local knowledge.`
