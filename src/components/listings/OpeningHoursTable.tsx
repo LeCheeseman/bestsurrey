@@ -1,3 +1,6 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import type { OpeningHours } from '@/types'
 
 interface OpeningHoursTableProps {
@@ -14,8 +17,23 @@ const DAY_LABELS: Array<{ key: keyof OpeningHours; label: string }> = [
   { key: 'sunday',    label: 'Sunday'    },
 ]
 
+function currentSurreyWeekday() {
+  return new Intl.DateTimeFormat('en-GB', {
+    weekday: 'long',
+    timeZone: 'Europe/London',
+  }).format(new Date()).toLowerCase() as keyof OpeningHours
+}
+
 export function OpeningHoursTable({ hours }: OpeningHoursTableProps) {
-  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long' }).toLowerCase() as keyof OpeningHours
+  const [today, setToday] = useState<keyof OpeningHours | null>(null)
+
+  useEffect(() => {
+    const updateToday = () => setToday(currentSurreyWeekday())
+
+    updateToday()
+    const interval = window.setInterval(updateToday, 60 * 60 * 1000)
+    return () => window.clearInterval(interval)
+  }, [])
 
   return (
     <dl className="space-y-1 text-sm font-body">

@@ -11,7 +11,7 @@ import { SiteFooter } from '@/components/layout/SiteFooter'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { AdminEditLink } from '@/components/admin/AdminEditLink'
 import { ListingGrid } from '@/components/listings/ListingGrid'
-import { ResponsiveListingImage } from '@/components/listings/ResponsiveListingImage'
+import { ListingPhotoGallery } from '@/components/listings/ListingPhotoGallery'
 import { OpeningHoursTable } from '@/components/listings/OpeningHoursTable'
 import { JsonLd } from '@/components/schema/JsonLd'
 import { buildListingSchema } from '@/lib/schema/listing'
@@ -67,7 +67,6 @@ export default async function ListingPage({ params }: Props) {
 
   const images       = normalizeListingImages(listing.images)
   const openingHours = normalizeOpeningHours(listing.openingHours)
-  const primaryImage = images.find((i) => i.isPrimary) ?? images[0]
   const hasPublicTownPage = isTownSlug(listing.town.slug)
   const hasPublicCategoryPage = isCategorySlug(listing.primaryCategory.slug)
   const townCategoryPath = hasPublicTownPage && hasPublicCategoryPage
@@ -385,71 +384,5 @@ function SectionCard({
         {children}
       </div>
     </section>
-  )
-}
-
-function ListingPhotoGallery({
-  images,
-  listingName,
-}: {
-  images: ReturnType<typeof normalizeListingImages>
-  listingName: string
-}) {
-  const galleryImages = images.length > 0
-    ? [...images].sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary))
-    : []
-  const [primary] = galleryImages
-
-  if (!primary) {
-    return (
-      <div className="relative aspect-[16/7] overflow-hidden rounded-lg bg-mist-green">
-        <div className="absolute inset-0 flex items-center justify-center text-gray-300 text-4xl">
-          📍
-        </div>
-      </div>
-    )
-  }
-
-  if (galleryImages.length === 1) {
-    return (
-      <div className="relative aspect-[16/7] overflow-hidden rounded-lg bg-mist-green">
-        <ResponsiveListingImage
-          src={primary.url}
-          alt={primary.alt}
-          priority
-          sizes="(max-width: 1180px) 100vw, 72rem"
-        />
-      </div>
-    )
-  }
-
-  return (
-    <div className="-mx-4 md:mx-0">
-      <div className="flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-2 md:px-0">
-        {galleryImages.map((image, index) => (
-          <div
-            key={`${image.url}-${index}`}
-            className={[
-              'relative shrink-0 snap-start overflow-hidden rounded-lg bg-mist-green',
-              index === 0
-                ? 'h-[300px] w-[84vw] sm:h-[360px] md:h-[420px] md:w-[58%] lg:w-[660px]'
-                : 'h-[300px] w-[72vw] sm:h-[360px] sm:w-[360px] md:h-[420px] md:w-[340px]',
-            ].join(' ')}
-          >
-            <ResponsiveListingImage
-              src={image.url}
-              alt={image.alt || `${listingName} photo ${index + 1}`}
-              priority={index === 0}
-              sizes={index === 0 ? '(max-width: 768px) 84vw, 660px' : '(max-width: 640px) 72vw, 360px'}
-            />
-            {index === 0 && galleryImages.length > 1 ? (
-              <div className="absolute bottom-3 right-3 rounded-full bg-black/70 px-3 py-1 text-xs font-medium text-white">
-                {galleryImages.length} photos
-              </div>
-            ) : null}
-          </div>
-        ))}
-      </div>
-    </div>
   )
 }
