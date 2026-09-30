@@ -25,7 +25,7 @@ const googleAnalyticsId = 'G-W01CN1CCGV'
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default:  'Best Surrey — The Finest in the County',
+    default:  'Best Surrey | The Finest in the County',
     template: '%s | Best Surrey',
   },
   description:

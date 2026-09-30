@@ -19,7 +19,7 @@ interface Props {
 export function generateMetadata({ searchParams }: Props): Metadata {
   const q = searchParams.q?.trim()
   return {
-    title:       q ? `"${q}" — Search` : 'Search',
+    title:       q ? `"${q}" | Search` : 'Search',
     description: q ? `Best Surrey search results for "${q}"` : 'Search the Best Surrey directory.',
     robots:      { index: false, follow: false },
   }

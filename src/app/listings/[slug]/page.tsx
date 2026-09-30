@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const primaryImage = images.find((i) => i.isPrimary) ?? images[0]
 
     return {
-      title:       `${listing.name} — ${listing.town.name} ${listing.primaryCategory.name}`,
+      title:       `${listing.name} | ${listing.town.name} ${listing.primaryCategory.name}`,
       description: listing.shortSummary ?? undefined,
       alternates:  { canonical: canonicalUrl(`/listings/${listing.slug}`) },
       openGraph: {
