@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 type ListingImage = {
@@ -70,6 +70,8 @@ type Taxonomy = {
   categories: TaxonomyItem[]
   subcategories: TaxonomyItem[]
 }
+
+type TaxonomyStatus = 'loading' | 'ready' | 'error'
 
 type DetailsForm = {
   name: string
@@ -210,6 +212,8 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
   const initialListingSlug = searchParams.get('listing')?.trim() || ''
   const initialStatus = searchParams.get('status')?.trim() || ''
   const [taxonomy, setTaxonomy] = useState<Taxonomy>(emptyTaxonomy)
+  const [taxonomyStatus, setTaxonomyStatus] = useState<TaxonomyStatus>('loading')
+  const [taxonomyError, setTaxonomyError] = useState('')
   const [listings, setListings] = useState<Listing[]>([])
   const [queueTotal, setQueueTotal] = useState(0)
   const [selectedSlug, setSelectedSlug] = useState<string>('')
@@ -301,11 +305,26 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
     }
   }
 
-  useEffect(() => {
-    api<Taxonomy>('/api/admin/taxonomy')
-      .then(setTaxonomy)
-      .catch((error) => setMessage(error instanceof Error ? error.message : 'Could not load taxonomy.'))
+  const loadTaxonomy = useCallback(async () => {
+    setTaxonomyStatus('loading')
+    setTaxonomyError('')
+
+    try {
+      const data = await api<Taxonomy>('/api/admin/taxonomy')
+      if (!Array.isArray(data.categories) || data.categories.length === 0 || !Array.isArray(data.subcategories)) {
+        throw new Error('The category list was empty or invalid.')
+      }
+      setTaxonomy(data)
+      setTaxonomyStatus('ready')
+    } catch (error) {
+      setTaxonomyStatus('error')
+      setTaxonomyError(error instanceof Error ? error.message : 'Could not load categories.')
+    }
   }, [])
+
+  useEffect(() => {
+    void loadTaxonomy()
+  }, [loadTaxonomy])
 
   useEffect(() => {
     void loadListings()
@@ -339,11 +358,6 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
     setImageMessage('')
     setDragImageIndex(null)
   }, [selected?.slug])
-
-  useEffect(() => {
-    const allowed = new Set(compatibleSubcategories.map((item) => item.slug))
-    setSelectedSubcategorySlugs((slugs) => slugs.filter((slug) => allowed.has(slug)))
-  }, [compatibleSubcategories])
 
   const categoryChoices = useMemo(() => {
     const currentSubcategories = new Set(selectedSubcategorySlugs)
@@ -510,7 +524,12 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
   }
 
   async function saveCategories(categorySlugs = currentCategorySlugs, subcategorySlugs = selectedSubcategorySlugs) {
-    await saveListing({ categorySlugs, subcategorySlugs })
+    if (taxonomyStatus !== 'ready') {
+      setMessage(taxonomyStatus === 'error' ? 'Categories could not be loaded. Retry before making category changes.' : 'Categories are still loading. Please wait before making category changes.')
+      return false
+    }
+
+    return saveListing({ categorySlugs, subcategorySlugs })
   }
 
   async function removeSubcategory(slug: string) {
@@ -1143,17 +1162,36 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                 <div className="rounded border border-gray-200 bg-white p-5">
                   <h3 className="text-sm font-semibold">Category QA</h3>
                   <div className="mt-3 space-y-3">
+                    {taxonomyStatus === 'loading' ? (
+                      <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+                        Loading categories… Category editing is temporarily disabled.
+                      </div>
+                    ) : null}
+                    {taxonomyStatus === 'error' ? (
+                      <div className="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+                        <p>Categories could not be loaded. Existing assignments are protected and cannot be changed until this is resolved.</p>
+                        {taxonomyError ? <p className="mt-1 text-xs">{taxonomyError}</p> : null}
+                        <button
+                          onClick={() => void loadTaxonomy()}
+                          className="mt-2 rounded border border-amber-500 bg-white px-3 py-1.5 text-xs font-medium hover:border-amber-700"
+                          type="button"
+                        >
+                          Retry loading categories
+                        </button>
+                      </div>
+                    ) : null}
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-xs font-medium text-gray-700">Currently listed in</p>
                       <p className="text-xs text-gray-500">{selectedSubcategorySlugs.length + currentCategorySlugs.length} total</p>
                     </div>
                     <div className="flex flex-wrap gap-2 rounded border border-gray-200 bg-gray-50 p-3">
                       {currentCategorySlugs.map((slug, index) => {
-                        const category = taxonomy.categories.find((item) => item.slug === slug)
+                        const category = taxonomy.categories.find((item) => item.slug === slug) ?? selected.categories.find((item) => item.slug === slug)
+                        const categoryName = category?.name ?? (slug === selected.categorySlug ? selected.categoryName : slug)
                         return (
                           <span key={slug} className="inline-flex items-center gap-2 rounded border border-emerald-200 bg-white px-3 py-2 text-sm">
                             <span>
-                              <span className="font-medium">{category?.name ?? slug}</span>
+                              <span className="font-medium">{categoryName}</span>
                               <span className="ml-1 text-xs text-gray-500">{index === 0 ? 'primary' : 'main'}</span>
                             </span>
                             {index > 0 && (
@@ -1161,7 +1199,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                                 onClick={() => void makePrimaryCategory(slug)}
                                 className="rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800 hover:bg-emerald-100"
                                 type="button"
-                                disabled={saving}
+                                disabled={saving || taxonomyStatus !== 'ready'}
                               >
                                 Make primary
                               </button>
@@ -1170,8 +1208,8 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                               onClick={() => void removeCategory(slug)}
                               className="rounded px-1 text-base font-semibold leading-none text-rose-700 hover:bg-rose-50 disabled:text-gray-300"
                               type="button"
-                              disabled={saving || currentCategorySlugs.length <= 1}
-                              aria-label={`Remove ${category?.name ?? slug}`}
+                              disabled={saving || taxonomyStatus !== 'ready' || currentCategorySlugs.length <= 1}
+                              aria-label={`Remove ${categoryName}`}
                             >
                               x
                             </button>
@@ -1180,7 +1218,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                       })}
                       {selectedSubcategorySlugs.length > 0 ? (
                         selectedSubcategorySlugs.map((slug) => {
-                          const subcategory = taxonomy.subcategories.find((item) => item.slug === slug)
+                          const subcategory = taxonomy.subcategories.find((item) => item.slug === slug) ?? selected.subcategories.find((item) => item.slug === slug)
                           return (
                             <span key={slug} className="inline-flex items-center gap-2 rounded border border-gray-200 bg-white px-3 py-2 text-sm">
                               <span>{subcategory?.name ?? slug}</span>
@@ -1188,7 +1226,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                                 onClick={() => void removeSubcategory(slug)}
                                 className="rounded px-1 text-base font-semibold leading-none text-rose-700 hover:bg-rose-50"
                                 type="button"
-                                disabled={saving}
+                                disabled={saving || taxonomyStatus !== 'ready'}
                                 aria-label={`Remove ${subcategory?.name ?? slug}`}
                               >
                                 x
@@ -1201,15 +1239,26 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                       )}
                     </div>
                     <div className="flex flex-col gap-2 sm:flex-row">
-                      <select value={categoryToAdd} onChange={(event) => setCategoryToAdd(event.target.value)} className="min-w-0 flex-1 rounded border border-gray-300 px-2 py-2 text-sm">
-                        <option value="">Select category or subcategory to add</option>
+                      <select
+                        value={categoryToAdd}
+                        onChange={(event) => setCategoryToAdd(event.target.value)}
+                        className="min-w-0 flex-1 rounded border border-gray-300 px-2 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
+                        disabled={saving || taxonomyStatus !== 'ready'}
+                      >
+                        <option value="">
+                          {taxonomyStatus === 'loading'
+                            ? 'Loading categories…'
+                            : taxonomyStatus === 'error'
+                              ? 'Categories unavailable'
+                              : 'Select category or subcategory to add'}
+                        </option>
                         {categoryChoices.map((item) => (
                           <option key={item.value} value={item.value}>
                             {item.label}
                           </option>
                         ))}
                       </select>
-                      <button onClick={() => void addCategoryChoice()} className={buttonClass(true)} disabled={saving || !categoryToAdd}>
+                      <button onClick={() => void addCategoryChoice()} className={buttonClass(true)} disabled={saving || taxonomyStatus !== 'ready' || !categoryToAdd}>
                         Add
                       </button>
                     </div>
@@ -1221,7 +1270,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                           value={currentCategorySlugs[0] ?? ''}
                           onChange={(event) => void makePrimaryCategory(event.target.value)}
                           className="mt-1 w-full rounded border border-gray-300 px-2 py-2 text-sm font-normal text-gray-950"
-                          disabled={saving}
+                          disabled={saving || taxonomyStatus !== 'ready'}
                         >
                           {currentCategorySlugs.map((slug) => {
                             const category = taxonomy.categories.find((item) => item.slug === slug)
