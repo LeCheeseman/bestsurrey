@@ -46,7 +46,7 @@ const townCategoryEditorial: Record<string, TownCategoryEditorial> = {
       eyebrow: 'Woking brunch guide',
       title: 'A focused shortlist for breakfast, coffee and slower weekend plans in Woking.',
       body:
-        'This page is already close to page-one visibility for Woking brunch searches, so it needs to behave like a useful local guide rather than a generic category page. The priority is clear listing quality: accurate cafes, good photos, proper summaries and links into coffee shops, bakeries and brunch-specific picks.',
+        "Find the best cafés and brunch spots in Woking, from all-day brunch kitchens and proper coffee to easy weekend catch-ups with the kids in tow. Here's where to go, whatever kind of morning you're after.",
       links: [
         { label: 'Coffee shops in Woking', href: '/woking/coffee-shops', description: 'Coffee-first places and daytime stops.' },
         { label: 'Brunch spots in Woking', href: '/woking/brunch-spots', description: 'Weekend breakfasts, brunch plates and relaxed cafes.' },
@@ -65,7 +65,7 @@ const townCategoryEditorial: Record<string, TownCategoryEditorial> = {
       eyebrow: 'Guildford days out',
       title: 'Build a proper day out around Guildford, not just a random list of attractions.',
       body:
-        'Guildford is the strongest things-to-do opportunity in Search Console. This page should help people choose between riverside walks, gardens, historic sites, indoor options and easy family plans, with better internal links into the subcategories as the listings improve.',
+        "Guildford packs a lot into a small town centre — a Norman castle, the River Wey, a cobbled high street, and the Surrey Hills within easy reach. Here's where to start, whether you're planning a riverside walk, a family day out, or something indoors for a rainy afternoon.",
       links: [
         { label: 'Walks & nature in Guildford', href: '/guildford/walks-nature', description: 'Riverside walks, viewpoints and green spaces.' },
         { label: 'Gardens & parks in Guildford', href: '/guildford/gardens-parks', description: 'Outdoor spaces for easy local days out.' },
@@ -82,9 +82,9 @@ const townCategoryEditorial: Record<string, TownCategoryEditorial> = {
       'Find the best restaurants and places to eat in Farnham, from relaxed local dining and family-friendly restaurants to date-night and Sunday roast picks.',
     panel: {
       eyebrow: 'Farnham restaurants',
-      title: 'Farnham is showing clear restaurant search demand, so this page needs the strongest dining coverage first.',
+      title: "Farnham's restaurant scene is a bit more varied than the high street suggests — independent Italian and Thai kitchens sit alongside a contemporary gastropub and a Mediterranean steakhouse.",
       body:
-        'The next editorial job is to make sure the obvious Farnham dining options are present, accurately categorised and supported with good photos. This page should answer places-to-eat searches directly, then guide visitors into date night, family dining and pub food where that is the better fit.',
+        'Below are our picks for a proper sit-down meal in Farnham. Looking for something more specific? Our date night, family dining, Sunday roast and pub food guides go deeper.',
       links: [
         { label: 'Date night in Farnham', href: '/farnham/date-night', description: 'More polished dinner options and evening choices.' },
         { label: 'Family dining in Farnham', href: '/farnham/family-dining', description: 'Restaurants that work for mixed groups and children.' },
@@ -101,9 +101,9 @@ const townCategoryEditorial: Record<string, TownCategoryEditorial> = {
       'Find the best pubs and bars in Farnham, including traditional pubs, gastropubs, beer gardens, country pubs and places for drinks.',
     panel: {
       eyebrow: 'Farnham pubs',
-      title: 'Separate proper local pubs from generic places to drink.',
+      title: 'The best pubs and bars in Farnham',
       body:
-        'Farnham pub searches are already appearing in Search Console. The page should make it easy to move between traditional pubs, gastropubs, beer gardens and country pub options, while duplicate or weak listings are removed through the admin cleanup workflow.',
+        "Farnham has a proper mix of pubs — boutique and hotel-style spots, a traditional live-music local, a historic pub with a big beer garden, and a dedicated craft beer bar. Whether you want a quiet pint, a Sunday roast, or somewhere to make a night of it, here's where to go.",
       links: [
         { label: 'Gastropubs in Farnham', href: '/farnham/gastropubs', description: 'Food-led pubs and more substantial meals.' },
         { label: 'Traditional pubs in Farnham', href: '/farnham/traditional-pubs', description: 'Classic local pubs and characterful drinking spots.' },

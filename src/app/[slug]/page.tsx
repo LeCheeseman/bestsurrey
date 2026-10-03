@@ -69,9 +69,9 @@ const townEditorial: Partial<Record<import('@/lib/taxonomy/constants').TownSlug,
       'Find the best places in Farnham, from restaurants and proper pubs to brunch spots, family days out and things to do around town.',
     panel: {
       eyebrow: 'Farnham guide',
-      title: 'Start with food and pubs, then branch into easy local days out.',
+      title: "Farnham is one of Surrey's best-looking market towns — a Georgian high street, a historic castle, and a dining and pub scene that holds its own against bigger neighbours.",
       body:
-        'Farnham is already attracting search visibility for restaurants, places to eat and pubs. This page is designed as the local hub: use it to move quickly into dining, pub guides, brunch and things to do, while the individual listings are cleaned and expanded.',
+        "This is your starting point for Farnham: the best places to eat, the best pubs, and what's worth doing once you've eaten.",
       links: [
         { label: 'Restaurants in Farnham', href: '/farnham/restaurants', description: 'Places to eat, date-night picks and stronger dining listings.' },
         { label: 'Pubs & bars in Farnham', href: '/farnham/pubs-bars', description: 'Traditional pubs, gastropubs, gardens and drinking spots.' },
