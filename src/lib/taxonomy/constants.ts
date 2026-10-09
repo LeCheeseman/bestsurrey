@@ -105,6 +105,12 @@ export type SubcategorySlug = (typeof SUBCATEGORIES)[number]['slug']
 
 export const SUBCATEGORY_SLUGS = SUBCATEGORIES.map((s) => s.slug) as SubcategorySlug[]
 
+export function getSubcategoryPageName(slug: string, fallbackName: string): string {
+  return slug === 'family-dining'
+    ? 'Family Dining Restaurants'
+    : fallbackName
+}
+
 // ─── Helper lookups ───────────────────────────────────────────────────────────
 
 export const TOWN_BY_SLUG = Object.fromEntries(

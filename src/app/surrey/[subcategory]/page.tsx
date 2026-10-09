@@ -12,8 +12,9 @@ import { ListingGrid } from '@/components/listings/ListingGrid'
 import { TownFilterRow } from '@/components/ui/TownFilterRow'
 import { JsonLd } from '@/components/schema/JsonLd'
 import { isSubcategorySlug } from '@/lib/taxonomy/validation'
-import { SUBCATEGORY_SLUGS, SUBCATEGORIES, TOWNS } from '@/lib/taxonomy/constants'
+import { SUBCATEGORY_SLUGS, SUBCATEGORIES, getSubcategoryPageName } from '@/lib/taxonomy/constants'
 import { getListingsBySubcategory } from '@/lib/queries/listings'
+import { getTownsWithListingsForSubcategory } from '@/lib/queries/taxonomy'
 import { buildBreadcrumbSchema } from '@/lib/schema/breadcrumbs'
 import { buildCollectionSchema } from '@/lib/schema/collection'
 import { canonicalUrl } from '@/lib/site'
@@ -34,10 +35,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const sub = SUBCATEGORIES.find((s) => s.slug === params.subcategory)
   if (!sub) return {}
+  const pageName = getSubcategoryPageName(sub.slug, sub.name)
 
   const metadata: Metadata = {
-    title:       `Best ${sub.name} in Surrey`,
-    description: `Discover the best ${sub.name.toLowerCase()} across Surrey. Curated and ranked.`,
+    title:       `Best ${pageName} in Surrey`,
+    description: `Discover the best ${pageName.toLowerCase()} across Surrey. Curated and ranked.`,
     alternates:  { canonical: canonicalUrl(`/surrey/${params.subcategory}`) },
   }
 
@@ -49,19 +51,23 @@ export default async function SubcategoryPage({ params }: Props) {
 
   const sub = SUBCATEGORIES.find((s) => s.slug === params.subcategory)
   if (!sub) notFound()
+  const pageName = getSubcategoryPageName(sub.slug, sub.name)
 
-  const pageListings = await getListingsBySubcategory(params.subcategory, 12)
+  const [pageListings, townsWithListings] = await Promise.all([
+    getListingsBySubcategory(params.subcategory, 12),
+    getTownsWithListingsForSubcategory(params.subcategory),
+  ])
 
   const breadcrumbItems = [
     { name: 'Home',     path: '/' },
-    { name: sub.name },
+    { name: pageName },
   ]
 
   const schema = [
     buildBreadcrumbSchema(breadcrumbItems),
     ...buildCollectionSchema({
-      name:        `Best ${sub.name} in Surrey`,
-      description: `Discover the best ${sub.name.toLowerCase()} across Surrey.`,
+      name:        `Best ${pageName} in Surrey`,
+      description: `Discover the best ${pageName.toLowerCase()} across Surrey.`,
       path:        `/surrey/${params.subcategory}`,
       listings:    pageListings,
     }),
@@ -73,8 +79,8 @@ export default async function SubcategoryPage({ params }: Props) {
       <JsonLd id={`schema-surrey-${params.subcategory}`} schema={schema} />
 
       <PageHeader
-        h1={`Best ${sub.name} in Surrey`}
-        intro={`Discover the best ${sub.name.toLowerCase()} across Surrey. Curated and ranked.`}
+        h1={`Best ${pageName} in Surrey`}
+        intro={`Discover the best ${pageName.toLowerCase()} across Surrey. Curated and ranked.`}
         breadcrumbs={breadcrumbItems}
       />
 
@@ -82,12 +88,17 @@ export default async function SubcategoryPage({ params }: Props) {
         <div className="max-w-6xl mx-auto px-4 py-10 space-y-10">
 
           {/* Browse by town */}
-          <section>
-            <h2 className="font-display text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-              Browse by town
-            </h2>
-            <TownFilterRow towns={TOWNS.map((t) => ({ ...t }))} />
-          </section>
+          {townsWithListings.length > 0 && (
+            <section>
+              <h2 className="font-display text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                Browse by town
+              </h2>
+              <TownFilterRow
+                towns={townsWithListings}
+                categorySlug={params.subcategory}
+              />
+            </section>
+          )}
 
           <section>
             <ListingGrid listings={pageListings} showRankingPosition />

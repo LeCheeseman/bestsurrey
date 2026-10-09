@@ -14,7 +14,7 @@ import { TownFilterRow } from '@/components/ui/TownFilterRow'
 import { EditorialPanel, type EditorialBlock } from '@/components/ui/EditorialPanel'
 import { JsonLd } from '@/components/schema/JsonLd'
 import { isTownSlug, isCategorySlug, isSubcategorySlug } from '@/lib/taxonomy/validation'
-import { TOWN_BY_SLUG, CATEGORY_BY_SLUG, SUBCATEGORIES } from '@/lib/taxonomy/constants'
+import { TOWN_BY_SLUG, CATEGORY_BY_SLUG, SUBCATEGORIES, getSubcategoryPageName } from '@/lib/taxonomy/constants'
 import { getListingsByTownAndCategory, getListingsByTownAndSubcategory } from '@/lib/queries/listings'
 import { getActiveSubcategoriesForTownCategory, getCategoryTownOverride, getTownsWithListingsForCategory, getTownsWithListingsForSubcategory } from '@/lib/queries/taxonomy'
 import { buildBreadcrumbSchema } from '@/lib/schema/breadcrumbs'
@@ -134,10 +134,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const sub = SUBCATEGORIES.find((item) => item.slug === params.category)
     if (!sub) return {}
     const editorial = editorialFor(params.slug, params.category)
+    const pageName = getSubcategoryPageName(sub.slug, sub.name)
 
     const metadata: Metadata = {
-      title:       editorial?.title ?? `Best ${sub.name} in ${town.name}, Surrey`,
-      description: editorial?.description ?? `The best ${sub.name.toLowerCase()} in ${town.name}. Curated local picks from Best Surrey.`,
+      title:       editorial?.title ?? `Best ${pageName} in ${town.name}, Surrey`,
+      description: editorial?.description ?? `The best ${pageName.toLowerCase()} in ${town.name}. Curated local picks from Best Surrey.`,
       alternates:  { canonical: canonicalUrl(`/${params.slug}/${params.category}`) },
     }
 
@@ -281,6 +282,7 @@ async function TownSubcategoryPage({
 
   const category = CATEGORY_BY_SLUG[sub.categorySlug]
   const editorial = editorialFor(townSlug, subcategorySlug)
+  const pageName = getSubcategoryPageName(sub.slug, sub.name)
 
   const [pageListings, siblingSubcategories, townsWithListings] = await Promise.all([
     getListingsByTownAndSubcategory(townSlug, subcategorySlug, 12),
@@ -288,19 +290,19 @@ async function TownSubcategoryPage({
     getTownsWithListingsForSubcategory(subcategorySlug),
   ])
 
-  const intro = editorial?.intro ?? `The best ${sub.name.toLowerCase()} in ${town.name}. Curated local picks from Best Surrey.`
+  const intro = editorial?.intro ?? `The best ${pageName.toLowerCase()} in ${town.name}. Curated local picks from Best Surrey.`
 
   const breadcrumbItems = [
     { name: 'Home', path: '/' },
     { name: town.name, path: `/${townSlug}` },
     { name: category.name, path: `/${townSlug}/${sub.categorySlug}` },
-    { name: `${sub.name} in ${town.name}` },
+    { name: `${pageName} in ${town.name}` },
   ]
 
   const schema = [
     buildBreadcrumbSchema(breadcrumbItems),
     ...buildCollectionSchema({
-      name:        `Best ${sub.name} in ${town.name}`,
+      name:        `Best ${pageName} in ${town.name}`,
       description: intro,
       path:        `/${townSlug}/${subcategorySlug}`,
       listings:    pageListings,
@@ -317,7 +319,7 @@ async function TownSubcategoryPage({
       <JsonLd id={`schema-${townSlug}-${subcategorySlug}`} schema={schema} />
 
       <PageHeader
-        h1={`Best ${sub.name} in ${town.name}`}
+        h1={`Best ${pageName} in ${town.name}`}
         intro={intro}
         breadcrumbs={breadcrumbItems}
       />
