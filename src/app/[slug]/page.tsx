@@ -5,13 +5,13 @@
 
 import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { ListingGrid } from '@/components/listings/ListingGrid'
 import { SubcategoryPills } from '@/components/ui/SubcategoryPills'
 import { TownFilterRow } from '@/components/ui/TownFilterRow'
-import { CategoryCard } from '@/components/ui/CategoryCard'
 import { EditorialPanel, type EditorialBlock } from '@/components/ui/EditorialPanel'
 import { JsonLd } from '@/components/schema/JsonLd'
 import { classifyTopLevelSlug } from '@/lib/taxonomy/validation'
@@ -200,15 +200,22 @@ async function CategoryIndexPage({ slug }: { slug: import('@/lib/taxonomy/consta
           </section>
 
           {/* Related categories */}
-          <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-            <h2 className="font-body text-xs font-bold uppercase tracking-[0.18em] text-gray-900 mb-4">
+          <section className="border-y border-gray-200 py-5">
+            <h2 className="font-display text-lg font-semibold text-forest-green">
               Also on Best Surrey
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <nav aria-label="Also on Best Surrey" className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
               {related.map((cat) => (
-                <CategoryCard key={cat.slug} name={cat.name} slug={cat.slug} />
+                <Link
+                  key={cat.slug}
+                  href={`/${cat.slug}`}
+                  className="group flex min-h-12 items-center justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold leading-tight text-gray-900 transition-colors hover:border-mid-green hover:bg-mist-green hover:text-forest-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mid-green"
+                >
+                  <span>{cat.name}</span>
+                  <span aria-hidden="true" className="shrink-0 text-base text-gray-500 transition-transform group-hover:translate-x-0.5">→</span>
+                </Link>
               ))}
-            </div>
+            </nav>
           </section>
 
         </div>
@@ -262,19 +269,22 @@ async function TownHubPage({ slug }: { slug: import('@/lib/taxonomy/constants').
           {/* Category grid — links to /{town}/{category}/ */}
           {editorial && <EditorialPanel block={editorial.panel} />}
 
-          <section>
-            <h2 className="font-display text-lg font-semibold text-forest-green mb-4">
+          <section className="border-y border-gray-200 py-5">
+            <h2 className="font-display text-lg font-semibold text-forest-green">
               Explore {town.name}
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <nav aria-label={`Explore ${town.name} by category`} className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
               {CATEGORIES.map((cat) => (
-                <CategoryCard
+                <Link
                   key={cat.slug}
-                  name={cat.name}
-                  slug={`${slug}/${cat.slug}`}
-                />
+                  href={`/${slug}/${cat.slug}`}
+                  className="group flex min-h-12 items-center justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold leading-tight text-gray-900 transition-colors hover:border-mid-green hover:bg-mist-green hover:text-forest-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mid-green"
+                >
+                  <span>{cat.name}</span>
+                  <span aria-hidden="true" className="shrink-0 text-base text-gray-500 transition-transform group-hover:translate-x-0.5">→</span>
+                </Link>
               ))}
-            </div>
+            </nav>
           </section>
 
           {/* Top picks */}

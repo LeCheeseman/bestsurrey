@@ -54,7 +54,7 @@ export default async function SubcategoryPage({ params }: Props) {
   const pageName = getSubcategoryPageName(sub.slug, sub.name)
 
   const [pageListings, townsWithListings] = await Promise.all([
-    getListingsBySubcategory(params.subcategory, 12),
+    getListingsBySubcategory(params.subcategory),
     getTownsWithListingsForSubcategory(params.subcategory),
   ])
 

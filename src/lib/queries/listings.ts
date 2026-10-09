@@ -109,8 +109,7 @@ export async function getListingsByTownAndCategory(
 }
 
 export async function getListingsBySubcategory(
-  subcategorySlug: string,
-  limit = 12
+  subcategorySlug: string
 ): Promise<ListingCard[]> {
   // Subcategory is a many-to-many join through listing_subcategories
   const sub = await db
@@ -132,7 +131,6 @@ export async function getListingsBySubcategory(
       eq(listingSubcategories.subcategoryId,     sub[0].id)
     ))
     .orderBy(desc(listings.rankingScore))
-    .limit(limit)
 
   return rows as ListingCard[]
 }
