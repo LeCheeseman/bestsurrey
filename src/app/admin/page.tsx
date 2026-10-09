@@ -5,7 +5,6 @@ import { adminToolsConfigured } from '@/lib/admin-auth'
 const flagLinks = [
   { label: 'Needs cleanup', issue: 'has_issues' },
   { label: 'Missing image', issue: 'missing_image' },
-  { label: '2 or fewer photos', issue: 'low_photo_count' },
   { label: 'Possible low-res image', issue: 'possible_low_res_image' },
   { label: 'Duplicate name', issue: 'duplicate_name_town' },
   { label: 'Shared website', issue: 'shared_website' },
@@ -55,6 +54,10 @@ export default function AdminPage() {
           <Link href="/admin/listing-qa?status=review&issue=all" className="rounded border border-emerald-200 bg-emerald-50 p-5 hover:border-emerald-700">
             <h2 className="text-sm font-semibold text-emerald-950">For approval</h2>
             <p className="mt-2 text-sm text-emerald-900">Review newly researched listings before they go live.</p>
+          </Link>
+          <Link href="/admin/listing-qa?status=published&issue=low_photo_count" className="rounded border border-amber-200 bg-amber-50 p-5 hover:border-amber-700">
+            <h2 className="text-sm font-semibold text-amber-950">Photo review</h2>
+            <p className="mt-2 text-sm text-amber-900">Review every published listing with zero, one or two photos.</p>
           </Link>
           <Link href="/admin/listing-qa" className="rounded border border-gray-200 bg-white p-5 hover:border-emerald-700">
             <h2 className="text-sm font-semibold">Cleanup queue</h2>

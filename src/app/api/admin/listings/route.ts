@@ -197,7 +197,7 @@ export async function GET(request: NextRequest) {
     if (website.includes('collectivelycamberley.co.uk/business/camberley-public-house')) flags.push('dead_website')
     if (images && !Array.isArray(images)) flags.push('invalid_image_json')
     if (!Array.isArray(images) || images.length === 0) flags.push('missing_image')
-    if (Array.isArray(images) && images.length > 0 && images.length <= 2) flags.push('low_photo_count')
+    if (!Array.isArray(images) || images.length <= 2) flags.push('low_photo_count')
     if (Array.isArray(images) && images.some((image) => (
       image &&
       typeof image === 'object' &&

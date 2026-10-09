@@ -116,7 +116,7 @@ const issueLabels: Record<string, string> = {
   dead_website: 'Dead website',
   invalid_image_json: 'Invalid image data',
   missing_image: 'Missing image',
-  low_photo_count: '2 or fewer photos',
+  low_photo_count: 'Photo review (0-2)',
   possible_low_res_image: 'Possible low-res image',
   duplicate_name_town: 'Duplicate name',
   shared_website: 'Shared website',
@@ -252,6 +252,7 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [candidateLoading, setCandidateLoading] = useState(false)
   const [dragImageIndex, setDragImageIndex] = useState<number | null>(null)
+  const photoReviewMode = !categoryReviewMode && issueFilter === 'low_photo_count'
 
   const selected = listings.find((listing) => listing.slug === selectedSlug) ?? listings[0] ?? null
   const currentImage = primaryImage(selected)
@@ -675,23 +676,33 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
   }
 
   function updateListingImages(slug: string, images: ListingImage[]) {
-    setListings((items) =>
-      items.map((item) => {
-        if (item.slug !== slug) return item
-        const issueFlags = item.issueFlags.filter((flag) => ![
-          'missing_image',
-          'invalid_image_json',
-          'low_photo_count',
-          'possible_low_res_image',
-        ].includes(flag))
-        if (images.length === 0) issueFlags.push('missing_image')
-        if (images.length > 0 && images.length <= 2) issueFlags.push('low_photo_count')
-        if (images.some((image) => typeof image.byteSize === 'number' && image.byteSize > 0 && image.byteSize < 90_000)) {
-          issueFlags.push('possible_low_res_image')
-        }
-        return { ...item, images, issueFlags, issueCount: issueFlags.length }
-      }),
-    )
+    const updatedListings = listings.map((item) => {
+      if (item.slug !== slug) return item
+      const issueFlags = item.issueFlags.filter((flag) => ![
+        'missing_image',
+        'invalid_image_json',
+        'low_photo_count',
+        'possible_low_res_image',
+      ].includes(flag))
+      if (images.length === 0) issueFlags.push('missing_image')
+      if (images.length <= 2) issueFlags.push('low_photo_count')
+      if (images.some((image) => typeof image.byteSize === 'number' && image.byteSize > 0 && image.byteSize < 90_000)) {
+        issueFlags.push('possible_low_res_image')
+      }
+      return { ...item, images, issueFlags, issueCount: issueFlags.length }
+    })
+
+    if (photoReviewMode && images.length >= 3) {
+      const completedIndex = updatedListings.findIndex((item) => item.slug === slug)
+      const remainingListings = updatedListings.filter((item) => item.slug !== slug)
+      setListings(remainingListings)
+      setQueueTotal((total) => Math.max(0, total - 1))
+      setSelectedSlug(remainingListings[Math.min(completedIndex, remainingListings.length - 1)]?.slug ?? '')
+      setMessage('The listing now has at least three photos and has left the photo review queue.')
+      return
+    }
+
+    setListings(updatedListings)
   }
 
   async function removeGalleryImage(index: number) {
@@ -923,15 +934,23 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
         <div className="mx-auto flex max-w-7xl flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Best Surrey admin</p>
-            <h1 className="mt-1 text-2xl font-semibold">{categoryReviewMode ? 'Category review' : 'Listing cleanup queue'}</h1>
+            <h1 className="mt-1 text-2xl font-semibold">
+              {categoryReviewMode ? 'Category review' : photoReviewMode ? 'Photo review queue' : 'Listing cleanup queue'}
+            </h1>
             <p className="mt-1 max-w-2xl text-sm text-gray-600">
               {categoryReviewMode
                 ? 'Work through every listing in a selected category or town. Save edits as you go, then mark reviewed when that listing is clean.'
+                : photoReviewMode
+                  ? 'Listings remain in this queue until they have at least three photos or are sent for research.'
                 : 'Save edits as you go. A listing only leaves this queue when you click Submit complete, Research, or Remove from site.'}
             </p>
             <nav className="mt-3 flex flex-wrap gap-2 text-sm">
-              <a href="/admin/listing-qa" className={categoryReviewMode ? 'text-emerald-800 underline' : 'font-semibold text-gray-950'}>
+              <a href="/admin/listing-qa" className={!categoryReviewMode && !photoReviewMode ? 'font-semibold text-gray-950' : 'text-emerald-800 underline'}>
                 Cleanup queue
+              </a>
+              <span className="text-gray-300">/</span>
+              <a href="/admin/listing-qa?status=published&issue=low_photo_count" className={photoReviewMode ? 'font-semibold text-gray-950' : 'text-emerald-800 underline'}>
+                Photo review
               </a>
               <span className="text-gray-300">/</span>
               <a href="/admin/category-review" className={categoryReviewMode ? 'font-semibold text-gray-950' : 'text-emerald-800 underline'}>
@@ -1027,8 +1046,8 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
               >
                 <div className="flex items-start justify-between gap-3">
                   <span className="text-sm font-semibold">{listing.name}</span>
-                  <span className={listing.images.length ? 'text-xs text-emerald-700' : 'text-xs text-rose-700'}>
-                    {listing.images.length ? 'image' : 'missing'}
+                  <span className={listing.images.length >= 3 ? 'text-xs text-emerald-700' : listing.images.length > 0 ? 'text-xs text-amber-700' : 'text-xs text-rose-700'}>
+                    {listing.images.length} {listing.images.length === 1 ? 'photo' : 'photos'}
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-gray-600">
@@ -1145,9 +1164,11 @@ export default function AdminListingQaClient({ mode = 'qa' }: AdminListingQaClie
                         <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">No cleanup flags.</div>
                       )}
                       <div className="flex flex-wrap gap-2">
-                        <button onClick={() => void completeListing()} className={buttonClass(true)} disabled={saving}>
-                          {selected.status === 'review' ? 'Approve and publish' : categoryReviewMode ? 'Mark reviewed' : 'Submit complete'}
-                        </button>
+                        {!photoReviewMode ? (
+                          <button onClick={() => void completeListing()} className={buttonClass(true)} disabled={saving}>
+                            {selected.status === 'review' ? 'Approve and publish' : categoryReviewMode ? 'Mark reviewed' : 'Submit complete'}
+                          </button>
+                        ) : null}
                         <button onClick={() => void saveAndReload({ status: 'review' })} className={buttonClass()} disabled={saving}>
                           Research
                         </button>
